@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>超市精明格價網</title>
+    <title>超市精明格價網 - 即時消委會數據版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .clickable-card { transition: transform 0.1s ease; }
@@ -15,7 +15,11 @@
     <header class="bg-white border-b sticky top-0 z-20 p-4 shadow-sm">
         <div class="max-w-2xl mx-auto flex justify-between items-center">
             <h1 class="text-xl bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent font-bold">超市價格導航</h1>
-            <div id="status-dot" class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+            <!-- 狀態燈：預設為連線中（橙色） -->
+            <div class="flex items-center gap-2">
+                <span id="status-text" class="text-xs text-slate-400">正在獲取最新數據</span>
+                <div id="status-dot" class="w-3 h-3 bg-amber-500 rounded-full animate-pulse"></div>
+            </div>
         </div>
     </header>
 
@@ -23,7 +27,7 @@
         <!-- 搜尋欄 -->
         <div class="relative mb-6">
             <input type="text" id="searchBar" placeholder="搜尋貨品（如：嘉頓、蛋糕）..." 
-                class="w-full p-4 pl-12 bg-white border border-slate-200 rounded-2xl shadow-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                class="w-full p-4 pl-12 bg-white border border-slate-200 rounded-2xl shadow-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all" disabled>
             <span class="absolute left-4 top-4 text-slate-400">🔍</span>
         </div>
 
@@ -31,7 +35,10 @@
         <section id="level1Section">
             <h2 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">主分類</h2>
             <div id="level1Container" class="grid grid-cols-2 gap-3">
-                <div class="text-center p-4 text-slate-400 text-sm col-span-2">正在處理超市真實數據...</div>
+                <div class="text-center p-8 text-slate-500 text-sm col-span-2 bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center justify-center gap-3">
+                    <div class="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    <div>正在連線至消委會下載今日即時數據...<br><span class="text-xs text-slate-400">（檔案較大，初次載入需時約 3-8 秒）</span></div>
+                </div>
             </div>
         </section>
 
@@ -68,6 +75,8 @@
         const level2Title = document.getElementById('level2Title');
         const backToLevel2Btn = document.getElementById('backToLevel2Btn');
         const searchBar = document.getElementById('searchBar');
+        const statusDot = document.getElementById('status-dot');
+        const statusText = document.getElementById('status-text');
 
         let structuredData = {};
 
@@ -83,11 +92,16 @@
             'USELECT': 'U購'
         };
 
-        // 1. 初始化：讀取並重組 pricewatch.json
+        // 1. 初始化：透過 CORS 代理讀取動態 JSON
         async function init() {
             try {
-                const response = await fetch('./pricewatch.json');
-                if (!response.ok) throw new Error('無法讀取 pricewatch.json');
+                // 消委會官方 Open Data 網址
+                const targetUrl = 'https://online-price-watch.consumer.org.hk/opw/opendata/pricewatch.json';
+                // 使用公共 CORS 代理轉發
+                const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(targetUrl);
+                
+                const response = await fetch(proxyUrl);
+                if (!response.ok) throw new Error('代理伺服器回應異常，無法獲取數據。');
                 
                 const rawData = await response.json();
                 
@@ -119,13 +133,23 @@
                     }
                 });
 
-                // 綁定搜尋監聽器 (即時輸入即時篩選)
+                // 數據加載成功，更新狀態燈
+                statusDot.className = "w-3 h-3 bg-green-500 rounded-full shadow-sm";
+                statusText.innerText = "今日數據已同步";
+                searchBar.removeAttribute('disabled');
                 searchBar.addEventListener('input', handleSearch);
 
                 renderLevel1();
             } catch (e) {
                 console.error(e);
-                level1Container.innerHTML = '<p class="text-red-500 text-center col-span-2 p-4 bg-red-50 rounded-lg">數據載入失敗</p>';
+                statusDot.className = "w-3 h-3 bg-red-500 rounded-full";
+                statusText.innerText = "連線失敗";
+                level1Container.innerHTML = `
+                    <div class="text-center p-6 text-red-500 col-span-2 bg-red-50 rounded-xl border border-red-100">
+                        <p class="font-bold mb-1">數據載入失敗</p>
+                        <p class="text-xs text-slate-500">消委會伺服器或代理網絡異常，請稍後重新整理網頁。</p>
+                    </div>
+                `;
             }
         }
 
@@ -152,7 +176,6 @@
                     if (p.supermarket === 'AEON') colorClass = 'bg-purple-50 text-purple-700 border-purple-200';
                 }
 
-                // 安全解析價格，避免修約 NaN 導致當機
                 let parsed = parseFloat(p.price);
                 let priceText = isNaN(parsed) ? p.price : `$${parsed.toFixed(1)}`;
 
@@ -197,7 +220,7 @@
                 card.className = 'clickable-card bg-white p-5 rounded-xl shadow-sm border border-slate-100 cursor-pointer hover:border-blue-300 flex flex-col items-center text-center';
                 card.innerHTML = `<span class="text-3xl mb-2">📁</span><span class="font-bold text-slate-700">${cat1}</span>`;
                 card.onclick = () => {
-                    searchBar.value = ''; // 點擊分類時清空搜尋欄
+                    searchBar.value = ''; 
                     renderLevel2(cat1);
                 };
                 level1Container.appendChild(card);
@@ -254,7 +277,7 @@
             const query = e.target.value.trim().toLowerCase();
             
             if (query === '') {
-                renderLevel1(); // 搜尋欄清空時回歸首頁
+                renderLevel1(); 
                 return;
             }
 
@@ -272,7 +295,6 @@
             productContainer.innerHTML = '';
             let hasResults = false;
 
-            // 全域深度遍歷結構進行模糊比對
             Object.keys(structuredData).forEach(cat1 => {
                 Object.keys(structuredData[cat1]).forEach(cat2 => {
                     Object.keys(structuredData[cat1][cat2]).forEach(pName => {
@@ -303,6 +325,7 @@
             renderLevel1();
         }
 
+        // 啟動執行
         init();
     </script>
 </body>
