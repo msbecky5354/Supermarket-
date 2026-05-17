@@ -1,3 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>超市精明格價網</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .clickable-card:active { transform: scale(0.98); }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen pb-20 font-sans text-slate-900">
+
+    <header class="bg-white border-b sticky top-0 z-20 p-4 shadow-sm">
+        <div class="max-w-2xl mx-auto flex justify-between items-center">
+            <h1 class="text-xl bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent font-bold">超市價格導航</h1>
+            <div id="status-dot" class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+        </div>
+    </header>
+
+    <main class="max-w-2xl mx-auto p-4">
+        <div class="relative mb-6">
+            <input type="text" id="searchBar" placeholder="搜尋貨品（如：嘉頓、蛋糕）..." 
+                class="w-full p-4 pl-12 bg-white border border-slate-200 rounded-2xl shadow-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+            <span class="absolute left-4 top-4 text-slate-400">🔍</span>
+        </div>
+
+        <section id="level1Section">
+            <h2 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">主分類</h2>
+            <div id="level1Container" class="grid grid-cols-2 gap-3">
+                <div class="text-center p-4 text-slate-400 text-sm col-span-2">正在處理超市真實數據...</div>
+            </div>
+        </section>
+
+        <section id="level2Section" class="hidden">
+            <button onclick="showLevel1()" class="mb-4 text-blue-600 font-medium flex items-center bg-blue-50 px-3 py-1 rounded-lg">
+                ← 返回主分類
+            </button>
+            <h2 id="level1Title" class="text-xl font-bold mb-4 text-slate-800"></h2>
+            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">請選擇子分類</h3>
+            <div id="level2Container" class="grid grid-cols-2 gap-3"></div>
+        </section>
+
+        <section id="productSection" class="hidden">
+            <button id="backToLevel2Btn" class="mb-4 text-blue-600 font-medium flex items-center bg-blue-50 px-3 py-1 rounded-lg">
+                ← 返回子分類
+            </button>
+            <h2 id="level2Title" class="text-2xl font-bold mb-6 text-slate-800"></h2>
+            <div id="productContainer" class="space-y-4"></div>
+        </section>
+    </main>
+
     <script>
         const level1Section = document.getElementById('level1Section');
         const level2Section = document.getElementById('level2Section');
@@ -10,11 +62,10 @@
         const level1Title = document.getElementById('level1Title');
         const level2Title = document.getElementById('level2Title');
         const backToLevel2Btn = document.getElementById('backToLevel2Btn');
-        const searchBar = document.getElementById('searchBar');
 
         let structuredData = {};
-        let allProductsFlat = []; // 新增：用於扁平化快速搜尋
 
+        // 超市代號翻譯字典
         const supermarketDict = {
             'WELLCOME': '惠康',
             'PARKNSHOP': '百佳',
@@ -26,6 +77,7 @@
             'USELECT': 'U購'
         };
 
+        // 1. 初始化：讀取並重組 pricewatch.json
         async function init() {
             try {
                 const response = await fetch('./pricewatch.json');
@@ -34,42 +86,40 @@
                 const rawData = await response.json();
                 
                 rawData.forEach(item => {
+                    // 根據照妖鏡結構，精準抽取繁體中文 (zh-Hant)
                     let cat1 = item.cat1Name?.['zh-Hant'] || '未分類';
+                    // 用 cat3Name 做子分類 (符合你講嘅 77 種)，冇就用 cat2Name 頂上
                     let cat2 = item.cat3Name?.['zh-Hant'] || item.cat2Name?.['zh-Hant'] || '其他';
                     let name = item.name?.['zh-Hant'] || '未知商品';
                     let brand = item.brand?.['zh-Hant'] || '';
 
-                    if (cat1 === '未分類') return;
+                    if (cat1 === '未分類') return; // 忽略無效數據
 
+                    // 建立第一層
                     if (!structuredData[cat1]) structuredData[cat1] = {};
+                    
+                    // 建立第二層
                     if (!structuredData[cat1][cat2]) structuredData[cat1][cat2] = {};
                     
+                    // 建立貨品
                     if (!structuredData[cat1][cat2][name]) {
                         structuredData[cat1][cat2][name] = { brand: brand, prices: [] };
                     }
                     
+                    // 處理價錢陣列 (prices array)
                     if (Array.isArray(item.prices)) {
                         item.prices.forEach(p => {
                             let rawCode = p.supermarketCode || '未知';
-                            let smName = supermarketDict[rawCode] || rawCode;
-                            let priceVal = p.price; 
+                            let smName = supermarketDict[rawCode] || rawCode; // 翻譯代號
+                            let priceVal = p.price || '--';
                             
-                            // 確保只推入有意義的價格
-                            if (priceVal !== undefined && priceVal !== null) {
-                                structuredData[cat1][cat2][name].prices.push({
-                                    supermarket: smName,
-                                    price: parseFloat(priceVal)
-                                });
-                            }
+                            structuredData[cat1][cat2][name].prices.push({
+                                supermarket: smName,
+                                price: priceVal
+                            });
                         });
                     }
                 });
-
-                // 建立扁平化數據，方便搜尋欄直接一鍵搜尋全庫商品
-                flattenData();
-                
-                // 初始化搜尋欄監聽器
-                initSearch();
 
                 renderLevel1();
             } catch (e) {
@@ -78,56 +128,7 @@
             }
         }
 
-        // 扁平化數據結構
-        function flattenData() {
-            allProductsFlat = [];
-            for (let cat1 in structuredData) {
-                for (let cat2 in structuredData[cat1]) {
-                    for (let pName in structuredData[cat1][cat2]) {
-                        allProductsFlat.push({
-                            cat1: cat1,
-                            cat2: cat2,
-                            name: pName,
-                            brand: structuredData[cat1][cat2][pName].brand,
-                            prices: structuredData[cat1][cat2][pName].prices
-                        });
-                    }
-                }
-            }
-        }
-
-        // 實作搜尋功能
-        function initSearch() {
-            searchBar.addEventListener('input', (e) => {
-                const keyword = e.target.value.trim().toLowerCase();
-                
-                if (keyword === '') {
-                    // 清空搜尋時，返回第一層主分類
-                    renderLevel1();
-                    return;
-                }
-
-                // 隱藏第一、二層，直接借用第三層展示搜尋結果
-                level1Section.classList.add('hidden');
-                level2Section.classList.add('hidden');
-                productSection.classList.remove('hidden');
-                
-                level2Title.innerText = `搜尋結果: 「${keyword}」`;
-                backToLevel2Btn.onclick = () => {
-                    searchBar.value = '';
-                    renderLevel1();
-                };
-
-                const filtered = allProductsFlat.filter(p => 
-                    p.name.toLowerCase().includes(keyword) || 
-                    p.brand.toLowerCase().includes(keyword) ||
-                    p.cat2.toLowerCase().includes(keyword)
-                );
-
-                renderProductCards(filtered);
-            });
-        }
-
+        // 2. 顯示第一層 (主分類)
         function renderLevel1() {
             level1Section.classList.remove('hidden');
             level2Section.classList.add('hidden');
@@ -143,13 +144,14 @@
 
             categoriesL1.forEach(cat1 => {
                 const card = document.createElement('div');
-                card.className = 'clickable-card bg-white p-5 rounded-xl shadow-sm border border-slate-100 cursor-pointer hover:border-blue-300 flex flex-col items-center text-center transition-all';
+                card.className = 'clickable-card bg-white p-5 rounded-xl shadow-sm border border-slate-100 cursor-pointer hover:border-blue-300 flex flex-col items-center text-center';
                 card.innerHTML = `<span class="text-3xl mb-2">📁</span><span class="font-bold text-slate-700">${cat1}</span>`;
                 card.onclick = () => renderLevel2(cat1);
                 level1Container.appendChild(card);
             });
         }
 
+        // 3. 顯示第二層 (子分類)
         function renderLevel2(cat1) {
             level1Section.classList.add('hidden');
             level2Section.classList.remove('hidden');
@@ -162,77 +164,54 @@
 
             categoriesL2.forEach(cat2 => {
                 const card = document.createElement('div');
-                card.className = 'clickable-card bg-white p-4 rounded-xl shadow-sm border border-slate-100 cursor-pointer hover:border-blue-300 flex flex-col items-center text-center transition-all';
+                card.className = 'clickable-card bg-white p-4 rounded-xl shadow-sm border border-slate-100 cursor-pointer hover:border-blue-300 flex flex-col items-center text-center';
                 card.innerHTML = `<span class="text-xl mb-1">🏷️</span><span class="font-bold text-slate-700">${cat2}</span>`;
-                card.onclick = () => {
-                    const productsData = structuredData[cat1][cat2];
-                    const list = Object.keys(productsData).sort().map(pName => ({
-                        cat1: cat1,
-                        cat2: cat2,
-                        name: pName,
-                        brand: productsData[pName].brand,
-                        prices: productsData[pName].prices
-                    }));
-                    
-                    level2Section.classList.add('hidden');
-                    productSection.classList.remove('hidden');
-                    level2Title.innerText = cat2;
-                    backToLevel2Btn.onclick = () => renderLevel2(cat1);
-                    
-                    renderProductCards(list);
-                };
+                card.onclick = () => renderProducts(cat1, cat2);
                 level2Container.appendChild(card);
             });
         }
 
-        // 核心渲染：精準處理卡片與價格格價
-        function renderProductCards(productsArray) {
+        // 4. 顯示第三層 (貨品列表及格價)
+        function renderProducts(cat1, cat2) {
+            level2Section.classList.add('hidden');
+            productSection.classList.remove('hidden');
+            
+            level2Title.innerText = cat2;
+            backToLevel2Btn.onclick = () => renderLevel2(cat1);
             productContainer.innerHTML = '';
 
-            if (productsArray.length === 0) {
-                productContainer.innerHTML = '<p class="text-slate-500 text-center py-8">找不到相關貨品。</p>';
+            const productsData = structuredData[cat1][cat2];
+            const productNames = Object.keys(productsData).sort();
+
+            if (productNames.length === 0) {
+                productContainer.innerHTML = '<p class="text-slate-500 text-center">此分類下沒有貨品。</p>';
                 return;
             }
 
-            productsArray.forEach(product => {
-                // 1. 找出該商品的最低價
-                let minPrice = Infinity;
-                product.prices.forEach(p => {
-                    if (p.price < minPrice) minPrice = p.price;
-                });
-
-                // 2. 建立價錢標籤（加入精準排序：最低價排最前，並標示綠冠）
-                const sortedPrices = [...product.prices].sort((a, b) => a.price - b.price);
-
-                const priceTags = sortedPrices.map(p => {
-                    const isMin = p.price === minPrice && minPrice !== Infinity;
+            productNames.forEach(pName => {
+                const productInfo = productsData[pName];
+                
+                // 動態生成價錢牌，加入排序令惠康百佳排前面
+                const priceTags = productInfo.prices.map(p => {
                     let colorClass = 'bg-slate-50 text-slate-700 border-slate-200';
-                    
-                    // 最低價給予亮眼的綠色醒目提示
-                    if (isMin) {
-                        colorClass = 'bg-emerald-50 text-emerald-700 border-emerald-300 ring-2 ring-emerald-100 font-bold';
-                    } else {
-                        if (p.supermarket === '惠康') colorClass = 'bg-red-50 text-red-600 border-red-100';
-                        if (p.supermarket === '百佳') colorClass = 'bg-amber-50 text-amber-700 border-amber-200';
-                    }
+                    if (p.supermarket === '惠康') colorClass = 'bg-red-50 text-red-700 border-red-200';
+                    if (p.supermarket === '百佳') colorClass = 'bg-yellow-50 text-yellow-700 border-yellow-200';
+                    if (p.supermarket === 'AEON') colorClass = 'bg-purple-50 text-purple-700 border-purple-200';
 
-                    const displayPrice = isNaN(p.price) ? '--' : `$${p.price.toFixed(1)}`;
-                    const crown = isMin ? '👑 ' : '';
-
-                    return `<span class="text-sm px-2.5 py-1 rounded-lg border whitespace-nowrap inline-block ${colorClass}">
-                        ${crown}${p.supermarket}: ${displayPrice}
+                    return `<span class="text-sm px-2 py-1 rounded-md border font-medium whitespace-nowrap inline-block ${colorClass}">
+                        ${p.supermarket}: $${parseFloat(p.price).toFixed(1)}
                     </span>`;
                 }).join('');
 
                 const itemCard = document.createElement('div');
-                itemCard.className = 'bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex gap-4 items-center hover:shadow-md transition-all';
+                itemCard.className = 'bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex gap-4';
                 itemCard.innerHTML = `
-                    <div class="w-16 h-16 bg-slate-50 rounded-xl flex-shrink-0 flex items-center justify-center text-2xl border border-slate-100">🛒</div>
+                    <div class="w-16 h-16 bg-slate-50 rounded-lg flex-shrink-0 flex items-center justify-center text-xl border border-slate-100">🛒</div>
                     <div class="flex-1 min-w-0">
-                        ${product.brand ? `<div class="text-xs text-blue-500 font-bold mb-0.5 truncate">${product.brand}</div>` : ''}
-                        <h3 class="font-bold text-slate-800 leading-tight text-base mb-2">${product.name}</h3>
-                        <div class="flex flex-wrap gap-1.5">
-                            ${priceTags || '<span class="text-xs text-slate-400">暫無各大超市報價</span>'}
+                        <div class="text-xs text-blue-500 font-bold mb-1 truncate">${productInfo.brand}</div>
+                        <h3 class="font-bold text-slate-800 leading-tight">${pName}</h3>
+                        <div class="mt-3 flex flex-wrap gap-2 items-start">
+                            ${priceTags}
                         </div>
                     </div>
                 `;
@@ -241,9 +220,10 @@
         }
 
         function showLevel1() {
-            searchBar.value = ''; // 回到主頁時清空搜尋
             renderLevel1();
         }
 
         init();
     </script>
+</body>
+</html>
