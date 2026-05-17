@@ -20,7 +20,7 @@
 
     <main class="max-w-2xl mx-auto p-4">
         <div class="relative mb-6">
-            <input type="text" id="searchBar" placeholder="搜尋貨品（如：食米）..." 
+            <input type="text" id="searchBar" placeholder="搜尋貨品（如：食米、洗髮水）..." 
                 class="w-full p-4 pl-12 bg-white border border-slate-200 rounded-2xl shadow-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all">
             <span class="absolute left-4 top-4 text-slate-400">🔍</span>
         </div>
@@ -28,7 +28,7 @@
         <section id="level1Section">
             <h2 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">主分類</h2>
             <div id="level1Container" class="grid grid-cols-2 gap-3">
-                <div class="text-center p-4 text-slate-400 text-sm col-span-2">正在智能分析數據...</div>
+                <div class="text-center p-4 text-slate-400 text-sm col-span-2">正在處理政府/超市數據...</div>
             </div>
         </section>
 
@@ -65,7 +65,7 @@
 
         let structuredData = {};
 
-        // 智能尋找欄位工具（無視全形半形、空格、或者叫「產品」定「貨品」）
+        // 智能尋找欄位工具（無視全形半形、前綴後綴）
         const getVal = (obj, keywords) => {
             const key = Object.keys(obj).find(k => keywords.some(kw => String(k).includes(kw)));
             return key ? obj[key] : null;
@@ -80,36 +80,33 @@
                 const rawData = await response.json();
                 
                 rawData.forEach(item => {
-                    // 自動分析對應欄位
-                    let cat1_raw = getVal(item, ['分類1']) || '未分類';
-                    // 根據你提示，子分類用 分類3 (大約77種)
-                    let cat2_raw = getVal(item, ['分類3', '分類2']) || '其他'; 
-                    let name = getVal(item, ['名稱']) || '未知商品';
+                    // 精準鎖定：分類1 (7大類) 同 分類3 (77小類)
+                    let cat1 = String(getVal(item, ['分類1', '分類一']) || '未分類').trim();
+                    let cat2 = String(getVal(item, ['分類3', '分類三']) || getVal(item, ['分類2', '分類二']) || '其他').trim();
+                    let name = String(getVal(item, ['名稱']) || '未知商品').trim();
                     let brand = getVal(item, ['品牌']) || '';
                     let supermarket = getVal(item, ['超市', '代號']) || '未知';
                     let price = getVal(item, ['價格', '價', '售']) || '--';
                     let promo = getVal(item, ['優惠', '備註']) || '';
 
-                    // 遇到 "/" 自動分拆成多個獨立分類
-                    let cat1_array = String(cat1_raw).split('/').map(s => s.trim());
-                    let cat2_array = String(cat2_raw).split('/').map(s => s.trim());
+                    // 確保只處理真實嘅數據，過濾走吉行
+                    if (!cat1 || cat1 === 'undefined' || cat1 === 'null') return;
 
-                    cat1_array.forEach(cat1 => {
-                        if (!structuredData[cat1]) structuredData[cat1] = {};
-                        
-                        cat2_array.forEach(cat2 => {
-                            if (!structuredData[cat1][cat2]) structuredData[cat1][cat2] = {};
-                            
-                            if (!structuredData[cat1][cat2][name]) {
-                                structuredData[cat1][cat2][name] = { brand: brand, prices: [] };
-                            }
-                            
-                            structuredData[cat1][cat2][name].prices.push({
-                                supermarket: supermarket,
-                                price: price,
-                                promo: promo
-                            });
-                        });
+                    // 建立第一層 (保留原有 / 符號，不拆開)
+                    if (!structuredData[cat1]) structuredData[cat1] = {};
+                    
+                    // 建立第二層
+                    if (!structuredData[cat1][cat2]) structuredData[cat1][cat2] = {};
+                    
+                    // 建立貨品並聚合價錢
+                    if (!structuredData[cat1][cat2][name]) {
+                        structuredData[cat1][cat2][name] = { brand: brand, prices: [] };
+                    }
+                    
+                    structuredData[cat1][cat2][name].prices.push({
+                        supermarket: supermarket,
+                        price: price,
+                        promo: promo
                     });
                 });
 
@@ -127,17 +124,16 @@
             productSection.classList.add('hidden');
             
             level1Container.innerHTML = '';
-            const categoriesL1 = Object.keys(structuredData);
+            
+            // 攞晒所有主分類出嚟，過濾走奇怪嘅空白項
+            const categoriesL1 = Object.keys(structuredData).filter(cat => cat && cat !== '未分類');
 
-            // 清除可能產生的空分類或 undefined
-            const validCategories = categoriesL1.filter(cat => cat !== 'undefined' && cat !== 'null' && cat !== '');
-
-            if (validCategories.length === 0) {
-                level1Container.innerHTML = '<p class="text-slate-500 col-span-2 text-center">找不到分類資料</p>';
+            if (categoriesL1.length === 0) {
+                level1Container.innerHTML = '<p class="text-slate-500 col-span-2 text-center">找不到有效的分類數據</p>';
                 return;
             }
 
-            validCategories.forEach(cat1 => {
+            categoriesL1.forEach(cat1 => {
                 const card = document.createElement('div');
                 card.className = 'clickable-card bg-white p-5 rounded-xl shadow-sm border border-slate-100 cursor-pointer hover:border-blue-300 flex flex-col items-center text-center';
                 card.innerHTML = `<span class="text-3xl mb-2">📁</span><span class="font-bold text-slate-700">${cat1}</span>`;
@@ -155,7 +151,7 @@
             level1Title.innerText = cat1;
             level2Container.innerHTML = '';
             
-            const categoriesL2 = Object.keys(structuredData[cat1]).filter(cat => cat !== 'undefined' && cat !== 'null' && cat !== '');
+            const categoriesL2 = Object.keys(structuredData[cat1]).filter(cat => cat && cat !== 'undefined');
 
             categoriesL2.forEach(cat2 => {
                 const card = document.createElement('div');
@@ -186,8 +182,9 @@
             productNames.forEach(pName => {
                 const productInfo = productsData[pName];
                 
+                // 動態生成各間超市嘅價錢牌
                 const priceTags = productInfo.prices.map(p => {
-                    let promoText = p.promo ? `<span class="text-xs text-red-500 ml-1">(${p.promo})</span>` : '';
+                    let promoText = p.promo && p.promo !== 'undefined' ? `<span class="text-xs text-red-500 ml-1">(${p.promo})</span>` : '';
                     return `<span class="text-sm px-2 py-1 bg-blue-50 text-blue-700 rounded-md border border-blue-200 font-medium whitespace-nowrap inline-block">
                         ${p.supermarket}: $${p.price} ${promoText}
                     </span>`;
@@ -198,7 +195,7 @@
                 itemCard.innerHTML = `
                     <div class="w-16 h-16 bg-slate-50 rounded-lg flex-shrink-0 flex items-center justify-center text-xl border border-slate-100">🛒</div>
                     <div class="flex-1 min-w-0">
-                        <div class="text-xs text-slate-400 mb-1 truncate">${productInfo.brand}</div>
+                        <div class="text-xs text-slate-400 mb-1 truncate">${productInfo.brand || ''}</div>
                         <h3 class="font-bold text-slate-800 leading-tight">${pName}</h3>
                         <div class="mt-3 flex flex-wrap gap-2 items-start">
                             ${priceTags}
