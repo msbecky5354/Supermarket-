@@ -28,7 +28,7 @@
         <section id="categorySection">
             <h2 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">商品分類</h2>
             <div id="categoryContainer" class="grid grid-cols-2 gap-3">
-                <div class="text-center p-4 text-slate-400 text-sm col-span-2">正在讀取 pricewatch.json...</div>
+                <div class="text-center p-4 text-slate-400 text-sm col-span-2">正在讀取最新數據...</div>
             </div>
         </section>
 
@@ -48,76 +48,110 @@
         const productSection = document.getElementById('productSection');
         const currentCategoryName = document.getElementById('currentCategoryName');
 
-        // 全域變數用來儲存所有 JSON 數據
-        let allPriceData = {};
+        // 用來儲存按分類整理好的數據
+        let groupedData = {};
 
-        // 初始化：一次過讀取整份 pricewatch.json
+        // 超市代碼翻譯與顏色設定
+        const marketConfig = {
+            'WELLCOME': { name: '惠康', color: 'bg-red-50 text-red-700 border-red-200' },
+            'PARKNSHOP': { name: '百佳', color: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
+            'JASONS': { name: 'Market Place', color: 'bg-orange-50 text-orange-700 border-orange-200' },
+            'AEON': { name: 'AEON', color: 'bg-purple-50 text-purple-700 border-purple-200' },
+            'DCHFOOD': { name: '大昌食品', color: 'bg-green-50 text-green-700 border-green-200' },
+            'LUNGFUNG': { name: '龍豐', color: 'bg-pink-50 text-pink-700 border-pink-200' },
+            'MANNINGS': { name: '萬寧', color: 'bg-orange-50 text-orange-700 border-orange-200' },
+            'WATSONS': { name: '屈臣氏', color: 'bg-teal-50 text-teal-700 border-teal-200' }
+        };
+
         async function init() {
             try {
-                // 改為直接讀取根目錄的 pricewatch.json
+                // 讀取根目錄的 pricewatch.json
                 const response = await fetch('./pricewatch.json');
                 if (!response.ok) throw new Error('無法讀取 pricewatch.json');
                 
-                allPriceData = await response.json();
+                const rawArray = await response.json();
+                
+                // 執行演算法：將單一陣列按 cat2Name 分類
+                rawArray.forEach(item => {
+                    const catName = item.cat2Name['zh-Hant'] || '其他分類';
+                    if (!groupedData[catName]) {
+                        groupedData[catName] = [];
+                    }
+                    groupedData[catName].push(item);
+                });
                 
                 // 渲染分類按鈕
                 categoryContainer.innerHTML = '';
+                const categories = Object.keys(groupedData).sort(); 
                 
-                // 假設 JSON 是一個 Object，Key 就是分類名稱
-                const categories = Object.keys(allPriceData); 
-                
-                if (categories.length === 0) {
-                    categoryContainer.innerHTML = '<p class="text-slate-500 col-span-2 text-center">找不到分類資料，請檢查 JSON 格式。</p>';
-                    return;
-                }
-
                 categories.forEach(catName => {
                     const card = document.createElement('div');
                     card.className = 'category-card bg-white p-4 rounded-xl shadow-sm border border-slate-100 cursor-pointer hover:border-blue-300 transition-all flex flex-col items-center justify-center text-center';
-                    card.innerHTML = `<span class="text-2xl mb-1">📦</span><span class="font-bold text-slate-700">${catName}</span>`;
+                    card.innerHTML = `<span class="text-2xl mb-1">📦</span><span class="font-bold text-slate-700 text-sm">${catName}</span>`;
                     card.onclick = () => loadCategoryData(catName);
                     categoryContainer.appendChild(card);
                 });
 
             } catch (e) {
                 console.error("載入數據失敗:", e);
-                categoryContainer.innerHTML = '<p class="text-red-500 text-center col-span-2 p-4 bg-red-50 rounded-lg">讀取 pricewatch.json 失敗，請確認檔案位置及格式正確。</p>';
+                categoryContainer.innerHTML = '<p class="text-red-500 text-center col-span-2 p-4 bg-red-50 rounded-lg">讀取 pricewatch.json 失敗，請確認檔案位置正確。</p>';
             }
         }
 
-        // 顯示該分類下的商品
         function loadCategoryData(catName) {
             categorySection.classList.add('hidden');
             productSection.classList.remove('hidden');
             currentCategoryName.innerText = catName;
             
-            const products = allPriceData[catName] || [];
+            const products = groupedData[catName] || [];
             productContainer.innerHTML = '';
-
-            if (products.length === 0) {
-                productContainer.innerHTML = '<p class="text-slate-500 text-center p-4">此分類下沒有商品。</p>';
-                return;
-            }
 
             products.forEach(item => {
                 const itemCard = document.createElement('div');
-                itemCard.className = 'bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex gap-4';
+                itemCard.className = 'bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex gap-4 flex-col';
                 
-                // 假設 JSON 的 Key 是 product_name, parknshop_price, wellcome_price 等
-                // 如果你的 JSON 欄位名稱不同，需要修改這裏的 item.XXXX
-                const name = item.product_name || item.name || '未知商品';
-                const pnsPrice = item.parknshop_price || item.pns || '--';
-                const wellcomePrice = item.wellcome_price || item.wellcome || '--';
+                const brand = item.brand['zh-Hant'] || '';
+                const name = item.name['zh-Hant'] || '未知商品';
+                const fullName = brand ? `[${brand}] ${name}` : name;
+
+                // 處理格價標籤
+                let priceHtml = '';
+                if (item.prices && item.prices.length > 0) {
+                    // 按價格由低至高排序
+                    const sortedPrices = [...item.prices].sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+                    
+                    sortedPrices.forEach(p => {
+                        const config = marketConfig[p.supermarketCode] || { name: p.supermarketCode, color: 'bg-slate-50 text-slate-700 border-slate-200' };
+                        priceHtml += `<span class="text-sm px-2 py-1 ${config.color} rounded-md border font-bold shadow-sm">${config.name}: $${p.price}</span>`;
+                    });
+                } else {
+                    priceHtml = '<span class="text-sm text-slate-400">暫無定價資料</span>';
+                }
+
+                // 處理優惠情報 (Offers)
+                let offerHtml = '';
+                if (item.offers && item.offers.length > 0) {
+                    const offerList = item.offers.map(o => {
+                        const marketName = marketConfig[o.supermarketCode] ? marketConfig[o.supermarketCode].name : o.supermarketCode;
+                        return `🎁 <span class="font-medium">${marketName}</span>: ${o['zh-Hant']}`;
+                    }).join('<br>');
+                    
+                    offerHtml = `
+                        <div class="mt-3 p-3 bg-green-50 border border-green-100 rounded-lg text-xs text-green-700 leading-relaxed">
+                            ${offerList}
+                        </div>
+                    `;
+                }
 
                 itemCard.innerHTML = `
-                    <div class="w-16 h-16 bg-slate-50 rounded-lg flex-shrink-0 flex items-center justify-center text-xl border border-slate-100">🛒</div>
-                    <div class="flex-1">
-                        <h3 class="font-bold text-slate-800 leading-tight">${name}</h3>
-                        <div class="mt-3 flex flex-wrap gap-2">
-                            <span class="text-sm px-2 py-1 bg-yellow-50 text-yellow-700 rounded-md border border-yellow-200 font-medium">百佳: $${pnsPrice}</span>
-                            <span class="text-sm px-2 py-1 bg-red-50 text-red-700 rounded-md border border-red-200 font-medium">惠康: $${wellcomePrice}</span>
-                        </div>
+                    <div>
+                        <h3 class="font-bold text-slate-800 leading-tight text-lg">${fullName}</h3>
+                        <p class="text-xs text-slate-400 mt-1">${item.cat3Name['zh-Hant'] || ''}</p>
                     </div>
+                    <div class="flex flex-wrap gap-2 mt-1">
+                        ${priceHtml}
+                    </div>
+                    ${offerHtml}
                 `;
                 productContainer.appendChild(itemCard);
             });
@@ -132,5 +166,3 @@
     </script>
 </body>
 </html>
-
-
