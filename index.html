@@ -20,21 +20,21 @@
 
     <main class="max-w-2xl mx-auto p-4">
         <div class="relative mb-6">
-            <input type="text" id="searchBar" placeholder="搜尋貨品（如：食米、洗髮水）..." 
+            <input type="text" id="searchBar" placeholder="搜尋貨品（如：食米）..." 
                 class="w-full p-4 pl-12 bg-white border border-slate-200 rounded-2xl shadow-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all">
             <span class="absolute left-4 top-4 text-slate-400">🔍</span>
         </div>
 
         <section id="level1Section">
-            <h2 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">主分類 (大概7種)</h2>
+            <h2 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">主分類</h2>
             <div id="level1Container" class="grid grid-cols-2 gap-3">
-                <div class="text-center p-4 text-slate-400 text-sm col-span-2">正在讀取數據...</div>
+                <div class="text-center p-4 text-slate-400 text-sm col-span-2">正在處理超市數據...</div>
             </div>
         </section>
 
         <section id="level2Section" class="hidden">
             <button onclick="showLevel1()" class="mb-4 text-blue-600 font-medium flex items-center bg-blue-50 px-3 py-1 rounded-lg">
-                ← 返回主目錄
+                ← 返回主分類
             </button>
             <h2 id="level1Title" class="text-xl font-bold mb-4 text-slate-800"></h2>
             <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">請選擇子分類</h3>
@@ -63,18 +63,49 @@
         const level2Title = document.getElementById('level2Title');
         const backToLevel2Btn = document.getElementById('backToLevel2Btn');
 
-        let allPriceData = {};
+        // 儲存重組後嘅樹狀結構數據
+        let structuredData = {};
 
-        // 1. 初始化：讀取 pricewatch.json
+        // 1. 初始化：讀取並重組 pricewatch.json
         async function init() {
             try {
                 const response = await fetch('./pricewatch.json');
                 if (!response.ok) throw new Error('無法讀取 pricewatch.json');
                 
-                allPriceData = await response.json();
+                const rawData = await response.json();
+                
+                // 自動歸類器：將大表變做樹狀結構
+                rawData.forEach(item => {
+                    let cat1 = item['貨品分類1'] || '未分類';
+                    let cat2 = item['貨品分類2'] || '其他';
+                    let name = item['貨品名稱'] || '未知商品';
+                    let brand = item['品牌'] || '';
+                    let supermarket = item['超市代號'] || '未知';
+                    let price = item['價格'] || '--';
+                    let promo = item['優惠'] || '';
+
+                    // 建立第一層
+                    if (!structuredData[cat1]) structuredData[cat1] = {};
+                    
+                    // 建立第二層
+                    if (!structuredData[cat1][cat2]) structuredData[cat1][cat2] = {};
+                    
+                    // 建立貨品（將同名貨品嘅唔同超市價錢拍埋一齊）
+                    if (!structuredData[cat1][cat2][name]) {
+                        structuredData[cat1][cat2][name] = { brand: brand, prices: [] };
+                    }
+                    
+                    structuredData[cat1][cat2][name].prices.push({
+                        supermarket: supermarket,
+                        price: price,
+                        promo: promo
+                    });
+                });
+
                 renderLevel1();
             } catch (e) {
-                level1Container.innerHTML = '<p class="text-red-500 text-center col-span-2">讀取數據失敗，請檢查 pricewatch.json</p>';
+                console.error(e);
+                level1Container.innerHTML = '<p class="text-red-500 text-center col-span-2 p-4 bg-red-50 rounded-lg">數據載入失敗，請檢查 pricewatch.json 格式</p>';
             }
         }
 
@@ -85,7 +116,12 @@
             productSection.classList.add('hidden');
             
             level1Container.innerHTML = '';
-            const categoriesL1 = Object.keys(allPriceData);
+            const categoriesL1 = Object.keys(structuredData);
+
+            if (categoriesL1.length === 0) {
+                level1Container.innerHTML = '<p class="text-slate-500 col-span-2 text-center">找不到分類，請確保 JSON 包含「貨品分類1」</p>';
+                return;
+            }
 
             categoriesL1.forEach(cat1 => {
                 const card = document.createElement('div');
@@ -105,7 +141,7 @@
             level1Title.innerText = cat1;
             level2Container.innerHTML = '';
             
-            const categoriesL2 = Object.keys(allPriceData[cat1] || {});
+            const categoriesL2 = Object.keys(structuredData[cat1]);
 
             categoriesL2.forEach(cat2 => {
                 const card = document.createElement('div');
@@ -116,36 +152,43 @@
             });
         }
 
-        // 4. 顯示第三層 (貨品列表)
+        // 4. 顯示第三層 (貨品列表及格價)
         function renderProducts(cat1, cat2) {
             level2Section.classList.add('hidden');
             productSection.classList.remove('hidden');
             
             level2Title.innerText = cat2;
-            backToLevel2Btn.onclick = () => renderLevel2(cat1); // 動態綁定返回按鈕
+            backToLevel2Btn.onclick = () => renderLevel2(cat1);
             productContainer.innerHTML = '';
 
-            const products = allPriceData[cat1][cat2] || [];
+            const productsData = structuredData[cat1][cat2];
+            const productNames = Object.keys(productsData);
 
-            if (products.length === 0) {
+            if (productNames.length === 0) {
                 productContainer.innerHTML = '<p class="text-slate-500 text-center">此分類下沒有貨品。</p>';
                 return;
             }
 
-            products.forEach(item => {
-                const name = item.product_name || item.name || '未知商品';
-                const pnsPrice = item.parknshop_price || item.pns || '--';
-                const wellcomePrice = item.wellcome_price || item.wellcome || '--';
+            productNames.forEach(pName => {
+                const productInfo = productsData[pName];
+                
+                // 動態生成價錢牌
+                const priceTags = productInfo.prices.map(p => {
+                    let promoText = p.promo ? `<span class="text-xs text-red-500 ml-1">(${p.promo})</span>` : '';
+                    return `<span class="text-sm px-2 py-1 bg-blue-50 text-blue-700 rounded-md border border-blue-200 font-medium">
+                        ${p.supermarket}: $${p.price} ${promoText}
+                    </span>`;
+                }).join('');
 
                 const itemCard = document.createElement('div');
                 itemCard.className = 'bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex gap-4';
                 itemCard.innerHTML = `
                     <div class="w-16 h-16 bg-slate-50 rounded-lg flex-shrink-0 flex items-center justify-center text-xl border border-slate-100">🛒</div>
                     <div class="flex-1">
-                        <h3 class="font-bold text-slate-800 leading-tight">${name}</h3>
-                        <div class="mt-3 flex flex-wrap gap-2">
-                            <span class="text-sm px-2 py-1 bg-yellow-50 text-yellow-700 rounded-md border border-yellow-200 font-medium">百佳: $${pnsPrice}</span>
-                            <span class="text-sm px-2 py-1 bg-red-50 text-red-700 rounded-md border border-red-200 font-medium">惠康: $${wellcomePrice}</span>
+                        <div class="text-xs text-slate-400 mb-1">${productInfo.brand}</div>
+                        <h3 class="font-bold text-slate-800 leading-tight">${pName}</h3>
+                        <div class="mt-3 flex flex-col gap-2 items-start">
+                            ${priceTags}
                         </div>
                     </div>
                 `;
@@ -153,7 +196,6 @@
             });
         }
 
-        // 返回主分類一
         function showLevel1() {
             renderLevel1();
         }
