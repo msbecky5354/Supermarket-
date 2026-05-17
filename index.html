@@ -6,8 +6,7 @@
     <title>超市精明格價網</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .clickable-card { transition: transform 0.1s ease; }
-        .clickable-card:active { transform: scale(0.96); }
+        .clickable-card:active { transform: scale(0.98); }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen pb-20 font-sans text-slate-900">
@@ -15,35 +14,26 @@
     <header class="bg-white border-b sticky top-0 z-20 p-4 shadow-sm">
         <div class="max-w-2xl mx-auto flex justify-between items-center">
             <h1 class="text-xl bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent font-bold">超市價格導航</h1>
-            <div class="flex items-center gap-2">
-                <span id="status-text" class="text-xs text-slate-400">正在處理數據</span>
-                <div id="status-dot" class="w-3 h-3 bg-amber-500 rounded-full animate-pulse"></div>
-            </div>
+            <div id="status-dot" class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
         </div>
     </header>
 
     <main class="max-w-2xl mx-auto p-4">
-        <!-- 搜尋欄 -->
         <div class="relative mb-6">
             <input type="text" id="searchBar" placeholder="搜尋貨品（如：嘉頓、蛋糕）..." 
-                class="w-full p-4 pl-12 bg-white border border-slate-200 rounded-2xl shadow-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all" disabled>
+                class="w-full p-4 pl-12 bg-white border border-slate-200 rounded-2xl shadow-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all">
             <span class="absolute left-4 top-4 text-slate-400">🔍</span>
         </div>
 
-        <!-- 主分類層 -->
         <section id="level1Section">
             <h2 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">主分類</h2>
             <div id="level1Container" class="grid grid-cols-2 gap-3">
-                <div class="text-center p-8 text-slate-500 text-sm col-span-2 bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center justify-center gap-3">
-                    <div class="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                    <div>正在載入超市數據檔案...</div>
-                </div>
+                <div class="text-center p-4 text-slate-400 text-sm col-span-2">正在處理超市真實數據...</div>
             </div>
         </section>
 
-        <!-- 子分類層 -->
         <section id="level2Section" class="hidden">
-            <button onclick="showLevel1()" class="mb-4 text-blue-600 font-medium flex items-center bg-blue-50 px-3 py-1 rounded-lg hover:bg-blue-100 transition-colors">
+            <button onclick="showLevel1()" class="mb-4 text-blue-600 font-medium flex items-center bg-blue-50 px-3 py-1 rounded-lg">
                 ← 返回主分類
             </button>
             <h2 id="level1Title" class="text-xl font-bold mb-4 text-slate-800"></h2>
@@ -51,10 +41,9 @@
             <div id="level2Container" class="grid grid-cols-2 gap-3"></div>
         </section>
 
-        <!-- 貨品列表層 / 搜尋結果層 -->
         <section id="productSection" class="hidden">
-            <button id="backToLevel2Btn" class="mb-4 text-blue-600 font-medium flex items-center bg-blue-50 px-3 py-1 rounded-lg hover:bg-blue-100 transition-colors">
-                ← 返回
+            <button id="backToLevel2Btn" class="mb-4 text-blue-600 font-medium flex items-center bg-blue-50 px-3 py-1 rounded-lg">
+                ← 返回子分類
             </button>
             <h2 id="level2Title" class="text-2xl font-bold mb-6 text-slate-800"></h2>
             <div id="productContainer" class="space-y-4"></div>
@@ -74,8 +63,6 @@
         const level2Title = document.getElementById('level2Title');
         const backToLevel2Btn = document.getElementById('backToLevel2Btn');
         const searchBar = document.getElementById('searchBar');
-        const statusDot = document.getElementById('status-dot');
-        const statusText = document.getElementById('status-text');
 
         let structuredData = {};
 
@@ -91,12 +78,16 @@
             'USELECT': 'U購'
         };
 
-        // 1. 初始化：讀取 GitHub 倉庫路徑下的 pricewatch.json
+        // 1. 初始化：透過 CORS 代理讀取動態消委會 JSON
         async function init() {
             try {
-                // 改返轉頭：讀取相對路徑本地檔案
-                const response = await fetch('./pricewatch.json');
-                if (!response.ok) throw new Error('無法讀取 pricewatch.json 檔案');
+                // 消委會官方原始網址
+                const targetUrl = 'https://online-price-watch.consumer.org.hk/opw/opendata/pricewatch.json';
+                // 加上 CORS 代理避開瀏覽器阻擋限制
+                const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(targetUrl);
+                
+                const response = await fetch(proxyUrl);
+                if (!response.ok) throw new Error('無法讀取數據');
                 
                 const rawData = await response.json();
                 
@@ -128,63 +119,39 @@
                     }
                 });
 
-                // 數據處理完成
-                statusDot.className = "w-3 h-3 bg-green-500 rounded-full shadow-sm";
-                statusText.innerText = "本地數據已載入";
-                searchBar.removeAttribute('disabled');
+                // 數據載入後，綁定搜尋欄監聽事件
                 searchBar.addEventListener('input', handleSearch);
 
                 renderLevel1();
             } catch (e) {
                 console.error(e);
-                statusDot.className = "w-3 h-3 bg-red-500 rounded-full";
-                statusText.innerText = "載入失敗";
-                level1Container.innerHTML = `
-                    <div class="text-center p-6 text-red-500 col-span-2 bg-red-50 rounded-xl border border-red-100">
-                        <p class="font-bold mb-1">JSON 數據載入失敗</p>
-                        <p class="text-xs text-slate-500">請確保 pricewatch.json 與此 HTML 檔案放在 GitHub 倉庫的同一個資料夾內。</p>
-                    </div>
-                `;
+                level1Container.innerHTML = '<p class="text-red-500 text-center col-span-2 p-4 bg-red-50 rounded-lg">數據載入失敗</p>';
             }
         }
 
-        // 建立單個貨品卡片 (整合最低價排序)
+        // 獨立出商品卡片生成邏輯（100% 還原你原本的乾淨外觀設計）
         function createProductCard(pName, productInfo) {
-            const sortedPrices = [...productInfo.prices].sort((a, b) => {
-                let p1 = parseFloat(a.price);
-                let p2 = parseFloat(b.price);
-                if (isNaN(p1)) return 1;
-                if (isNaN(p2)) return -1;
-                return p1 - p2;
-            });
-
-            const priceTags = sortedPrices.map((p, index) => {
+            const priceTags = productInfo.prices.map(p => {
                 let colorClass = 'bg-slate-50 text-slate-700 border-slate-200';
-                
-                if (index === 0 && !isNaN(parseFloat(p.price))) {
-                    colorClass = 'bg-green-50 text-green-700 border-green-300 ring-1 ring-green-400/30';
-                } else {
-                    if (p.supermarket === '惠康') colorClass = 'bg-red-50 text-red-700 border-red-200';
-                    if (p.supermarket === '百佳') colorClass = 'bg-yellow-50 text-yellow-700 border-yellow-200';
-                    if (p.supermarket === 'AEON') colorClass = 'bg-purple-50 text-purple-700 border-purple-200';
-                }
+                if (p.supermarket === '惠康') colorClass = 'bg-red-50 text-red-700 border-red-200';
+                if (p.supermarket === '百佳') colorClass = 'bg-yellow-50 text-yellow-700 border-yellow-200';
+                if (p.supermarket === 'AEON') colorClass = 'bg-purple-50 text-purple-700 border-purple-200';
 
+                // 安全防禦：如果數值是 '--'，直接輸出，否則才執行 toFixed(1) 避免程式當機
                 let parsed = parseFloat(p.price);
                 let priceText = isNaN(parsed) ? p.price : `$${parsed.toFixed(1)}`;
 
-                return `
-                    <span class="text-sm px-2 py-1 rounded-md border font-medium whitespace-nowrap inline-block ${colorClass}">
-                        ${index === 0 && !isNaN(parsed) ? '👑 ' : ''}${p.supermarket}: ${priceText}
-                    </span>
-                `;
+                return `<span class="text-sm px-2 py-1 rounded-md border font-medium whitespace-nowrap inline-block ${colorClass}">
+                    ${p.supermarket}: ${priceText}
+                </span>`;
             }).join('');
 
             const itemCard = document.createElement('div');
-            itemCard.className = 'bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex gap-4 hover:shadow-md transition-shadow';
+            itemCard.className = 'bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex gap-4';
             itemCard.innerHTML = `
                 <div class="w-16 h-16 bg-slate-50 rounded-lg flex-shrink-0 flex items-center justify-center text-xl border border-slate-100">🛒</div>
                 <div class="flex-1 min-w-0">
-                    <div class="text-xs text-blue-500 font-bold mb-1 truncate">${productInfo.brand || '精選品牌'}</div>
+                    <div class="text-xs text-blue-500 font-bold mb-1 truncate">${productInfo.brand}</div>
                     <h3 class="font-bold text-slate-800 leading-tight">${pName}</h3>
                     <div class="mt-3 flex flex-wrap gap-2 items-start">
                         ${priceTags}
@@ -213,7 +180,7 @@
                 card.className = 'clickable-card bg-white p-5 rounded-xl shadow-sm border border-slate-100 cursor-pointer hover:border-blue-300 flex flex-col items-center text-center';
                 card.innerHTML = `<span class="text-3xl mb-2">📁</span><span class="font-bold text-slate-700">${cat1}</span>`;
                 card.onclick = () => {
-                    searchBar.value = ''; 
+                    searchBar.value = ''; // 切換分類時清空搜尋欄
                     renderLevel2(cat1);
                 };
                 level1Container.appendChild(card);
@@ -265,12 +232,12 @@
             });
         }
 
-        // 5. 全域搜尋
+        // 5. 處理全域即時搜尋功能
         function handleSearch(e) {
             const query = e.target.value.trim().toLowerCase();
             
             if (query === '') {
-                renderLevel1(); 
+                renderLevel1(); // 清空時退回主首頁
                 return;
             }
 
@@ -288,6 +255,7 @@
             productContainer.innerHTML = '';
             let hasResults = false;
 
+            // 全域模糊比對
             Object.keys(structuredData).forEach(cat1 => {
                 Object.keys(structuredData[cat1]).forEach(cat2 => {
                     Object.keys(structuredData[cat1][cat2]).forEach(pName => {
@@ -305,12 +273,7 @@
             });
 
             if (!hasResults) {
-                productContainer.innerHTML = `
-                    <div class="text-center py-12 text-slate-400">
-                        <p class="text-lg mb-2">🔍 找不到與 「${e.target.value}」 相關的貨品</p>
-                        <p class="text-sm">請嘗試檢查錯別字或更換關鍵字</p>
-                    </div>
-                `;
+                productContainer.innerHTML = '<p class="text-slate-500 text-center py-8">找不到相關貨品</p>';
             }
         }
 
@@ -318,6 +281,7 @@
             renderLevel1();
         }
 
+        // 啟動載入
         init();
     </script>
 </body>
