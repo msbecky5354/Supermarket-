@@ -63,7 +63,6 @@
         const level2Title = document.getElementById('level2Title');
         const backToLevel2Btn = document.getElementById('backToLevel2Btn');
 
-        // 儲存重組後嘅樹狀結構數據
         let structuredData = {};
 
         // 1. 初始化：讀取並重組 pricewatch.json
@@ -74,31 +73,36 @@
                 
                 const rawData = await response.json();
                 
-                // 自動歸類器：將大表變做樹狀結構
                 rawData.forEach(item => {
-                    let cat1 = item['貨品分類1'] || '未分類';
-                    let cat2 = item['貨品分類2'] || '其他';
+                    let cat1_raw = item['貨品分類1'] || '未分類';
+                    let cat2_raw = item['貨品分類2'] || '其他';
                     let name = item['貨品名稱'] || '未知商品';
                     let brand = item['品牌'] || '';
                     let supermarket = item['超市代號'] || '未知';
                     let price = item['價格'] || '--';
                     let promo = item['優惠'] || '';
 
-                    // 建立第一層
-                    if (!structuredData[cat1]) structuredData[cat1] = {};
-                    
-                    // 建立第二層
-                    if (!structuredData[cat1][cat2]) structuredData[cat1][cat2] = {};
-                    
-                    // 建立貨品（將同名貨品嘅唔同超市價錢拍埋一齊）
-                    if (!structuredData[cat1][cat2][name]) {
-                        structuredData[cat1][cat2][name] = { brand: brand, prices: [] };
-                    }
-                    
-                    structuredData[cat1][cat2][name].prices.push({
-                        supermarket: supermarket,
-                        price: price,
-                        promo: promo
+                    // 核心修正：遇到 "/" 自動分拆成多個獨立分類
+                    let cat1_array = cat1_raw.split('/').map(s => s.trim());
+                    let cat2_array = cat2_raw.split('/').map(s => s.trim());
+
+                    // 利用迴圈，將貨品分配到所有拆解出嚟嘅分類入面
+                    cat1_array.forEach(cat1 => {
+                        if (!structuredData[cat1]) structuredData[cat1] = {};
+                        
+                        cat2_array.forEach(cat2 => {
+                            if (!structuredData[cat1][cat2]) structuredData[cat1][cat2] = {};
+                            
+                            if (!structuredData[cat1][cat2][name]) {
+                                structuredData[cat1][cat2][name] = { brand: brand, prices: [] };
+                            }
+                            
+                            structuredData[cat1][cat2][name].prices.push({
+                                supermarket: supermarket,
+                                price: price,
+                                promo: promo
+                            });
+                        });
                     });
                 });
 
@@ -172,10 +176,9 @@
             productNames.forEach(pName => {
                 const productInfo = productsData[pName];
                 
-                // 動態生成價錢牌
                 const priceTags = productInfo.prices.map(p => {
                     let promoText = p.promo ? `<span class="text-xs text-red-500 ml-1">(${p.promo})</span>` : '';
-                    return `<span class="text-sm px-2 py-1 bg-blue-50 text-blue-700 rounded-md border border-blue-200 font-medium">
+                    return `<span class="text-sm px-2 py-1 bg-blue-50 text-blue-700 rounded-md border border-blue-200 font-medium whitespace-nowrap">
                         ${p.supermarket}: $${p.price} ${promoText}
                     </span>`;
                 }).join('');
@@ -184,10 +187,10 @@
                 itemCard.className = 'bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex gap-4';
                 itemCard.innerHTML = `
                     <div class="w-16 h-16 bg-slate-50 rounded-lg flex-shrink-0 flex items-center justify-center text-xl border border-slate-100">🛒</div>
-                    <div class="flex-1">
-                        <div class="text-xs text-slate-400 mb-1">${productInfo.brand}</div>
+                    <div class="flex-1 min-w-0">
+                        <div class="text-xs text-slate-400 mb-1 truncate">${productInfo.brand}</div>
                         <h3 class="font-bold text-slate-800 leading-tight">${pName}</h3>
-                        <div class="mt-3 flex flex-col gap-2 items-start">
+                        <div class="mt-3 flex flex-wrap gap-2 items-start">
                             ${priceTags}
                         </div>
                     </div>
