@@ -3,112 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>超市精明格價網</title>
+    <title>超市格價 App 2.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .category-card:active { transform: scale(0.98); }
-    </style>
 </head>
-<body class="bg-slate-50 min-h-screen pb-20 font-sans text-slate-900">
+<body class="bg-gray-50 min-h-screen pb-20">
 
-    <header class="bg-white border-b sticky top-0 z-20 p-4 shadow-sm">
-        <div class="max-w-2xl mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-heavy bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent font-bold">超市價格導航</h1>
-            <div id="status-dot" class="w-3 h-3 bg-green-500 rounded-full"></div>
+    <header class="bg-indigo-700 text-white p-4 sticky top-0 z-50 shadow-lg">
+        <div class="max-w-md mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold">超市價格地圖</h1>
+            <span id="load-status" class="text-xs bg-indigo-800 px-2 py-1 rounded">系統就緒</span>
         </div>
     </header>
 
-    <main class="max-w-2xl mx-auto p-4">
-        <div class="relative mb-6">
-            <input type="text" id="searchBar" placeholder="搜尋貨品（如：食米、罐頭）..." 
-                class="w-full p-4 pl-12 bg-white border border-slate-200 rounded-2xl shadow-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all">
-            <span class="absolute left-4 top-4 text-slate-400">🔍</span>
+    <main class="max-w-md mx-auto p-4">
+        <div class="mb-6">
+            <input type="text" id="searchInput" placeholder="搜尋貨品..." class="w-full p-3 rounded-xl border-none shadow-sm focus:ring-2 focus:ring-indigo-500">
         </div>
 
-        <section id="categorySection">
-            <h2 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">商品分類</h2>
-            <div id="categoryContainer" class="grid grid-cols-2 gap-3">
-                <div class="animate-pulse bg-slate-200 h-20 rounded-xl"></div>
-                <div class="animate-pulse bg-slate-200 h-20 rounded-xl"></div>
+        <div id="categoryView">
+            <h2 class="text-gray-500 text-sm font-bold mb-4 uppercase">貨品分類</h2>
+            <div id="categoryGrid" class="grid grid-cols-2 gap-3">
+                <div class="p-8 text-center text-gray-400 col-span-2">正在讀取數據...</div>
             </div>
-        </section>
+        </div>
 
-        <section id="productSection" class="hidden">
-            <button onclick="showCategories()" class="mb-4 text-blue-600 font-medium flex items-center">
-                ← 返回分類
+        <div id="productView" class="hidden">
+            <button onclick="backToCategories()" class="mb-4 text-indigo-600 flex items-center font-medium">
+                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                返回分類
             </button>
-            <h2 id="currentCategoryName" class="text-2xl font-bold mb-6 text-slate-800"></h2>
-            <div id="productContainer" class="space-y-4">
-                </div>
-        </section>
+            <h2 id="catNameTitle" class="text-2xl font-bold mb-4 text-gray-800"></h2>
+            <div id="productList" class="space-y-3"></div>
+        </div>
     </main>
 
     <script>
-        const categoryContainer = document.getElementById('categoryContainer');
-        const productContainer = document.getElementById('productContainer');
-        const categorySection = document.getElementById('categorySection');
-        const productSection = document.getElementById('productSection');
-        const currentCategoryName = document.getElementById('currentCategoryName');
+        const categoryGrid = document.getElementById('categoryGrid');
+        const productList = document.getElementById('productList');
+        const categoryView = document.getElementById('categoryView');
+        const productView = document.getElementById('productView');
 
-        // 1. 初始化：載入分類索引
-        async function init() {
+        // 1. 取得分類主清單
+        async function fetchCategories() {
             try {
-                // 讀取你在 public/data/ 的主索引
-                const response = await fetch('./public/data/categories_list.json');
-                const categories = await response.json();
+                const res = await fetch('./public/data/categories_list.json');
+                if (!res.ok) throw new Error('找不到 categories_list.json');
+                const data = await res.json();
                 
-                categoryContainer.innerHTML = '';
-                categories.forEach(cat => {
-                    const card = document.createElement('div');
-                    card.className = 'category-card bg-white p-4 rounded-xl shadow-sm border border-slate-100 cursor-pointer hover:border-blue-300 transition-all flex flex-col items-center justify-center text-center';
-                    card.innerHTML = `<span class="text-2xl mb-1">📦</span><span class="font-bold text-slate-700">${cat.name}</span>`;
-                    card.onclick = () => loadCategoryData(cat.name);
-                    categoryContainer.appendChild(card);
+                categoryGrid.innerHTML = '';
+                data.forEach(cat => {
+                    const div = document.createElement('div');
+                    div.className = "bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center cursor-pointer active:scale-95 transition-all";
+                    div.innerHTML = `<div class="text-3xl mb-2">🛒</div><div class="font-bold text-gray-700">${cat.name}</div>`;
+                    div.onclick = () => loadProducts(cat.name);
+                    categoryGrid.appendChild(div);
                 });
-            } catch (e) {
-                categoryContainer.innerHTML = '<p class="text-red-500">數據載入失敗，請檢查路徑。</p>';
+            } catch (err) {
+                categoryGrid.innerHTML = `<div class="col-span-2 text-red-500 bg-red-50 p-4 rounded-xl text-sm">錯誤: ${err.message}<br>請確保檔案路徑正確。</div>`;
             }
         }
 
-        // 2. 載入具體分類的商品
-        async function loadCategoryData(name) {
-            categorySection.classList.add('hidden');
-            productSection.classList.remove('hidden');
-            currentCategoryName.innerText = name;
-            productContainer.innerHTML = '<div class="text-center p-10 text-slate-400">正在讀取最新價格...</div>';
+        // 2. 取得具體貨品清單
+        async function loadProducts(name) {
+            categoryView.classList.add('hidden');
+            productView.classList.remove('hidden');
+            document.getElementById('catNameTitle').innerText = name;
+            productList.innerHTML = '<div class="p-10 text-center text-gray-400">讀取中...</div>';
 
             try {
-                // 讀取你在 public/data/categories/ 裡面的獨立 JSON
-                const response = await fetch(`./public/data/categories/${name}.json`);
-                const products = await response.json();
+                const res = await fetch(`./public/data/categories/${encodeURIComponent(name)}.json`);
+                if (!res.ok) throw new Error('找不到該分類的 JSON 檔案');
+                const products = await res.json();
 
-                productContainer.innerHTML = '';
-                products.forEach(item => {
-                    const itemCard = document.createElement('div');
-                    itemCard.className = 'bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex gap-4';
-                    itemCard.innerHTML = `
-                        <div class="w-16 h-16 bg-slate-100 rounded-lg flex-shrink-0 flex items-center justify-center text-xl">🛒</div>
-                        <div class="flex-1">
-                            <h3 class="font-bold text-slate-800">${item.product_name}</h3>
-                            <div class="mt-2 flex flex-wrap gap-2">
-                                <span class="text-xs px-2 py-1 bg-yellow-50 text-yellow-700 rounded-md border border-yellow-100">百佳: $${item.parknshop_price || '--'}</span>
-                                <span class="text-xs px-2 py-1 bg-red-50 text-red-700 rounded-md border border-red-100">惠康: $${item.wellcome_price || '--'}</span>
-                            </div>
+                productList.innerHTML = '';
+                products.forEach(p => {
+                    const card = document.createElement('div');
+                    card.className = "bg-white p-4 rounded-xl shadow-sm border border-gray-100";
+                    card.innerHTML = `
+                        <div class="font-bold text-gray-800 mb-2">${p.product_name}</div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded">百佳: $${p.parknshop_price || 'N/A'}</span>
+                            <span class="text-sm text-red-600 bg-red-50 px-2 py-1 rounded">惠康: $${p.wellcome_price || 'N/A'}</span>
                         </div>
                     `;
-                    productContainer.appendChild(itemCard);
+                    productList.appendChild(card);
                 });
-            } catch (e) {
-                productContainer.innerHTML = '<p class="text-red-500">找不到該分類的詳細數據。</p>';
+            } catch (err) {
+                productList.innerHTML = `<div class="text-red-500 p-4">讀取失敗: ${name}.json 檔案不存在</div>`;
             }
         }
 
-        function showCategories() {
-            productSection.classList.add('hidden');
-            categorySection.classList.remove('hidden');
+        function backToCategories() {
+            productView.classList.add('hidden');
+            categoryView.classList.remove('hidden');
         }
 
-        init();
+        fetchCategories();
     </script>
 </body>
 </html>
