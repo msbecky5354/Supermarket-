@@ -3,102 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>超市格價 App 2.0</title>
+    <title>超市格價導航</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-50 min-h-screen pb-20">
-
-    <header class="bg-indigo-700 text-white p-4 sticky top-0 z-50 shadow-lg">
-        <div class="max-w-md mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-bold">超市價格地圖</h1>
-            <span id="load-status" class="text-xs bg-indigo-800 px-2 py-1 rounded">系統就緒</span>
-        </div>
+<body class="bg-gray-50 p-4">
+    <header class="mb-6 text-center">
+        <h1 class="text-2xl font-bold text-blue-700">超市價格實時導航</h1>
+        <p class="text-gray-500 text-sm">中山全城數據覆蓋</p>
     </header>
 
-    <main class="max-w-md mx-auto p-4">
-        <div class="mb-6">
-            <input type="text" id="searchInput" placeholder="搜尋貨品..." class="w-full p-3 rounded-xl border-none shadow-sm focus:ring-2 focus:ring-indigo-500">
-        </div>
-
-        <div id="categoryView">
-            <h2 class="text-gray-500 text-sm font-bold mb-4 uppercase">貨品分類</h2>
-            <div id="categoryGrid" class="grid grid-cols-2 gap-3">
-                <div class="p-8 text-center text-gray-400 col-span-2">正在讀取數據...</div>
-            </div>
-        </div>
-
-        <div id="productView" class="hidden">
-            <button onclick="backToCategories()" class="mb-4 text-indigo-600 flex items-center font-medium">
-                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-                返回分類
-            </button>
-            <h2 id="catNameTitle" class="text-2xl font-bold mb-4 text-gray-800"></h2>
-            <div id="productList" class="space-y-3"></div>
-        </div>
-    </main>
+    <div id="categoryList" class="grid grid-cols-2 gap-4">
+        <p class="col-span-2 text-center text-gray-400">正在加載分類數據...</p>
+    </div>
 
     <script>
-        const categoryGrid = document.getElementById('categoryGrid');
-        const productList = document.getElementById('productList');
-        const categoryView = document.getElementById('categoryView');
-        const productView = document.getElementById('productView');
-
-        // 1. 取得分類主清單
-        async function fetchCategories() {
-            try {
-                const res = await fetch('./public/data/categories_list.json');
-                if (!res.ok) throw new Error('找不到 categories_list.json');
-                const data = await res.json();
-                
-                categoryGrid.innerHTML = '';
-                data.forEach(cat => {
-                    const div = document.createElement('div');
-                    div.className = "bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center cursor-pointer active:scale-95 transition-all";
-                    div.innerHTML = `<div class="text-3xl mb-2">🛒</div><div class="font-bold text-gray-700">${cat.name}</div>`;
-                    div.onclick = () => loadProducts(cat.name);
-                    categoryGrid.appendChild(div);
-                });
-            } catch (err) {
-                categoryGrid.innerHTML = `<div class="col-span-2 text-red-500 bg-red-50 p-4 rounded-xl text-sm">錯誤: ${err.message}<br>請確保檔案路徑正確。</div>`;
-            }
-        }
-
-        // 2. 取得具體貨品清單
-        async function loadProducts(name) {
-            categoryView.classList.add('hidden');
-            productView.classList.remove('hidden');
-            document.getElementById('catNameTitle').innerText = name;
-            productList.innerHTML = '<div class="p-10 text-center text-gray-400">讀取中...</div>';
-
-            try {
-                const res = await fetch(`./public/data/categories/${encodeURIComponent(name)}.json`);
-                if (!res.ok) throw new Error('找不到該分類的 JSON 檔案');
-                const products = await res.json();
-
-                productList.innerHTML = '';
-                products.forEach(p => {
-                    const card = document.createElement('div');
-                    card.className = "bg-white p-4 rounded-xl shadow-sm border border-gray-100";
-                    card.innerHTML = `
-                        <div class="font-bold text-gray-800 mb-2">${p.product_name}</div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded">百佳: $${p.parknshop_price || 'N/A'}</span>
-                            <span class="text-sm text-red-600 bg-red-50 px-2 py-1 rounded">惠康: $${p.wellcome_price || 'N/A'}</span>
-                        </div>
-                    `;
-                    productList.appendChild(card);
-                });
-            } catch (err) {
-                productList.innerHTML = `<div class="text-red-500 p-4">讀取失敗: ${name}.json 檔案不存在</div>`;
-            }
-        }
-
-        function backToCategories() {
-            productView.classList.add('hidden');
-            categoryView.classList.remove('hidden');
-        }
-
-        fetchCategories();
+        // 自動讀取你 public 資料夾下的數據
+        fetch('./public/data/categories_list.json')
+            .then(res => res.json())
+            .then(data => {
+                const container = document.getElementById('categoryList');
+                container.innerHTML = data.map(cat => `
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center active:scale-95 transition-transform">
+                        <div class="text-3xl mb-2">🛒</div>
+                        <div class="font-bold text-gray-800">${cat.name}</div>
+                    </div>
+                `).join('');
+            })
+            .catch(err => {
+                document.getElementById('categoryList').innerHTML = '<p class="text-red-500 col-span-2 text-center">找不到數據檔案，請檢查 public/data/ 路徑。</p>';
+            });
     </script>
 </body>
 </html>
