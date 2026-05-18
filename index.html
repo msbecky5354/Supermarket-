@@ -182,7 +182,6 @@
                 if (!structuredData[cat1][cat2][name]) {
                     structuredData[cat1][cat2][name] = { 
                         brand: localBrand, 
-                        // 呼叫 promoEngine.js 內的 normalizeStr
                         searchKeywords: normalizeStr(`${name} ${enName} ${localBrand} ${enBrand}`),
                         prices: [] 
                     };
@@ -196,17 +195,13 @@
                         
                         const promoKeys = ['promotions', 'promotion', 'offer', 'promotionDesc', 'promotionName', 'itemOffsetText'];
                         
+                        // 💡 修正 BUG：直接強制用 extractDeepPromoText 抽出 'en' 畀大腦！
                         for (let key of promoKeys) {
                             if (p[key]) {
-                                // 呼叫 promoEngine.js 內的 extractDeepPromoText
                                 let extractedDisplay = extractDeepPromoText(p[key], currentLang);
                                 if (extractedDisplay && extractedDisplay !== "[object Object]") { 
                                     promoDisplay = extractedDisplay; 
-                                    if (typeof p[key] === 'object' && p[key]['en']) {
-                                        promoCalcEn = p[key]['en'];
-                                    } else if (typeof p[key] === 'string' && /save|for|off|free|half|2nd/.test(p[key].toLowerCase())) {
-                                        promoCalcEn = p[key]; 
-                                    }
+                                    promoCalcEn = extractDeepPromoText(p[key], 'en'); // 直接調用遞迴掃描抽英文
                                     break; 
                                 }
                             }
@@ -221,8 +216,7 @@
                                         let extractedDisplay = extractDeepPromoText(smPromo, currentLang);
                                         if (extractedDisplay && extractedDisplay !== "[object Object]") {
                                             promoDisplay = extractedDisplay;
-                                            if (smPromo['en']) promoCalcEn = smPromo['en'];
-                                            else if (smPromo.description && smPromo.description['en']) promoCalcEn = smPromo.description['en'];
+                                            promoCalcEn = extractDeepPromoText(smPromo, 'en'); // 直接調用遞迴掃描抽英文
                                             break;
                                         }
                                     }
@@ -323,7 +317,6 @@
             info.prices.forEach(p => {
                 let parsed = parseFloat(p.price);
                 if (!isNaN(parsed)) {
-                    // 呼叫 promoEngine.js 內的 calculateAvgPrice
                     let avg = calculateAvgPrice(p.promoCalc, parsed);
                     validPrices.push((avg && avg > 0 && avg < parsed) ? avg : parsed);
                 }
