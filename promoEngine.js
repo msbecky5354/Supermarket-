@@ -1,6 +1,6 @@
-// promoEngine.js - 100% 純英文運算大腦版 (已清除所有中文過濾)
+// promoEngine.js - 100% 純英文 (嚴謹階級防漏版)
 
-// 💡 搜尋強化：移除非字母、數字及中文字元 (呢個保留中文係因為用家搜尋時會打中文)
+// 💡 搜尋強化：移除非字母、數字及中文字元
 function normalizeStr(str) {
     if (!str) return "";
     return String(str)
@@ -15,10 +15,8 @@ function extractDeepPromoText(val, targetLang) {
     if (!val) return "";
     if (typeof val === 'string') return val.trim();
     if (Array.isArray(val)) return val.map(v => extractDeepPromoText(v, targetLang)).filter(v => v !== "").join('; ');
-    
     if (typeof val === 'object') {
         if (val[targetLang]) return extractDeepPromoText(val[targetLang], targetLang);
-        // 修正：如果系統指明要抽 'en'，就絕對唔會 Fallback 去 'zh-Hant'
         if (targetLang !== 'en' && val['zh-Hant']) return extractDeepPromoText(val['zh-Hant'], targetLang);
         if (val.description) return extractDeepPromoText(val.description, targetLang);
         let vals = Object.values(val);
@@ -27,46 +25,71 @@ function extractDeepPromoText(val, targetLang) {
     return String(val);
 }
 
-// 🧠 100% 純英文無死角引擎
+// 🧠 層級優先度計算引擎 (Tiered Priority Logic)
 function calculateAvgPrice(enPromoText, originalPrice) {
     if (!enPromoText || isNaN(originalPrice)) return null;
     try {
-        // 清理多餘空格，全部轉細楷
         let p = enPromoText.toLowerCase().replace(/\s+/g, ' '); 
+        const getNum = (n) => parseFloat(n);
         
-        // 1. Buy X save Y (e.g., "Buy 2 item(s) save $27.00")
-        let mSave = p.match(/buy.*?([0-9]+).*?save.*?\$?([0-9.]+)/);
-        if (mSave) return ((originalPrice * parseInt(mSave[1])) - parseFloat(mSave[2])) / parseInt(mSave[1]);
+        // ==========================================
+        // 級別 1：最複雜嘅「買 X 送 Y」及「特定 Y 折扣」
+        // ==========================================
         
-        // 2. Buy Second for $X (e.g., "Buy Second for $1.00")
-        let m2ndFor = p.match(/(?:buy\s*)?(?:second|2nd).*?for\s*\$([0-9.]+)/);
-        if (m2ndFor) return (originalPrice + parseFloat(m2ndFor[1])) / 2;
+        // 1a. Buy X get Y for $Z (e.g., "Buy 1 get 1 for $10.00")
+        let mGetFor = p.match(/(?:buy|add).*?([0-9]+).*?get.*?([0-9]+).*?(?:for|at)\s*\$([0-9.]+)/);
+        if (mGetFor) return (originalPrice * getNum(mGetFor[1]) + getNum(mGetFor[3])) / (getNum(mGetFor[1]) + getNum(mGetFor[2]));
 
-        // 3. X for $Y / Buy X for $Y / X at $Y (e.g., "2 for $16.00", "Buy 2 at $54.00")
-        let mFor1 = p.match(/([0-9]+).*?(?:for|at)\s*\$([0-9.]+)/);
-        if (mFor1 && !p.includes('save')) return parseFloat(mFor1[2]) / parseInt(mFor1[1]);
-        
-        // 4. 2nd Item % off (e.g., "2nd item for 50% off", "50% for 2nd")
-        let m2ndPerc = p.match(/(?:2nd).*?([0-9.]+)%|([0-9.]+)%.*?(?:2nd)/);
-        if (m2ndPerc) {
-            let perc = parseFloat(m2ndPerc[1] || m2ndPerc[2]);
-            return (originalPrice * (2 - (perc / 100))) / 2;
-        }
+        // 1b. Buy X get Y half price (e.g., "Buy 1 get 1 half price")
+        let mGetHalf = p.match(/(?:buy|add).*?([0-9]+).*?get.*?([0-9]+).*?half/);
+        if (mGetHalf) return (originalPrice * getNum(mGetHalf[1]) + (originalPrice * 0.5 * getNum(mGetHalf[2]))) / (getNum(mGetHalf[1]) + getNum(mGetHalf[2]));
 
-        // 5. % off (e.g., "15% off")
+        // 1c. Buy X get Y Z% off (e.g., "Buy 2 get 1 50% off")
+        let mGetPerc = p.match(/(?:buy|add).*?([0-9]+).*?get.*?([0-9]+).*?([0-9.]+)%\s*off/);
+        if (mGetPerc) return (originalPrice * getNum(mGetPerc[1]) + (originalPrice * (1 - getNum(mGetPerc[3])/100) * getNum(mGetPerc[2]))) / (getNum(mGetPerc[1]) + getNum(mGetPerc[2]));
+
+        // 1d. Buy X get Y free (嚴格限制必須有 free)
+        let mGetFree = p.match(/(?:buy|add).*?([0-9]+).*?get.*?([0-9]+).*?free/);
+        if (mGetFree) return (originalPrice * getNum(mGetFree[1])) / (getNum(mGetFree[1]) + getNum(mGetFree[2]));
+
+        // ==========================================
+        // 級別 2：「第二件 (2nd / Second)」專屬處理
+        // ==========================================
+        
+        // 2a. 2nd for $Z (e.g., "Buy 2nd for $10.00")
+        let m2ndFor = p.match(/(?:second|2nd).*?(?:for|at)\s*\$([0-9.]+)/);
+        if (m2ndFor) return (originalPrice + getNum(m2ndFor[1])) / 2;
+
+        // 2b. 2nd half price (e.g., "2nd item half price")
+        if (p.match(/(?:second|2nd).*?half/)) return (originalPrice * 1.5) / 2;
+
+        // 2c. 2nd Z% off (e.g., "50% off for 2nd")
+        let m2ndPerc = p.match(/(?:second|2nd).*?([0-9.]+)%|([0-9.]+)%.*?(?:second|2nd)/);
+        if (m2ndPerc) return (originalPrice * (2 - (getNum(m2ndPerc[1] || m2ndPerc[2]) / 100))) / 2;
+
+        // ==========================================
+        // 級別 3：常規數量計算 (Buy X save Y / X for $Y)
+        // ==========================================
+        
+        // 3a. Buy X save $Y
+        let mSave = p.match(/(?:buy|add).*?([0-9]+).*?save.*?\$([0-9.]+)/);
+        if (mSave) return (originalPrice * getNum(mSave[1]) - getNum(mSave[2])) / getNum(mSave[1]);
+
+        // 3b. X for $Y / Buy X at $Y (排到最後先執行，避免誤傷)
+        // 嚴格確保前面唔係 "2nd"
+        let mFor = p.match(/(?<!(?:2nd|second)\s*.*?)([0-9]+).*?(?:for|at)\s*\$([0-9.]+)/);
+        if (mFor) return getNum(mFor[2]) / getNum(mFor[1]);
+
+        // ==========================================
+        // 級別 4：全單折扣 (Overall % off / Half price)
+        // ==========================================
+        
+        // 4a. Overall % off (e.g., "15% off")
         let mPerc = p.match(/([0-9.]+)%\s*off/);
-        if (mPerc) return originalPrice * (1 - (parseFloat(mPerc[1]) / 100));
+        if (mPerc) return originalPrice * (1 - (getNum(mPerc[1]) / 100));
 
-        // 6. Buy/Add X get Y free (e.g., "Add 2 item(s) to cart and get 1 free")
-        let mFree = p.match(/(?:buy|add).*?([0-9]+).*?(?:get|free).*?([0-9]+)/);
-        if (mFree) {
-            let buy = parseInt(mFree[1]);
-            let free = parseInt(mFree[2]);
-            return (originalPrice * buy) / (buy + free);
-        }
-
-        // 7. Half price (e.g., "2nd half price")
-        if (p.includes('half')) return (originalPrice * 1.5) / 2;
+        // 4b. Overall half price (排除咗 2nd)
+        if (p.includes('half price')) return originalPrice * 0.5;
 
         return null;
     } catch(e) { return null; }
