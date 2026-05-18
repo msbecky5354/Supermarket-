@@ -77,25 +77,28 @@
 
         const uiText = {
             'zh-Hant': { 
-                title: "超市價格導航", mainCat: "第一步：選擇主分類", back: "返回", loading: "正在同步最新超市數據...", error: "數據載入失敗，請檢查網絡連線。", send: "搜尋", placeholder: "輸入貨品名稱...",
+                title: "超市價格導航", mainCat: "第一步：選擇主分類", back: "返回", loading: "正在同步最新超市數據...", error: "數據載入失敗，請刪除 GitHub 上嘅 vercel.json 檔案。", send: "搜尋", placeholder: "輸入貨品名稱...",
                 chatWelcome: "您選擇了", chatAsk: "請問想尋找什麼貨品？<br><span class='text-xs text-slate-500 mt-1 block'>（可輸入名稱，或留言「全部」查看清單）</span>", chatSearching: "尋找中...", chatNoResult: "找不到相關貨品，請嘗試其他字眼。", chatFound: "為您找到以下貨品：", chatShowAll: "為您列出該分類下的所有貨品：",
                 replyGreeting: "你好啊！我係超市格價小助手 🤖，今日想搵啲咩貨品呢？",
                 replyThanks: "唔使客氣！隨時為你效勞。仲想搵其他嘢嗎？",
-                replyTest: "收到你嘅測試！系統運作正常 🟢，請輸入你想搵嘅貨品啦！"
+                replyTest: "收到你嘅測試！系統運作正常 🟢，請輸入你想搵嘅貨品啦！",
+                replyEmotion: "哈哈！我只係一個專心幫你格價嘅 AI 🤖，冷靜啲，話畀我知你想搵咩貨品啦？"
             },
             'zh-Hans': { 
-                title: "超市价格导航", mainCat: "第一步：选择主分类", back: "返回", loading: "正在同步最新超市数据...", error: "数据加载失败，请检查网络连线。", send: "搜索", placeholder: "输入商品名称...",
+                title: "超市价格导航", mainCat: "第一步：选择主分类", back: "返回", loading: "正在同步最新超市数据...", error: "数据加载失败，请删除 GitHub 上的 vercel.json 档案。", send: "搜索", placeholder: "输入商品名称...",
                 chatWelcome: "您选择了", chatAsk: "请问想寻找什么商品？<br><span class='text-xs text-slate-500 mt-1 block'>（可输入名称，或留言「全部」查看清单）</span>", chatSearching: "寻找中...", chatNoResult: "找不到相关商品，请尝试其他字眼。", chatFound: "为您找到以下商品：", chatShowAll: "为您列出该分类下的所有商品：",
                 replyGreeting: "你好啊！我是超市比价小助手 🤖，今天想找点什么商品呢？",
                 replyThanks: "不用客气！随时为您效劳。还想找其他东西吗？",
-                replyTest: "收到您的测试！系统运作正常 🟢，请输入您想找的商品吧！"
+                replyTest: "收到您的测试！系统运作正常 🟢，请输入您想找的商品吧！",
+                replyEmotion: "哈哈！我只是个专心帮您比价的 AI 🤖，深呼吸，告诉我您想找什么商品吧？"
             },
             'en': { 
-                title: "Price Navigator", mainCat: "Step 1: Select Category", back: "Back", loading: "Syncing live data...", error: "Failed to load data. Please check your connection.", send: "Search", placeholder: "Type product name...",
+                title: "Price Navigator", mainCat: "Step 1: Select Category", back: "Back", loading: "Syncing live data...", error: "Failed to load data. Please delete vercel.json on GitHub.", send: "Search", placeholder: "Type product name...",
                 chatWelcome: "You selected", chatAsk: "What product are you looking for?<br><span class='text-xs text-slate-500 mt-1 block'>(Or type 'all' to see the full list)</span>", chatSearching: "Searching...", chatNoResult: "No results found, please try another keyword.", chatFound: "Found these products for you:", chatShowAll: "Here are all products in this category:",
                 replyGreeting: "Hello! I am your Price Navigator Assistant 🤖. What product are you looking for today?",
                 replyThanks: "You're very welcome! Always here to help. Anything else you need to find?",
-                replyTest: "Test received! System is fully operational 🟢. Please enter a product name to begin!"
+                replyTest: "Test received! System is fully operational 🟢. Please enter a product name to begin!",
+                replyEmotion: "Haha! I am just a Price Navigator AI 🤖. Take a deep breath and tell me what product you'd like to find!"
             }
         };
 
@@ -105,18 +108,18 @@
             'en': { 'WELLCOME': 'Wellcome', 'PARKNSHOP': 'PARKnSHOP', 'JASONS': 'Jasons', 'MARKETPLACE': 'Market Place', 'AEON': 'AEON', 'Watsons': 'Watsons', 'MANNINGS': 'Mannings', 'USELECT': 'U-Select' }
         };
 
-        // 💡 強化版圖案字典：更精準的字眼配對，確保不會全部顯示 🛍️
+        // 💡 終極版圖案字典：只取「核心字眼」，保證 100% 命中率
         const catStyles = [
-            { keywords: ['米', '食油', '罐頭', 'rice', 'oil', 'meat'], icon: '🍚', bg: 'from-amber-100 to-orange-100', text: 'text-orange-900', border: 'border-orange-200' },
-            { keywords: ['奶類', '奶类', '大豆', '蛋', 'dairy', 'egg', 'soy'], icon: '🥚', bg: 'from-yellow-100 to-amber-100', text: 'text-amber-900', border: 'border-yellow-300' },
-            { keywords: ['粉麵', '粉面', '冷凍', '冷冻', 'noodle', 'frozen'], icon: '🍜', bg: 'from-sky-100 to-indigo-100', text: 'text-indigo-900', border: 'border-indigo-200' },
-            { keywords: ['家居', '寵物', '宠物', 'household', 'pet'], icon: '🧻', bg: 'from-purple-100 to-fuchsia-100', text: 'text-fuchsia-900', border: 'border-fuchsia-200' },
-            { keywords: ['個人護理', '个人护理', 'personal'], icon: '🧴', bg: 'from-teal-100 to-emerald-100', text: 'text-teal-900', border: 'border-teal-200' },
-            { keywords: ['奶粉', '嬰兒', '婴儿', 'baby', 'infant'], icon: '🍼', bg: 'from-pink-100 to-rose-100', text: 'text-rose-900', border: 'border-rose-200' },
-            { keywords: ['糖果', '餅乾', '饼干', '小食', 'candies', 'snack', 'biscuit'], icon: '🍫', bg: 'from-rose-100 to-pink-200', text: 'text-rose-900', border: 'border-rose-300' },
-            { keywords: ['飲品', '饮品', 'drink', 'beverage'], icon: '🧃', bg: 'from-cyan-100 to-blue-100', text: 'text-blue-900', border: 'border-blue-200' },
+            { keywords: ['米', '油', '罐', 'rice', 'oil', 'meat'], icon: '🍚', bg: 'from-amber-100 to-orange-100', text: 'text-orange-900', border: 'border-orange-200' },
+            { keywords: ['奶', '大豆', '蛋', 'dairy', 'egg', 'soy'], icon: '🥚', bg: 'from-yellow-100 to-amber-100', text: 'text-amber-900', border: 'border-yellow-300' },
+            { keywords: ['粉', '麵', '面', '冷', 'noodle', 'frozen'], icon: '🍜', bg: 'from-sky-100 to-indigo-100', text: 'text-indigo-900', border: 'border-indigo-200' },
+            { keywords: ['居', '寵', '宠', 'household', 'pet'], icon: '🧻', bg: 'from-purple-100 to-fuchsia-100', text: 'text-fuchsia-900', border: 'border-fuchsia-200' },
+            { keywords: ['護理', '护理', 'personal', 'care'], icon: '🧴', bg: 'from-teal-100 to-emerald-100', text: 'text-teal-900', border: 'border-teal-200' },
+            { keywords: ['嬰', '婴', 'baby', 'infant'], icon: '🍼', bg: 'from-pink-100 to-rose-100', text: 'text-rose-900', border: 'border-rose-200' },
+            { keywords: ['糖', '餅', '饼', '食', 'candies', 'snack', 'biscuit'], icon: '🍫', bg: 'from-rose-100 to-pink-200', text: 'text-rose-900', border: 'border-rose-300' },
+            { keywords: ['飲', '饮', 'drink', 'beverage'], icon: '🧃', bg: 'from-cyan-100 to-blue-100', text: 'text-blue-900', border: 'border-blue-200' },
             { keywords: ['酒', 'beer', 'wine', 'spirit'], icon: '🍷', bg: 'from-fuchsia-100 to-purple-200', text: 'text-purple-900', border: 'border-purple-300' },
-            { keywords: ['麵包', '面包', '蛋糕', 'bakery', 'cereal', 'spread'], icon: '🍞', bg: 'from-orange-100 to-amber-200', text: 'text-orange-900', border: 'border-orange-300' }
+            { keywords: ['包', '糕', 'bakery', 'cereal', 'spread'], icon: '🍞', bg: 'from-orange-100 to-amber-200', text: 'text-orange-900', border: 'border-orange-300' }
         ];
 
         async function init() {
@@ -125,6 +128,7 @@
                 let data = null;
                 
                 try {
+                    // 加入動態時間戳，徹底擊破 Vercel 緩存
                     const localUrl = '/pricewatch.json?t=' + new Date().getTime();
                     const localResponse = await fetch(localUrl);
                     if (localResponse.ok) {
@@ -133,7 +137,7 @@
                         throw new Error('Local file fetch failed');
                     }
                 } catch (localError) {
-                    console.warn("本地檔案讀取失敗，啟動備用 API...");
+                    console.warn("本地讀取失敗，啟動備用 API...");
                     try {
                         const liveUrl = 'https://online-price-watch.consumer.org.hk/opw/opendata/pricewatch.json';
                         const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(liveUrl)}`;
@@ -256,16 +260,17 @@
             addBotMessage(welcomeText);
         }
 
-        // 🤖 升級版閑聊過濾器：加入英文縮寫支援
+        // 🤖 加入「情緒與感嘆詞」庫
         function checkSmallTalk(query) {
             const rawQ = query.toLowerCase().trim();
-            
-            // 清除標點符號與空格，只對比純文字
             const q = rawQ.replace(/[.,!?。，！？\s]/g, '');
             
             if (q.length > 20) return null; 
 
-            // 💡 針對帶有空格的英文句子/縮寫進行優先比對
+            // 常見感嘆詞 (解決 On my god, OMG 等)
+            const exclamations = ['omg', 'ohmygod', 'onmygod', 'wow', 'haha', 'lol', 'omds', '天啊', '哈哈', '哇', '救命'];
+            if (exclamations.some(kw => q.includes(kw))) return uiText[currentLang].replyEmotion;
+
             if (rawQ.includes('how are you') || rawQ.includes('how r u') || rawQ.includes('whats up') || rawQ.includes('how do you do')) {
                 return uiText[currentLang].replyGreeting;
             }
