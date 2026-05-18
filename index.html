@@ -14,11 +14,23 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
         
+        /* ⚡ 價格神器專屬動畫 */
         @keyframes pulse-lightning {
             0%, 100% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 2px #fbbf24); }
             50% { opacity: 0.7; transform: scale(1.1); filter: drop-shadow(0 0 8px #fbbf24); }
         }
         .lightning-icon { animation: pulse-lightning 2s infinite ease-in-out; display: inline-block; }
+        
+        /* 🎁 優惠標籤微動畫 */
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        .promo-badge {
+            background: linear-gradient(90deg, #ef4444 25%, #f87171 50%, #ef4444 75%);
+            background-size: 200% 100%;
+            animation: shimmer 3s infinite linear;
+        }
     </style>
 </head>
 <body class="bg-slate-50 h-[100dvh] flex flex-col font-sans text-slate-900 overflow-hidden w-full">
@@ -57,7 +69,7 @@
                 <span id="sortTip" class="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full font-bold">常用優先</span>
             </div>
             <div id="level1Container" class="grid grid-cols-2 gap-4">
-                <div id="loadingText" class="text-center p-4 text-slate-400 text-sm col-span-2">正在啟動數據神器...</div>
+                <div id="loadingText" class="text-center p-4 text-slate-400 text-sm col-span-2">正在啟動價格神器...</div>
             </div>
         </section>
 
@@ -94,9 +106,9 @@
         let selectedCat1 = null; 
 
         const uiText = {
-            'zh-Hant': { title: "香港生活百貨價格神器", badge: "政府數據連線", subLabel: "今日即時行情", mainCat: "第一步：選擇主分類", sortTip: "常用優先", back: "返回", loading: "正在啟動價格神器...", error: "數據載入失敗", send: "搜尋", placeholder: "輸入貨品/牌子...", chatWelcome: "您選擇了", chatAsk: "想搵咩貨品？<br><span class='text-xs text-slate-500 mt-1 block'>（或留言「全部」查看清單）</span>", chatSearching: "尋找中...", chatNoResult: "找不到貨品。", chatFound: "神器為您找到：", chatShowAll: "該分類下的所有清單：", replyGreeting: "你好！我係格價助手 🤖，今日想買咩？", replyThanks: "唔使客氣！仲有咩幫到你？", replyTest: "神器運作正常 🟢", replyEmotion: "哈哈！我係一個幫你格價慳錢嘅 AI 🤖" },
-            'zh-Hans': { title: "香港生活百货价格神器", badge: "政府数据连线", subLabel: "今日即时行情", mainCat: "第一步：选择主分类", sortTip: "常用優先", back: "返回", loading: "正在启动价格神器...", error: "数据加载失败", send: "搜索", placeholder: "输入商品/品牌...", chatWelcome: "您选择了", chatAsk: "想找什么商品？<br><span class='text-xs text-slate-500 mt-1 block'>（或输入「全部」）</span>", chatSearching: "寻找中...", chatNoResult: "找不到商品。", chatFound: "神器为您找到：", chatShowAll: "该分类下的所有商品：", replyGreeting: "你好！我是比价助手 🤖，今天想找什么？", replyThanks: "不用客气！还有什麼可以帮您？", replyTest: "神器运作正常 🟢", replyEmotion: "哈哈！我是幫您比價的 AI 🤖" },
-            'en': { title: "HK Artifact", badge: "Gov Data Link", subLabel: "Live Daily Prices", mainCat: "Step 1: Select Category", sortTip: "Frequent First", back: "Back", loading: "Starting...", error: "Failed to load", send: "Search", placeholder: "Type name...", chatWelcome: "Selected", chatAsk: "What are you looking for?<br><span class='text-xs text-slate-500 mt-1 block'>(Or type 'all')</span>", chatSearching: "Searching...", chatNoResult: "No results.", chatFound: "Found:", chatShowAll: "Full List:", replyGreeting: "Hello! I am your Price AI 🤖", replyThanks: "You're welcome!", replyTest: "System OK 🟢", replyEmotion: "Haha! Just here to save you money!" }
+            'zh-Hant': { title: "香港生活百貨價格神器", badge: "政府數據連線", subLabel: "今日即時行情", mainCat: "第一步：選擇主分類", sortTip: "常用優先", back: "返回", loading: "啟動中...", error: "載入失敗", send: "搜尋", placeholder: "輸入名稱...", chatWelcome: "您選擇了", chatAsk: "想搵咩貨品？<br><span class='text-xs text-slate-500 mt-1 block'>（或輸入「全部」）</span>", chatSearching: "尋找中...", chatNoResult: "找不到貨品，請確保分類正確。", chatFound: "神器為您找到：", chatShowAll: "所有貨品清單：", replyGreeting: "你好！我係格價助手 🤖", replyThanks: "唔使客氣！", replyTest: "系統 OK 🟢", replyEmotion: "哈哈！我只係幫你格價嘅 AI 🤖" },
+            'zh-Hans': { title: "香港生活百货价格神器", badge: "政府数据连线", subLabel: "今日即时行情", mainCat: "第一步：选择主分类", sortTip: "常用優先", back: "返回", loading: "启动中...", error: "加载失败", send: "搜索", placeholder: "输入名称...", chatWelcome: "您选择了", chatAsk: "想找什么商品？<br><span class='text-xs text-slate-500 mt-1 block'>（或输入「全部」）</span>", chatSearching: "寻找中...", chatNoResult: "找不到商品。", chatFound: "神器为您找到：", chatShowAll: "商品清单：", replyGreeting: "你好！我是比价助手 🤖", replyThanks: "不用客气！", replyTest: "系统 OK 🟢", replyEmotion: "哈哈！我是幫您比價的 AI 🤖" },
+            'en': { title: "HK Artifact", badge: "Gov Data Link", subLabel: "Live Daily Prices", mainCat: "Step 1: Select Category", sortTip: "Frequent First", back: "Back", loading: "Starting...", error: "Failed", send: "Search", placeholder: "Type name...", chatWelcome: "Selected", chatAsk: "What are you looking for?<br><span class='text-xs text-slate-500 mt-1 block'>(Or type 'all')</span>", chatSearching: "Searching...", chatNoResult: "No results.", chatFound: "Found:", chatShowAll: "Full List:", replyGreeting: "Hello! I am your AI 🤖", replyThanks: "Welcome!", replyTest: "System OK 🟢", replyEmotion: "Haha!" }
         };
 
         const supermarketDict = {
@@ -170,12 +182,19 @@
                 let brand = item.brand?.[currentLang] || item.brand?.['zh-Hant'] || '';
                 if (!structuredData[cat1]) structuredData[cat1] = {};
                 if (!structuredData[cat1][cat2]) structuredData[cat1][cat2] = {};
-                if (!structuredData[cat1][cat2][name]) structuredData[cat1][cat2][name] = { brand, prices: [] };
+                if (!structuredData[cat1][cat2][name]) {
+                    structuredData[cat1][cat2][name] = { brand, prices: [] };
+                }
                 if (Array.isArray(item.prices)) {
                     item.prices.forEach(p => {
                         let smName = supermarketDict[currentLang][p.supermarketCode] || p.supermarketCode;
-                        // 💡 關鍵數據抓取：確保 promotionName 被提取
-                        let promo = p.promotionName?.[currentLang] || p.promotionName?.['zh-Hant'] || p.promotionName || "";
+                        
+                        // 💡 終極抓取：偵測所有可能的優惠欄位
+                        let promo = "";
+                        if (p.promotionName) promo = p.promotionName[currentLang] || p.promotionName['zh-Hant'] || p.promotionName;
+                        if (!promo && p.itemOffsetText) promo = p.itemOffsetText[currentLang] || p.itemOffsetText['zh-Hant'] || p.itemOffsetText;
+                        if (!promo && p.promotion) promo = p.promotion; // 處理字串格式
+
                         structuredData[cat1][cat2][name].prices.push({ 
                             rawCode: p.supermarketCode, 
                             supermarket: smName, 
@@ -293,8 +312,11 @@
                 else if (p.rawCode === 'AEON') cls = 'bg-purple-50 text-purple-700 border-purple-200';
                 else if (p.rawCode === 'MANNINGS' || p.rawCode === 'Watsons' || p.rawCode === 'LUNGFUNG') cls = 'bg-blue-50 text-blue-700 border-blue-200';
                 
-                // 💡 優惠字眼顯示升級：醒目的禮物盒標籤
-                const promoText = p.promo ? `<div class="text-[10px] mt-1.5 leading-tight text-red-600 font-bold bg-red-50 p-1.5 rounded-lg border border-red-100 flex items-start gap-1"><span>🎁</span><span>${p.promo}</span></div>` : '';
+                // 💡 核心升級：精美紅金優惠標籤 (🎁 加上 Shimmer 動效)
+                const promoText = p.promo ? `
+                    <div class="promo-badge text-[10px] mt-2 leading-tight text-white font-black p-1.5 rounded-lg shadow-sm flex items-start gap-1">
+                        <span>🎁</span><span>${p.promo}</span>
+                    </div>` : '';
 
                 return `<div class="flex flex-col p-2.5 rounded-xl border flex-1 min-w-[45%] ${cls} ${isLowest ? 'ring-2 ring-green-400 font-bold bg-white scale-[1.02] shadow-sm z-10' : 'opacity-90'}">
                     <div class="flex items-center justify-between">
