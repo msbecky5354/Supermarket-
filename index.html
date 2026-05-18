@@ -115,28 +115,42 @@
             { keywords: ['麵包', '面包', 'bakery', 'cereal', 'spread'], icon: '🍞', bg: 'from-orange-100 to-amber-200', text: 'text-orange-900', border: 'border-orange-300' }
         ];
 
+        // 💡 強化版資料讀取機制 (防止 Vercel 緩存或設定錯誤)
         async function init() {
             try {
                 document.getElementById('loadingText').innerText = uiText[currentLang].loading;
                 let data = null;
                 
                 try {
-                    const localResponse = await fetch('pricewatch.json');
+                    // 策略 1: 絕對路徑 + 時間戳 (避免 Vercel 緩存或 vercel.json 影響)
+                    const localUrl = '/pricewatch.json?t=' + new Date().getTime();
+                    const localResponse = await fetch(localUrl);
                     if (localResponse.ok) {
                         data = await localResponse.json();
                     } else {
-                        throw new Error('Local file not found');
+                        throw new Error('Local file fetch failed');
                     }
                 } catch (localError) {
-                    const liveUrl = 'https://online-price-watch.consumer.org.hk/opw/opendata/pricewatch.json';
-                    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(liveUrl)}`;
+                    console.warn("本地檔案讀取失敗，啟動備用 API...");
                     
-                    const proxyResponse = await fetch(proxyUrl);
-                    if (!proxyResponse.ok) throw new Error('Proxy fetch failed');
-                    data = await proxyResponse.json();
+                    try {
+                        // 策略 2: AllOrigins Proxy
+                        const liveUrl = 'https://online-price-watch.consumer.org.hk/opw/opendata/pricewatch.json';
+                        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(liveUrl)}`;
+                        const proxyResponse = await fetch(proxyUrl);
+                        if (!proxyResponse.ok) throw new Error('Proxy 1 failed');
+                        data = await proxyResponse.json();
+                    } catch (proxyError1) {
+                        // 策略 3: Corsproxy.io
+                        const liveUrl = 'https://online-price-watch.consumer.org.hk/opw/opendata/pricewatch.json';
+                        const proxyUrl2 = 'https://corsproxy.io/?' + encodeURIComponent(liveUrl);
+                        const proxyResponse2 = await fetch(proxyUrl2);
+                        if (!proxyResponse2.ok) throw new Error('Proxy 2 failed');
+                        data = await proxyResponse2.json();
+                    }
                 }
 
-                if (!data) throw new Error('No data retrieved');
+                if (!data) throw new Error('No data retrieved from any source');
                 
                 rawApiData = data;
                 changeLanguage('zh-Hant');
@@ -243,24 +257,23 @@
             addBotMessage(welcomeText);
         }
 
-        // 🤖 升級版閑聊過濾器
+        // 🤖 超級智能版閑聊過濾器 (Fuzzy Match + Length Filter)
         function checkSmallTalk(query) {
-            // 💡 關鍵修正：將所有標點符號、問號、感嘆號和空格清除，只對比文字本身！
+            // 清除標點符號與空格，只對比純文字
             const q = query.toLowerCase().replace(/[.,!?。，！？\s]/g, '');
-
-            // 擴展的詞彙庫
-            const exactGreetings = ['你好', 'hi', 'hello', '早晨', 'hey', '你好嗎', '你好吗', '點呀', '早上好', '哈囉', '你好啊', '早', '午安', '晚安', '喂', '嗨', 'hihi', '你好呀', 'helloa', 'hola', 'howareyou', 'goodmorning'];
-            const exactThanks = ['唔該', '多謝', 'thankyou', 'thanks', '謝謝', '谢谢', 'thx', 'tq', '唔該晒', '多謝晒', '多謝曬', '唔該曬', 'thanksalot', 'thank'];
-            const exactTests = ['test', '測試', '测试', '123', 'testing', '1234', 'tst'];
-
-            if (exactGreetings.includes(q)) return uiText[currentLang].replyGreeting;
-            if (exactThanks.includes(q)) return uiText[currentLang].replyThanks;
-            if (exactTests.includes(q)) return uiText[currentLang].replyTest;
             
-            // 處理稍微長一點的問候語 (例如 "你好小助手")
-            if (q.includes('你好') && (q.includes('助手') || q.includes('bot'))) {
-                return uiText[currentLang].replyGreeting;
-            }
+            // 💡 如果句子太長（超過15個字），通常係真正嘅搜尋，直接跳出過濾器
+            if (q.length > 15) return null; 
+
+            // 包含以下字眼即觸發對應回應
+            const greetings = ['你好', 'hi', 'hello', '早晨', '早上好', '午安', '晚安', '哈囉', 'hola', 'hey', '早', '嗨'];
+            const thanks = ['唔該', '多謝', 'thank', 'thx', 'tq', '謝謝', '谢谢'];
+            const tests = ['test', '測試', '测试', '123', 'testing'];
+
+            // 使用 some + includes 做到模糊配對 (例如 "好，多謝你呀" 包含 "多謝")
+            if (greetings.some(kw => q.includes(kw))) return uiText[currentLang].replyGreeting;
+            if (thanks.some(kw => q.includes(kw))) return uiText[currentLang].replyThanks;
+            if (tests.some(kw => q === kw)) return uiText[currentLang].replyTest; // Test 保留嚴格配對，避免誤傷
             
             return null;
         }
