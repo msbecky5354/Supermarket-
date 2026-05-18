@@ -19,7 +19,6 @@
 
     <header class="bg-white border-b flex-none z-30 px-4 py-3 shadow-sm relative">
         <div class="max-w-2xl mx-auto flex justify-between items-center">
-            
             <div class="flex flex-col">
                 <div class="flex items-center gap-1.5">
                     <span class="text-xl md:text-2xl">⚡</span>
@@ -47,9 +46,12 @@
     <main class="flex-1 overflow-hidden w-full max-w-2xl mx-auto relative flex flex-col">
         
         <section id="level1Section" class="absolute inset-0 overflow-y-auto no-scrollbar p-5 pb-24 bg-slate-50/50">
-            <h2 id="mainCatLabel" class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-5">第一步：選擇主分類</h2>
+            <div class="flex justify-between items-center mb-5">
+                <h2 id="mainCatLabel" class="text-sm font-bold text-slate-500 uppercase tracking-wider">第一步：選擇主分類</h2>
+                <span id="sortTip" class="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full font-bold">常用優先</span>
+            </div>
             <div id="level1Container" class="grid grid-cols-2 gap-4">
-                <div id="loadingText" class="text-center p-4 text-slate-400 text-sm col-span-2">正在處理數據...</div>
+                <div id="loadingText" class="text-center p-4 text-slate-400 text-sm col-span-2">正在同步最新數據...</div>
             </div>
         </section>
 
@@ -88,9 +90,9 @@
         let selectedCat1 = null; 
 
         const uiText = {
-            'zh-Hant': { title: "超市精明格價網", badge: "香港政府超市數據", subLabel: "今日即時行情", mainCat: "第一步：選擇主分類", back: "返回", loading: "同步中...", error: "載入失敗", send: "搜尋", placeholder: "輸入名稱...", chatWelcome: "您選擇了", chatAsk: "想搵咩貨品？<br><span class='text-xs text-slate-500 mt-1 block'>（或輸入「全部」）</span>", chatSearching: "尋找中...", chatNoResult: "找不到貨品。", chatFound: "為您找到：", chatShowAll: "該分類下的所有貨品：", replyGreeting: "你好！我係格價助手 🤖，今日想搵咩？", replyThanks: "唔使客氣！仲有咩可以幫你？", replyTest: "系統運作正常 🟢", replyEmotion: "哈哈！我只係幫你格價嘅 AI 🤖" },
-            'zh-Hans': { title: "超市精明格价网", badge: "香港政府超市数据", subLabel: "今日即时行情", mainCat: "第一步：选择主分类", back: "返回", loading: "同步中...", error: "加载失败", send: "搜索", placeholder: "输入名称...", chatWelcome: "您选择了", chatAsk: "想找什么商品？<br><span class='text-xs text-slate-500 mt-1 block'>（或输入「全部」）</span>", chatSearching: "寻找中...", chatNoResult: "找不到商品。", chatFound: "为您找到：", chatShowAll: "该分类下的所有商品：", replyGreeting: "你好！我是比价助手 🤖，今天想找什么？", replyThanks: "不用客气！还有什麼可以帮您？", replyTest: "系统运作正常 🟢", replyEmotion: "哈哈！我只是帮您比价的 AI 🤖" },
-            'en': { title: "Price Navigator", badge: "HK Gov Supermarket Data", subLabel: "Live Daily Prices", mainCat: "Step 1: Select Category", back: "Back", loading: "Syncing...", error: "Failed to load", send: "Search", placeholder: "Type name...", chatWelcome: "Selected", chatAsk: "What are you looking for?<br><span class='text-xs text-slate-500 mt-1 block'>(Or type 'all')</span>", chatSearching: "Searching...", chatNoResult: "No results.", chatFound: "Found:", chatShowAll: "All items in this category:", replyGreeting: "Hello! I am your Price Assistant 🤖", replyThanks: "You're welcome! Anything else?", replyTest: "System OK 🟢", replyEmotion: "Haha! I am just your Price AI 🤖" }
+            'zh-Hant': { title: "超市精明格價網", badge: "香港政府超市數據", subLabel: "今日即時行情", mainCat: "第一步：選擇主分類", sortTip: "常用優先", back: "返回", loading: "同步中...", error: "載入失敗", send: "搜尋", placeholder: "輸入名稱...", chatWelcome: "您選擇了", chatAsk: "想搵咩貨品？<br><span class='text-xs text-slate-500 mt-1 block'>（或輸入「全部」）</span>", chatSearching: "尋找中...", chatNoResult: "找不到貨品。", chatFound: "為您找到：", chatShowAll: "該分類下的所有貨品：", replyGreeting: "你好！我係格價助手 🤖，今日想搵咩？", replyThanks: "唔使客氣！仲有咩可以幫你？", replyTest: "系統運作正常 🟢", replyEmotion: "哈哈！我只係幫你格價嘅 AI 🤖" },
+            'zh-Hans': { title: "超市精明格价网", badge: "香港政府超市数据", subLabel: "今日即时行情", mainCat: "第一步：选择主分类", sortTip: "常用優先", back: "返回", loading: "同步中...", error: "加载失败", send: "搜索", placeholder: "输入名称...", chatWelcome: "您选择了", chatAsk: "想找什么商品？<br><span class='text-xs text-slate-500 mt-1 block'>（或输入「全部」）</span>", chatSearching: "寻找中...", chatNoResult: "找不到商品。", chatFound: "为您找到：", chatShowAll: "该分类下的所有商品：", replyGreeting: "你好！我是比价助手 🤖，今天想找什么？", replyThanks: "不用客气！还有什麼可以帮您？", replyTest: "系统运作正常 🟢", replyEmotion: "哈哈！我只是帮您比价的 AI 🤖" },
+            'en': { title: "Price Navigator", badge: "HK Gov Supermarket Data", subLabel: "Live Daily Prices", mainCat: "Step 1: Select Category", sortTip: "Frequent First", back: "Back", loading: "Syncing...", error: "Failed to load", send: "Search", placeholder: "Type name...", chatWelcome: "Selected", chatAsk: "What are you looking for?<br><span class='text-xs text-slate-500 mt-1 block'>(Or type 'all')</span>", chatSearching: "Searching...", chatNoResult: "No results.", chatFound: "Found:", chatShowAll: "All items in this category:", replyGreeting: "Hello! I am your Price Assistant 🤖", replyThanks: "You're welcome! Anything else?", replyTest: "System OK 🟢", replyEmotion: "Haha! I am just your Price AI 🤖" }
         };
 
         const supermarketDict = {
@@ -99,7 +101,6 @@
             'en': { 'WELLCOME': 'Wellcome', 'PARKNSHOP': 'PARKnSHOP', 'JASONS': 'Jasons', 'MARKETPLACE': 'Market Place', 'AEON': 'AEON', 'Watsons': 'Watsons', 'MANNINGS': 'Mannings', 'USELECT': 'U-Select' }
         };
 
-        // 🎨 強化圖案字典：將「奶粉」和「麵包」優先順序提前，防止與「奶/蛋」混淆
         const catStyles = [
             { keywords: ['奶粉', '嬰兒', '婴儿', 'baby', 'infant'], icon: '🍼', bg: 'from-pink-100 to-rose-100', text: 'text-rose-900', border: 'border-rose-200' },
             { keywords: ['麵包', '面包', '蛋糕', 'bakery', 'cereal', 'spread'], icon: '🍞', bg: 'from-orange-100 to-amber-200', text: 'text-orange-900', border: 'border-orange-300' },
@@ -112,6 +113,13 @@
             { keywords: ['飲', '饮', 'drink', 'beverage'], icon: '🧃', bg: 'from-cyan-100 to-blue-100', text: 'text-blue-900', border: 'border-blue-200' },
             { keywords: ['酒', 'beer', 'wine', 'spirit'], icon: '🍷', bg: 'from-fuchsia-100 to-purple-200', text: 'text-purple-900', border: 'border-purple-300' }
         ];
+
+        // 💡 記憶功能：記錄分類點擊次數
+        function recordCategoryClick(catName) {
+            let history = JSON.parse(localStorage.getItem('cat_usage_history') || '{}');
+            history[catName] = (history[catName] || 0) + 1;
+            localStorage.setItem('cat_usage_history', JSON.stringify(history));
+        }
 
         async function init() {
             try {
@@ -140,6 +148,7 @@
             document.getElementById('dataSourceBadge').innerText = uiText[lang].badge;
             document.getElementById('todayStatusLabel').innerText = uiText[lang].subLabel;
             document.getElementById('mainCatLabel').innerText = uiText[lang].mainCat;
+            document.getElementById('sortTip').innerText = uiText[lang].sortTip;
             document.getElementById('backBtnText').innerText = uiText[lang].back;
             document.getElementById('sendBtnText').innerText = uiText[lang].send;
             chatInput.placeholder = uiText[lang].placeholder;
@@ -158,7 +167,9 @@
                 let brand = item.brand?.[currentLang] || item.brand?.['zh-Hant'] || '';
                 if (!structuredData[cat1]) structuredData[cat1] = {};
                 if (!structuredData[cat1][cat2]) structuredData[cat1][cat2] = {};
-                if (!structuredData[cat1][cat2][name]) structuredData[cat1][cat2][name] = { brand, prices: [] };
+                if (!structuredData[cat1][cat2][name]) {
+                    structuredData[cat1][cat2][name] = { brand, prices: [] };
+                }
                 if (Array.isArray(item.prices)) {
                     item.prices.forEach(p => {
                         let smName = supermarketDict[currentLang][p.supermarketCode] || p.supermarketCode;
@@ -170,26 +181,55 @@
 
         function getCatStyle(catName) {
             const lowerName = catName.toLowerCase();
-            // 比對順序依照字典陣列順序，確保長詞優先
             for (let style of catStyles) {
                 if (style.keywords.some(kw => lowerName.includes(kw.toLowerCase()))) return style;
             }
             return { icon: '🛍️', bg: 'from-slate-100 to-slate-200', text: 'text-slate-800', border: 'border-slate-300' };
         }
 
+        // 💡 核心改動：渲染時根據點擊次數排序
         function renderLevel1() {
             level1Container.innerHTML = '';
-            Object.keys(structuredData).sort().forEach(cat1 => {
+            
+            // 讀取點擊歷史
+            const history = JSON.parse(localStorage.getItem('cat_usage_history') || '{}');
+            
+            // 排序邏輯：點擊次數降序 -> 字母順序
+            const categoriesL1 = Object.keys(structuredData).sort((a, b) => {
+                const countA = history[a] || 0;
+                const countB = history[b] || 0;
+                if (countB !== countA) return countB - countA;
+                return a.localeCompare(b);
+            });
+
+            categoriesL1.forEach(cat1 => {
                 const style = getCatStyle(cat1);
+                const clickCount = history[cat1] || 0;
                 const card = document.createElement('div');
-                card.className = `clickable-card bg-gradient-to-br ${style.bg} p-3 rounded-[2rem] shadow-sm border ${style.border} cursor-pointer transition-all flex flex-col items-center justify-center text-center aspect-square overflow-hidden`;
-                card.innerHTML = `<div class="text-4xl mb-2">${style.icon}</div><span class="font-bold ${style.text} text-[13px] leading-snug line-clamp-3 px-1">${cat1}</span>`;
-                card.onclick = () => startChat(cat1);
+                card.className = `clickable-card bg-gradient-to-br ${style.bg} p-3 rounded-[2rem] shadow-sm border ${style.border} cursor-pointer transition-all flex flex-col items-center justify-center text-center aspect-square overflow-hidden relative`;
+                
+                // 如果有點擊次數，在右上角加一個淡淡的小點標示它是常用分類
+                const favIndicator = clickCount > 0 ? `<div class="absolute top-3 right-3 w-1.5 h-1.5 bg-blue-400 rounded-full opacity-50"></div>` : '';
+
+                card.innerHTML = `
+                    ${favIndicator}
+                    <div class="text-4xl mb-2">${style.icon}</div>
+                    <span class="font-bold ${style.text} text-[13px] leading-snug line-clamp-3 px-1">${cat1}</span>
+                `;
+                card.onclick = () => {
+                    recordCategoryClick(cat1); // 記錄點擊
+                    startChat(cat1);
+                };
                 level1Container.appendChild(card);
             });
         }
 
-        function showLevel1() { chatSection.classList.add('hidden'); level1Section.classList.remove('hidden'); selectedCat1 = null; }
+        function showLevel1() { 
+            chatSection.classList.add('hidden'); 
+            level1Section.classList.remove('hidden'); 
+            selectedCat1 = null; 
+            renderLevel1(); // 返回時刷新一次首頁，確保最新的排序立即生效
+        }
 
         function startChat(cat1) {
             selectedCat1 = cat1;
