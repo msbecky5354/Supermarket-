@@ -14,7 +14,8 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="價格神器">
     
-    <script src="promoEngine.js?v=2"></script>
+    <script src="lang.js?v=1"></script>
+    <script src="promoEngine.js?v=3"></script>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -107,18 +108,6 @@
         let currentLang = 'zh-Hant';
         let selectedCat1 = null; 
 
-        const uiText = {
-            'zh-Hant': { title: "香港生活百貨價格神器", badge: "政府數據連線", subLabel: "今日即時行情", mainCat: "第一步：選擇主分類", sortTip: "常用優先", back: "返回", loading: "讀取中...", error: "載入失敗", send: "搜尋", placeholder: "搜尋貨品/牌子...", chatWelcome: "您選擇了", chatAsk: "想搵咩貨品？", chatFound: "神器為您找到：", chatShowAll: "所有貨品清單：", replyGreeting: "你好！我係格價助手 🤖", replyThanks: "唔使客氣！" },
-            'zh-Hans': { title: "香港生活百货价格神器", badge: "政府数据连线", subLabel: "今日即时行情", mainCat: "第一步：选择主分类", sortTip: "常用優先", back: "返回", loading: "启动中...", error: "加载失败", send: "搜索", placeholder: "搜索商品/品牌...", chatWelcome: "您选择了", chatAsk: "想找什么商品？", chatFound: "神器为您找到：", chatShowAll: "商品清单：", replyGreeting: "你好！我是比价助手 🤖", replyThanks: "不用客气！" },
-            'en': { title: "Price Navigator", badge: "HK Open Data", subLabel: "Live Daily Prices", mainCat: "Step 1: Select Category", sortTip: "Frequent First", back: "Back", loading: "Loading...", error: "Failed", send: "Search", placeholder: "Type product or brand...", chatWelcome: "Selected", chatAsk: "What are you looking for?", chatFound: "Found:", chatShowAll: "Full List:", replyGreeting: "Hello! I am your AI 🤖", replyThanks: "You're welcome!" }
-        };
-
-        const supermarketDict = {
-            'zh-Hant': { 'WELLCOME': '惠康', 'PARKNSHOP': '百佳', 'JASONS': 'Jasons', 'MARKETPLACE': 'Market Place', 'AEON': 'AEON', 'Watsons': '屈臣氏', 'MANNINGS': '萬寧', 'USELECT': 'U購', 'LUNGFUNG': '龍豐' },
-            'zh-Hans': { 'WELLCOME': '惠康', 'PARKNSHOP': '百佳', 'JASONS': 'Jasons', 'MARKETPLACE': 'Market Place', 'AEON': 'AEON', 'Watsons': '屈臣氏', 'MANNINGS': '万宁', 'USELECT': 'U购', 'LUNGFUNG': '龙丰' },
-            'en': { 'WELLCOME': 'Wellcome', 'PARKNSHOP': 'PARKnSHOP', 'JASONS': 'Jasons', 'MARKETPLACE': 'Market Place', 'AEON': 'AEON', 'Watsons': 'Watsons', 'MANNINGS': 'Mannings', 'USELECT': 'U-Select', 'LUNGFUNG': 'Lung Fung' }
-        };
-
         const catStyles = [
             { keywords: ['奶粉', '嬰兒', 'baby'], icon: '🍼', bg: 'from-pink-100 to-rose-100', text: 'text-rose-900', border: 'border-rose-200' },
             { keywords: ['麵包', '面包', '糕', 'bakery'], icon: '🍞', bg: 'from-orange-100 to-amber-200', text: 'text-orange-900', border: 'border-orange-300' },
@@ -195,13 +184,12 @@
                         
                         const promoKeys = ['promotions', 'promotion', 'offer', 'promotionDesc', 'promotionName', 'itemOffsetText'];
                         
-                        // 💡 修正 BUG：直接強制用 extractDeepPromoText 抽出 'en' 畀大腦！
                         for (let key of promoKeys) {
                             if (p[key]) {
                                 let extractedDisplay = extractDeepPromoText(p[key], currentLang);
                                 if (extractedDisplay && extractedDisplay !== "[object Object]") { 
                                     promoDisplay = extractedDisplay; 
-                                    promoCalcEn = extractDeepPromoText(p[key], 'en'); // 直接調用遞迴掃描抽英文
+                                    promoCalcEn = extractDeepPromoText(p[key], 'en');
                                     break; 
                                 }
                             }
@@ -216,7 +204,7 @@
                                         let extractedDisplay = extractDeepPromoText(smPromo, currentLang);
                                         if (extractedDisplay && extractedDisplay !== "[object Object]") {
                                             promoDisplay = extractedDisplay;
-                                            promoCalcEn = extractDeepPromoText(smPromo, 'en'); // 直接調用遞迴掃描抽英文
+                                            promoCalcEn = extractDeepPromoText(smPromo, 'en');
                                             break;
                                         }
                                     }
