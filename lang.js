@@ -1,44 +1,50 @@
-// lang.js - 神器多語言及 AI 對答詞庫
+// lang.js - 神器多語言及 AI 對答詞庫 (語法昇華版)
 
 const uiText = {
     'zh-Hant': { 
         title: "香港生活百貨價格神器", 
         badge: "政府數據連線", 
         subLabel: "今日即時行情", 
-        mainCat: "第一步：選擇主分類", 
+        mainCat: "第一步：揀個主分類先", 
         sortTip: "常用優先", 
         back: "返回", 
-        loading: "讀取中...", 
+        loading: "努力同步緊最新價格...", 
         error: "載入失敗", 
-        send: "搜尋", 
-        placeholder: "搜尋貨品/牌子...", 
-        chatWelcome: "您選擇了", 
-        chatAsk: "想搵咩貨品？", 
-        chatFound: "神器為您找到：", 
-        chatShowAll: "所有貨品清單：", 
-        chatNoResult: "搵唔到相關貨品，試下用其他字眼搜尋啦！",
-        replyGreeting: "你好！我係格價助手 🤖，有咩幫到你？", 
-        replyThanks: "唔使客氣！祝你掃貨買得最抵！🛒" 
+        send: "搵嘢", 
+        placeholder: "輸入貨品、牌子或者關鍵字...", 
+        
+        // 💬 廣東話口語化 AI 對答
+        chatWelcome: "收到！你揀咗", 
+        chatAsk: "想搵邊款貨品或者牌子呢？", 
+        chatFound: "為你搜羅到以下最抵結果：", 
+        chatShowAll: "呢個分類嘅全部貨品清單：", 
+        chatNoResult: "哎呀，搵唔到相關貨品添！🤔 不如試吓縮短關鍵字，或者用其他字眼再搵過？",
+        replyGreeting: "你好呀！我係你嘅專屬格價助手 🤖，有咩幫到你？", 
+        replyThanks: "唔使客氣！最緊要幫你慳到錢！祝你掃貨開心！🛒✨" 
     },
+    
     'zh-Hans': { 
         title: "香港生活百货价格神器", 
         badge: "政府数据连线", 
         subLabel: "今日即时行情", 
-        mainCat: "第一步：选择主分类", 
+        mainCat: "第一步：请选择主分类", 
         sortTip: "常用優先", 
         back: "返回", 
-        loading: "读取中...", 
+        loading: "努力同步最新价格...", 
         error: "加载失败", 
         send: "搜索", 
-        placeholder: "搜索商品/品牌...", 
-        chatWelcome: "您选择了", 
-        chatAsk: "想找什么商品？", 
-        chatFound: "神器为您找到：", 
-        chatShowAll: "所有商品清单：", 
-        chatNoResult: "找不到相关商品，试试用其他字眼搜索吧！",
-        replyGreeting: "你好！我是比价助手 🤖，有什么能帮到你？", 
-        replyThanks: "不用客气！祝你买得最划算！🛒" 
+        placeholder: "输入商品、品牌或关键词...", 
+        
+        // 💬 自然流暢的簡體中文對答
+        chatWelcome: "收到！您选择了", 
+        chatAsk: "请问想找什么商品或品牌呢？", 
+        chatFound: "为您搜索到以下比价结果：", 
+        chatShowAll: "该分类下的全部商品清单：", 
+        chatNoResult: "哎呀，找不到相关商品！🤔 不如尝试缩短关键词，或者换个字眼再搜搜看？",
+        replyGreeting: "您好！我是您的专属比价助手 🤖，随时为您服务！", 
+        replyThanks: "不客气！能帮您省钱就好！祝您购物愉快！🛒✨" 
     },
+    
     'en': { 
         title: "Price Navigator", 
         badge: "HK Open Data", 
@@ -46,17 +52,19 @@ const uiText = {
         mainCat: "Step 1: Select Category", 
         sortTip: "Frequent First", 
         back: "Back", 
-        loading: "Loading...", 
-        error: "Failed", 
+        loading: "Syncing live prices...", 
+        error: "Failed to load", 
         send: "Search", 
-        placeholder: "Type product or brand...", 
-        chatWelcome: "Selected", 
-        chatAsk: "What are you looking for?", 
-        chatFound: "Found:", 
-        chatShowAll: "Full List:", 
-        chatNoResult: "No products found. Please try different keywords!",
-        replyGreeting: "Hello! I am your AI Price Assistant 🤖. How can I help?", 
-        replyThanks: "You're welcome! Happy shopping! 🛒" 
+        placeholder: "Type product, brand or keywords...", 
+        
+        // 💬 Professional & Friendly English
+        chatWelcome: "Got it! You've selected", 
+        chatAsk: "What product or brand are you looking for?", 
+        chatFound: "Here are the best prices we found for you:", 
+        chatShowAll: "Here is the full list of products in this category:", 
+        chatNoResult: "Oops, we couldn't find any matching products! 🤔 Try using shorter or different keywords.",
+        replyGreeting: "Hello there! I'm your personal Price Assistant 🤖. How can I help you today?", 
+        replyThanks: "You're very welcome! Happy saving and happy shopping! 🛒✨" 
     }
 };
 
