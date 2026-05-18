@@ -72,7 +72,6 @@
         let currentLang = 'zh-Hant';
         let selectedCat1 = null; 
 
-        // 加入閑聊回應的多語言字典
         const uiText = {
             'zh-Hant': { 
                 title: "超市價格導航", mainCat: "第一步：選擇主分類", back: "返回", loading: "正在同步最新超市數據...", error: "數據載入失敗，請檢查網絡連線。", send: "搜尋", placeholder: "輸入貨品名稱...",
@@ -244,28 +243,26 @@
             addBotMessage(welcomeText);
         }
 
-        // 🤖 閑聊過濾器邏輯
+        // 🤖 升級版閑聊過濾器
         function checkSmallTalk(query) {
-            const q = query.toLowerCase();
-            
-            // 定義常見閑聊關鍵字
-            const smallTalkKeys = {
-                greetings: ['你好', 'hi', 'hello', '早晨', 'hey', '你好嗎', '點呀', '早上好', '哈囉', 'hola', '你好啊'],
-                thanks: ['唔該', '多謝', 'thank you', 'thanks', '謝謝', '谢谢', 'thx'],
-                test: ['test', '測試', '测试', '123', 'testing']
-            };
+            // 💡 關鍵修正：將所有標點符號、問號、感嘆號和空格清除，只對比文字本身！
+            const q = query.toLowerCase().replace(/[.,!?。，！？\s]/g, '');
 
-            // 精確配對或包含問句 (避免搜尋 "你好牌" 餅乾時被誤判)
-            if (smallTalkKeys.greetings.some(kw => q === kw || q === kw + '嗎' || q === kw + '吗')) {
-                 return uiText[currentLang].replyGreeting;
+            // 擴展的詞彙庫
+            const exactGreetings = ['你好', 'hi', 'hello', '早晨', 'hey', '你好嗎', '你好吗', '點呀', '早上好', '哈囉', '你好啊', '早', '午安', '晚安', '喂', '嗨', 'hihi', '你好呀', 'helloa', 'hola', 'howareyou', 'goodmorning'];
+            const exactThanks = ['唔該', '多謝', 'thankyou', 'thanks', '謝謝', '谢谢', 'thx', 'tq', '唔該晒', '多謝晒', '多謝曬', '唔該曬', 'thanksalot', 'thank'];
+            const exactTests = ['test', '測試', '测试', '123', 'testing', '1234', 'tst'];
+
+            if (exactGreetings.includes(q)) return uiText[currentLang].replyGreeting;
+            if (exactThanks.includes(q)) return uiText[currentLang].replyThanks;
+            if (exactTests.includes(q)) return uiText[currentLang].replyTest;
+            
+            // 處理稍微長一點的問候語 (例如 "你好小助手")
+            if (q.includes('你好') && (q.includes('助手') || q.includes('bot'))) {
+                return uiText[currentLang].replyGreeting;
             }
-            if (smallTalkKeys.thanks.some(kw => q === kw || q.includes(kw + '晒') || q.includes(kw + '曬'))) {
-                 return uiText[currentLang].replyThanks;
-            }
-            if (smallTalkKeys.test.some(kw => q === kw)) {
-                 return uiText[currentLang].replyTest;
-            }
-            return null; 
+            
+            return null;
         }
 
         function submitChat() {
@@ -277,7 +274,6 @@
             chatInput.blur();
 
             setTimeout(() => {
-                // 💡 提交前先經過「閑聊過濾器」
                 const smallTalkResponse = checkSmallTalk(query);
                 
                 if (smallTalkResponse) {
