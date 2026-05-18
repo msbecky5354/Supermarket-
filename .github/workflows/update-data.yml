@@ -1,0 +1,40 @@
+name: Auto Update PriceWatch Data
+
+on:
+  schedule:
+    # Runs at 00:00 UTC every day (which is 8:00 AM Hong Kong Time)
+    - cron: '0 0 * * *'
+  workflow_dispatch: 
+    # This allows you to manually run the action from the GitHub UI
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Crucial: Allows the bot to push commits to your repo
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download latest pricewatch.json
+        run: |
+          curl -s -o pricewatch.json "https://online-price-watch.consumer.org.hk/opw/opendata/pricewatch.json"
+
+      - name: Check for changes and commit
+        run: |
+          # Set up the git bot user
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          
+          # Add the downloaded file
+          git add pricewatch.json
+          
+          # Check if there are actual changes before committing
+          if git diff --staged --quiet; then
+            echo "No changes in pricewatch.json today."
+          else
+            git commit -m "🤖 Auto-update pricewatch.json with latest data"
+            git push
+            echo "Successfully updated pricewatch.json!"
+          fi
