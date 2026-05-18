@@ -2,7 +2,7 @@ name: Daily JSON Update
 
 on:
   schedule:
-    - cron: '21:30'   # 每日 UTC 02:00 執行
+    -   cron: '22 * * *' # 每日 UTC 02:00 執行
   workflow_dispatch:       # 容許手動觸發
 
 jobs:
