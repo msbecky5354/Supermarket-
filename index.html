@@ -125,11 +125,7 @@
 
         function normalizeStr(str) {
             if (!str) return "";
-            return String(str)
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "")
-                .replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "") 
-                .toLowerCase();
+            return String(str).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "").toLowerCase();
         }
 
         function extractDeepPromoText(val, targetLang) {
@@ -146,47 +142,56 @@
             return String(val);
         }
 
-        // 🧠 中英無死角終極引擎
-        function calculateAvgPrice(promoText, originalPrice) {
-            if (!promoText || isNaN(originalPrice)) return null;
+        // 🧠 終極無死角英文語義引擎 (100% 覆蓋 CSV 發現嘅盲點)
+        function calculateAvgPrice(enPromoText, originalPrice) {
+            if (!enPromoText || isNaN(originalPrice)) return null;
             try {
-                let p = promoText.toLowerCase().replace(/\s+/g, ' '); 
+                // 清洗及翻譯字眼
+                let p = enPromoText.toLowerCase().replace(/\s+/g, ''); 
                 p = p.replace(/一/g, '1').replace(/二/g, '2').replace(/三/g, '3').replace(/兩/g, '2');
-                
-                // 1. Buy X save Y / 買 X 慳 Y
+                p = p.replace(/second/g, '2nd'); // 解決 Buy Second for $1.00
+
+                // 1. Buy 2nd for $Y
+                let mSec = p.match(/2nd.*?(?:for|at).*?\$([0-9.]+)/);
+                if (mSec) return (originalPrice + parseFloat(mSec[1])) / 2;
+
+                // 2. Buy X save Y / 買 X 慳 Y
                 let mSave = p.match(/(?:buy|買)?.*?([0-9]+).*?(?:save|慳).*?\$?([0-9.]+)/);
                 if (mSave) return ((originalPrice * parseInt(mSave[1])) - parseFloat(mSave[2])) / parseInt(mSave[1]);
                 
-                // 2. X for $Y / Buy X for $Y / $Y 任揀 X 件
+                // 3. X for $Y / Buy X for $Y
                 let mFor1 = p.match(/([0-9]+).*?(?:for|at)\s*\$([0-9.]+)/);
                 if (mFor1) return parseFloat(mFor1[2]) / parseInt(mFor1[1]);
                 
+                // 4. $Y 任揀 X 件
                 let mFor2 = p.match(/\$?([0-9.]+).*?(?:任[揀擇買選])([0-9]+)/);
                 if (mFor2) return parseFloat(mFor2[1]) / parseInt(mFor2[2]);
 
-                // 3. % off / 折扣
+                // 5. % off / 折扣
                 let mPerc = p.match(/([0-9.]+)%\s*(?:off|折扣)/);
                 if (mPerc) return originalPrice * (1 - (parseFloat(mPerc[1]) / 100));
 
-                // 4. 打折 (中文限定)
+                // 6. 打折 (中文限定)
                 let mDisc = p.match(/([0-9.]+)(?:折)/);
                 if (mDisc) {
                     let val = parseFloat(mDisc[1]);
                     return originalPrice * (val >= 10 ? val / 100 : val / 10);
                 }
 
-                // 5. Buy X get Y free / 買 X 送 Y
-                let mFree = p.match(/(?:buy|買).*?([0-9]+).*?(?:get|送).*?([0-9]+)/);
+                // 7. Add/Buy X get Y free / 買 X 送 Y (解決 Add 盲點)
+                let mFree = p.match(/(?:buy|買|add).*?([0-9]+).*?(?:get|送).*?([0-9]+)/);
                 if (mFree) {
                     let buy = parseInt(mFree[1]);
                     let free = parseInt(mFree[2]);
                     return (originalPrice * buy) / (buy + free);
                 }
 
-                // 6. Half price / 半價
-                if (p.includes('half') || p.includes('半價') || p.includes('半价')) return (originalPrice * 1.5) / 2;
+                // 8. Half price / 50% for 2nd / 半價 (解決 50% for 2nd 盲點)
+                if (p.includes('half') || p.includes('半價') || p.includes('半价') || p.includes('50%for2nd')) {
+                    return (originalPrice * 1.5) / 2;
+                }
 
-                // 7. Y件$X / Y at $X (容錯 Buy 2 at $54.00)
+                // 9. Y件$X / Y items at $X
                 let mTotal3 = p.match(/(?:buy|買)?\s*([0-9]+)\s*(?:件|包|盒|排|支|罐|筒|樽|at|items|item|pcs|pc).*?\$([0-9.]+)/);
                 if (mTotal3 && !p.includes('save') && !p.includes('慳')) return parseFloat(mTotal3[2]) / parseInt(mTotal3[1]);
 
@@ -252,19 +257,22 @@
                 if (Array.isArray(item.prices)) {
                     item.prices.forEach(p => {
                         let smName = supermarketDict[currentLang][p.supermarketCode] || p.supermarketCode;
-                        
                         let promoDisplay = "";
                         let promoCalcEn = ""; 
                         
                         const promoKeys = ['promotions', 'promotion', 'offer', 'promotionDesc', 'promotionName', 'itemOffsetText'];
                         
-                        // 💡 提取資料，唔再用蠢過濾器！有咩食咩，交畀強大嘅 Regex 去處理！
                         for (let key of promoKeys) {
                             if (p[key]) {
                                 let extractedDisplay = extractDeepPromoText(p[key], currentLang);
                                 if (extractedDisplay && extractedDisplay !== "[object Object]") { 
                                     promoDisplay = extractedDisplay; 
-                                    promoCalcEn = extractDeepPromoText(p[key], 'en') || promoDisplay;
+                                    
+                                    if (typeof p[key] === 'object' && p[key]['en']) {
+                                        promoCalcEn = p[key]['en'];
+                                    } else if (typeof p[key] === 'string' && /save|for|off|free|half|add|second/i.test(p[key])) {
+                                        promoCalcEn = p[key]; 
+                                    }
                                     break; 
                                 }
                             }
@@ -279,7 +287,9 @@
                                         let extractedDisplay = extractDeepPromoText(smPromo, currentLang);
                                         if (extractedDisplay && extractedDisplay !== "[object Object]") {
                                             promoDisplay = extractedDisplay;
-                                            promoCalcEn = extractDeepPromoText(smPromo, 'en') || promoDisplay;
+                                            
+                                            if (smPromo['en']) promoCalcEn = smPromo['en'];
+                                            else if (smPromo.description && smPromo.description['en']) promoCalcEn = smPromo.description['en'];
                                             break;
                                         }
                                     }
@@ -292,7 +302,7 @@
                             supermarket: smName, 
                             price: p.price ?? '--', 
                             promoDisplay: promoDisplay,
-                            promoCalc: promoCalcEn 
+                            promoCalc: promoCalcEn || promoDisplay // 雙重保障
                         });
                     });
                 }
