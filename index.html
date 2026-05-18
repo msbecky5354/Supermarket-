@@ -72,18 +72,19 @@
         let currentLang = 'zh-Hant';
         let selectedCat1 = null; 
 
+        // 更新字典：加入「查看全部」的提示與對應的回覆語氣
         const uiText = {
             'zh-Hant': { 
                 title: "超市價格導航", mainCat: "第一步：選擇主分類", back: "返回", loading: "正在讀取超市數據...", error: "數據載入失敗，請確認 pricewatch.json 存在", send: "搜尋", placeholder: "輸入貨品名稱...",
-                chatWelcome: "您選擇了", chatAsk: "請問想尋找什麼貨品？", chatSearching: "尋找中...", chatNoResult: "找不到相關貨品，請嘗試其他字眼。", chatFound: "為您找到以下貨品："
+                chatWelcome: "您選擇了", chatAsk: "請問想尋找什麼貨品？<br><span class='text-xs text-slate-500 mt-1 block'>（或輸入「全部」查看清單）</span>", chatSearching: "尋找中...", chatNoResult: "找不到相關貨品，請嘗試其他字眼。", chatFound: "為您找到以下貨品：", chatShowAll: "這是該分類下的所有貨品："
             },
             'zh-Hans': { 
                 title: "超市价格导航", mainCat: "第一步：选择主分类", back: "返回", loading: "正在读取超市数据...", error: "数据加载失败，请确认 pricewatch.json 存在", send: "搜索", placeholder: "输入商品名称...",
-                chatWelcome: "您选择了", chatAsk: "请问想寻找什么商品？", chatSearching: "寻找中...", chatNoResult: "找不到相关商品，请尝试其他字眼。", chatFound: "为您找到以下商品："
+                chatWelcome: "您选择了", chatAsk: "请问想寻找什么商品？<br><span class='text-xs text-slate-500 mt-1 block'>（或输入「全部」查看清单）</span>", chatSearching: "寻找中...", chatNoResult: "找不到相关商品，请尝试其他字眼。", chatFound: "为您找到以下商品：", chatShowAll: "这是该分类下的所有商品："
             },
             'en': { 
                 title: "Price Navigator", mainCat: "Step 1: Select Category", back: "Back", loading: "Loading live data...", error: "Failed to load data, ensure pricewatch.json exists", send: "Search", placeholder: "Type product name...",
-                chatWelcome: "You selected", chatAsk: "What product are you looking for?", chatSearching: "Searching...", chatNoResult: "No results found, please try another keyword.", chatFound: "Found these products for you:"
+                chatWelcome: "You selected", chatAsk: "What product are you looking for?<br><span class='text-xs text-slate-500 mt-1 block'>(Or type 'all' to see the list)</span>", chatSearching: "Searching...", chatNoResult: "No results found, please try another keyword.", chatFound: "Found these products for you:", chatShowAll: "Here are all products in this category:"
             }
         };
 
@@ -206,18 +207,14 @@
             level1Section.classList.add('hidden');
             chatSection.classList.remove('hidden');
             
-            // 獲取目前分類對應的 Icon
             const style = getCatStyle(cat1);
             
-            // 將 Icon 加到頂部標題列
             chatTitle.innerHTML = `<span class="mr-1.5 text-lg">${style.icon}</span> <span class="truncate">${cat1}</span>`;
             chatMessages.innerHTML = ''; 
             chatInput.value = '';
 
-            // 將 Icon 加到系統歡迎對話泡泡中
             const welcomeText = `${uiText[currentLang].chatWelcome} <strong class="text-blue-600 inline-flex items-center gap-1">${style.icon} ${cat1}</strong>。<br>${uiText[currentLang].chatAsk}`;
             addBotMessage(welcomeText);
-            
         }
 
         function submitChat() {
@@ -226,7 +223,6 @@
 
             addUserMessage(query);
             chatInput.value = '';
-            
             chatInput.blur();
 
             setTimeout(() => {
@@ -236,6 +232,11 @@
 
         function performScopedSearch(query) {
             const q = query.toLowerCase();
+            
+            // 定義「顯示全部」的觸發關鍵字 (涵蓋中英文常見說法)
+            const showAllKeywords = ['所有', '全部', '全', 'all', 'everything', 'list', '清單', '清单', 'show all', '*', '任何'];
+            const isShowAll = showAllKeywords.includes(q);
+
             let resultsHTML = '';
             let count = 0;
 
@@ -245,7 +246,8 @@
                     const brand = (productInfo.brand || '').toLowerCase();
                     const name = pName.toLowerCase();
 
-                    if (name.includes(q) || brand.includes(q)) {
+                    // 邏輯升級：如果是「全部」指令，直接放行，否則進行名稱或品牌比對
+                    if (isShowAll || name.includes(q) || brand.includes(q)) {
                         count++;
                         resultsHTML += generateProductCardHTML(pName, productInfo);
                     }
@@ -255,7 +257,9 @@
             if (count === 0) {
                 addBotMessage(uiText[currentLang].chatNoResult);
             } else {
-                addBotMessage(uiText[currentLang].chatFound, resultsHTML);
+                // 如果是查看全部，給予特定的回覆語氣
+                let replyMsg = isShowAll ? uiText[currentLang].chatShowAll : uiText[currentLang].chatFound;
+                addBotMessage(replyMsg, resultsHTML);
             }
         }
 
