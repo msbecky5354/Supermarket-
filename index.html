@@ -33,7 +33,7 @@
         <section id="level1Section" class="absolute inset-0 overflow-y-auto no-scrollbar p-5 pb-24 bg-slate-50/50">
             <h2 id="mainCatLabel" class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-5">第一步：選擇主分類</h2>
             <div id="level1Container" class="grid grid-cols-2 gap-4">
-                <div id="loadingText" class="text-center p-4 text-slate-400 text-sm col-span-2">正在處理超市真實數據...</div>
+                <div id="loadingText" class="text-center p-4 text-slate-400 text-sm col-span-2">正在讀取超市數據...</div>
             </div>
         </section>
 
@@ -72,22 +72,18 @@
         let currentLang = 'zh-Hant';
         let selectedCat1 = null; 
 
-        // 💡 更新字典：加入機器人被「撩傾偈」時的專屬幽默回覆
         const uiText = {
             'zh-Hant': { 
-                title: "超市價格導航", mainCat: "第一步：選擇主分類", back: "返回", loading: "正在讀取超市數據...", error: "數據載入失敗，請確認 pricewatch.json 存在", send: "搜尋", placeholder: "輸入貨品名稱...",
-                chatWelcome: "您選擇了", chatAsk: "請問想尋找什麼貨品？<br><span class='text-xs text-slate-500 mt-1 block'>（可輸入名稱，或留言「全部」查看清單）</span>", chatSearching: "尋找中...", chatNoResult: "找不到相關貨品，請嘗試其他字眼。", chatFound: "為您找到以下貨品：", chatShowAll: "為您列出該分類下的所有貨品：",
-                chatSmallTalk: "哈哈，我雖然識聽你講嘢，但我唔係專門傾偈嘅 AI 嚟㗎！🤖<br><br>我係為你服務嘅「格價小助手」🛒，快啲話我知你想買咩貨品啦（或者輸入「全部」睇清單）！"
+                title: "超市價格導航", mainCat: "第一步：選擇主分類", back: "返回", loading: "正在同步最新超市數據...", error: "數據載入失敗，請檢查網絡連線。", send: "搜尋", placeholder: "輸入貨品名稱...",
+                chatWelcome: "您選擇了", chatAsk: "請問想尋找什麼貨品？<br><span class='text-xs text-slate-500 mt-1 block'>（可輸入名稱，或留言「全部」查看清單）</span>", chatSearching: "尋找中...", chatNoResult: "找不到相關貨品，請嘗試其他字眼。", chatFound: "為您找到以下貨品：", chatShowAll: "為您列出該分類下的所有貨品："
             },
             'zh-Hans': { 
-                title: "超市价格导航", mainCat: "第一步：选择主分类", back: "返回", loading: "正在读取超市数据...", error: "数据加载失败，请确认 pricewatch.json 存在", send: "搜索", placeholder: "输入商品名称...",
-                chatWelcome: "您选择了", chatAsk: "请问想寻找什么商品？<br><span class='text-xs text-slate-500 mt-1 block'>（可输入名称，或留言「全部」查看清单）</span>", chatSearching: "寻找中...", chatNoResult: "找不到相关商品，请尝试其他字眼。", chatFound: "为您找到以下商品：", chatShowAll: "为您列出该分类下的所有商品：",
-                chatSmallTalk: "哈哈，虽然我看得懂你的意思，但我不是专门聊天的 AI 哦！🤖<br><br>我是为你服务的「比价小助手」🛒，快告诉我你想买什么商品吧（或者输入「全部」看清单）！"
+                title: "超市价格导航", mainCat: "第一步：选择主分类", back: "返回", loading: "正在同步最新超市数据...", error: "数据加载失败，请检查网络连线。", send: "搜索", placeholder: "输入商品名称...",
+                chatWelcome: "您选择了", chatAsk: "请问想寻找什么商品？<br><span class='text-xs text-slate-500 mt-1 block'>（可输入名称，或留言「全部」查看清单）</span>", chatSearching: "寻找中...", chatNoResult: "找不到相关商品，请尝试其他字眼。", chatFound: "为您找到以下商品：", chatShowAll: "为您列出该分类下的所有商品："
             },
             'en': { 
-                title: "Price Navigator", mainCat: "Step 1: Select Category", back: "Back", loading: "Loading live data...", error: "Failed to load data, ensure pricewatch.json exists", send: "Search", placeholder: "Type product name...",
-                chatWelcome: "You selected", chatAsk: "What product are you looking for?<br><span class='text-xs text-slate-500 mt-1 block'>(Or type 'all' to see the full list)</span>", chatSearching: "Searching...", chatNoResult: "No results found, please try another keyword.", chatFound: "Found these products for you:", chatShowAll: "Here are all products in this category:",
-                chatSmallTalk: "Haha, I appreciate the chat, but I'm not a general conversational AI! 🤖<br><br>I'm your dedicated 'Price Navigator' 🛒. Just tell me what product you're looking for (or type 'all')!"
+                title: "Price Navigator", mainCat: "Step 1: Select Category", back: "Back", loading: "Syncing live data...", error: "Failed to load data. Please check your connection.", send: "Search", placeholder: "Type product name...",
+                chatWelcome: "You selected", chatAsk: "What product are you looking for?<br><span class='text-xs text-slate-500 mt-1 block'>(Or type 'all' to see the full list)</span>", chatSearching: "Searching...", chatNoResult: "No results found, please try another keyword.", chatFound: "Found these products for you:", chatShowAll: "Here are all products in this category:"
             }
         };
 
@@ -110,16 +106,40 @@
             { keywords: ['麵包', '面包', 'bakery', 'cereal', 'spread'], icon: '🍞', bg: 'from-orange-100 to-amber-200', text: 'text-orange-900', border: 'border-orange-300' }
         ];
 
+        // 💡 雙重保險機制：找不到本地 JSON 就去抓取 Live API
         async function init() {
             try {
                 document.getElementById('loadingText').innerText = uiText[currentLang].loading;
-                const targetUrl = 'pricewatch.json'; 
-                const response = await fetch(targetUrl);
-                if (!response.ok) throw new Error('無法讀取數據');
-                rawApiData = await response.json();
+                
+                let data = null;
+                
+                try {
+                    // 策略一：先嘗試讀取本地檔案 (速度最快)
+                    const localResponse = await fetch('pricewatch.json');
+                    if (localResponse.ok) {
+                        data = await localResponse.json();
+                        console.log("成功讀取本地數據");
+                    } else {
+                        throw new Error('Local file not found');
+                    }
+                } catch (localError) {
+                    // 策略二：本地檔案失敗，自動啟用備用方案 (AllOrigins 代理官方 API)
+                    console.warn("本地檔案讀取失敗，啟動備用 API 抓取即時數據...");
+                    const liveUrl = 'https://online-price-watch.consumer.org.hk/opw/opendata/pricewatch.json';
+                    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(liveUrl)}`;
+                    
+                    const proxyResponse = await fetch(proxyUrl);
+                    if (!proxyResponse.ok) throw new Error('Proxy fetch failed');
+                    data = await proxyResponse.json();
+                }
+
+                if (!data) throw new Error('No data retrieved');
+                
+                rawApiData = data;
                 changeLanguage('zh-Hant');
+                
             } catch (e) {
-                console.error(e);
+                console.error("載入錯誤:", e);
                 level1Container.innerHTML = `<p class="text-red-500 text-center col-span-2 p-4 bg-red-50 rounded-2xl border border-red-100">${uiText[currentLang].error}</p>`;
             }
         }
@@ -169,3 +189,188 @@
                 }
             });
         }
+
+        function getCatStyle(catName) {
+            const lowerName = catName.toLowerCase();
+            for (let style of catStyles) {
+                if (style.keywords.some(kw => lowerName.includes(kw.toLowerCase()))) {
+                    return style;
+                }
+            }
+            return { icon: '🛍️', bg: 'from-slate-100 to-slate-200', text: 'text-slate-800', border: 'border-slate-300' };
+        }
+
+        function renderLevel1() {
+            level1Container.innerHTML = '';
+            const categoriesL1 = Object.keys(structuredData).sort();
+            categoriesL1.forEach(cat1 => {
+                const style = getCatStyle(cat1);
+                const card = document.createElement('div');
+                
+                card.className = `clickable-card bg-gradient-to-br ${style.bg} p-3 rounded-[2rem] shadow-sm border ${style.border} cursor-pointer hover:shadow-md transition-all flex flex-col items-center justify-center text-center aspect-square relative overflow-hidden`;
+                
+                card.innerHTML = `
+                    <div class="absolute inset-0 bg-white/20 rounded-[2rem] opacity-0 hover:opacity-100 transition-opacity"></div>
+                    <div class="text-4xl mb-2 drop-shadow-sm transform group-hover:scale-110 transition-transform">${style.icon}</div>
+                    <span class="font-bold ${style.text} text-[13px] leading-snug z-10 line-clamp-3 px-1">${cat1}</span>
+                `;
+                card.onclick = () => startChat(cat1);
+                level1Container.appendChild(card);
+            });
+        }
+
+        function showLevel1() {
+            chatSection.classList.add('hidden');
+            level1Section.classList.remove('hidden');
+            selectedCat1 = null;
+        }
+
+        function startChat(cat1) {
+            selectedCat1 = cat1;
+            level1Section.classList.add('hidden');
+            chatSection.classList.remove('hidden');
+            
+            const style = getCatStyle(cat1);
+            
+            chatTitle.innerHTML = `<span class="mr-1.5 text-lg">${style.icon}</span> <span class="truncate">${cat1}</span>`;
+            chatMessages.innerHTML = ''; 
+            chatInput.value = '';
+
+            const welcomeText = `${uiText[currentLang].chatWelcome} <strong class="text-blue-600 inline-flex items-center gap-1">${style.icon} ${cat1}</strong>。<br>${uiText[currentLang].chatAsk}`;
+            addBotMessage(welcomeText);
+        }
+
+        function submitChat() {
+            const query = chatInput.value.trim();
+            if (!query) return;
+
+            addUserMessage(query);
+            chatInput.value = '';
+            chatInput.blur();
+
+            setTimeout(() => {
+                performScopedSearch(query);
+            }, 300);
+        }
+
+        function performScopedSearch(query) {
+            const q = query.toLowerCase();
+            const containsKeywords = ['所有', '全部', '清單', '清单', 'show all', 'list', 'everything', '我要晒', '睇晒', '任何'];
+            const exactKeywords = ['全', 'all', '*', '晒', '睇'];
+            const isShowAll = containsKeywords.some(kw => q.includes(kw)) || exactKeywords.includes(q);
+
+            let resultsHTML = '';
+            let count = 0;
+
+            Object.keys(structuredData[selectedCat1]).forEach(cat2 => {
+                Object.keys(structuredData[selectedCat1][cat2]).forEach(pName => {
+                    const productInfo = structuredData[selectedCat1][cat2][pName];
+                    const brand = (productInfo.brand || '').toLowerCase();
+                    const name = pName.toLowerCase();
+
+                    if (isShowAll || name.includes(q) || brand.includes(q)) {
+                        count++;
+                        resultsHTML += generateProductCardHTML(pName, productInfo);
+                    }
+                });
+            });
+
+            if (count === 0) {
+                addBotMessage(uiText[currentLang].chatNoResult);
+            } else {
+                let replyMsg = isShowAll ? uiText[currentLang].chatShowAll : uiText[currentLang].chatFound;
+                addBotMessage(replyMsg, resultsHTML);
+            }
+        }
+
+        function addBotMessage(text, cardsHTML = null) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'flex flex-col items-start w-full';
+            
+            let content = `
+                <div class="flex items-end gap-2 max-w-[90%]">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center text-lg flex-none mb-1 shadow-sm border border-blue-200">🤖</div>
+                    <div class="bg-white border border-slate-200 text-slate-800 px-4 py-3 rounded-2xl rounded-bl-sm shadow-sm text-[15px] leading-relaxed">
+                        ${text}
+                    </div>
+                </div>
+            `;
+
+            if (cardsHTML) {
+                content += `<div class="w-full pl-10 mt-3 space-y-4">${cardsHTML}</div>`;
+            }
+
+            wrapper.innerHTML = content;
+            chatMessages.appendChild(wrapper);
+            scrollToBottom();
+        }
+
+        function addUserMessage(text) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'flex flex-col items-end w-full';
+            wrapper.innerHTML = `
+                <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-3 rounded-2xl rounded-br-sm shadow-md max-w-[85%] text-[15px]">
+                    ${text}
+                </div>
+            `;
+            chatMessages.appendChild(wrapper);
+            scrollToBottom();
+        }
+
+        function generateProductCardHTML(pName, productInfo) {
+            let validPrices = productInfo.prices.map(p => parseFloat(p.price)).filter(price => !isNaN(price));
+            let hasComparison = validPrices.length > 1;
+            let minPrice = validPrices.length > 0 ? Math.min(...validPrices) : null;
+
+            const priceTags = productInfo.prices.map(p => {
+                let parsed = parseFloat(p.price);
+                let isLowest = (!isNaN(parsed) && parsed === minPrice && minPrice !== null && hasComparison);
+                
+                let colorClass = 'bg-slate-50 text-slate-700 border-slate-200';
+                if (p.rawCode === 'WELLCOME') colorClass = 'bg-red-50 text-red-700 border-red-200';
+                else if (p.rawCode === 'PARKNSHOP') colorClass = 'bg-yellow-50 text-yellow-800 border-yellow-300';
+                else if (p.rawCode === 'AEON') colorClass = 'bg-purple-50 text-purple-700 border-purple-200';
+                else if (p.rawCode === 'MANNINGS' || p.rawCode === 'Watsons') colorClass = 'bg-blue-50 text-blue-700 border-blue-200';
+
+                let priceText = isNaN(parsed) ? p.price : `$${parsed.toFixed(1)}`;
+                
+                let highlightClass = isLowest 
+                    ? 'ring-2 ring-green-400 font-bold scale-[1.02] shadow-sm z-10 relative bg-white' 
+                    : 'font-medium opacity-80'; 
+                    
+                let thumbIcon = isLowest ? `<span class="ml-1 text-base animate-bounce">👍</span>` : '';
+
+                return `<div class="flex items-center justify-between text-[13px] px-3 py-2 rounded-xl border whitespace-nowrap flex-1 min-w-[45%] transition-all ${colorClass} ${highlightClass}">
+                    <span>${p.supermarket}</span> <span class="ml-2 text-[15px]">${priceText}${thumbIcon}</span>
+                </div>`;
+            }).join('');
+
+            return `
+                <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-200 flex flex-col gap-3 relative overflow-hidden">
+                    <div class="flex gap-3 items-center">
+                        <div class="w-12 h-12 bg-gradient-to-br from-slate-50 to-slate-100 rounded-full flex-shrink-0 flex items-center justify-center text-xl border border-slate-100 shadow-inner">🛒</div>
+                        <div class="flex-1 min-w-0">
+                            <div class="text-[11px] text-blue-500 font-extrabold tracking-wide uppercase truncate">${productInfo.brand || '&nbsp;'}</div>
+                            <h3 class="font-bold text-slate-800 text-[15px] leading-snug">${pName}</h3>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-2 items-center mt-1">
+                        ${priceTags}
+                    </div>
+                </div>
+            `;
+        }
+
+        function scrollToBottom() {
+            setTimeout(() => {
+                chatMessages.scrollTo({
+                    top: chatMessages.scrollHeight,
+                    behavior: 'smooth'
+                });
+            }, 50);
+        }
+
+        init();
+    </script>
+</body>
+</html>
