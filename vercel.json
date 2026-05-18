@@ -1,3 +1,8 @@
 {
-  "cleanUrls": true
+  "rewrites": [
+    {
+      "source": "/api/pricewatch",
+      "destination": "https://online-price-watch.consumer.org.hk/opw/opendata/pricewatch.json"
+    }
+  ]
 }
