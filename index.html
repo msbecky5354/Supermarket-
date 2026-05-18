@@ -7,6 +7,13 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>香港生活百貨價格神器 | HK Essentials Price Artifact</title>
+    
+    <link rel="icon" type="image/png" href="price.PNG">
+    <link rel="apple-touch-icon" href="price.PNG">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="價格神器">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .clickable-card:active { transform: scale(0.95); }
@@ -142,59 +149,36 @@
             return String(val);
         }
 
-        // 🧠 終極無死角英文語義引擎 (100% 覆蓋 CSV 發現嘅盲點)
         function calculateAvgPrice(enPromoText, originalPrice) {
             if (!enPromoText || isNaN(originalPrice)) return null;
             try {
-                // 清洗及翻譯字眼
-                let p = enPromoText.toLowerCase().replace(/\s+/g, ''); 
-                p = p.replace(/一/g, '1').replace(/二/g, '2').replace(/三/g, '3').replace(/兩/g, '2');
-                p = p.replace(/second/g, '2nd'); // 解決 Buy Second for $1.00
-
-                // 1. Buy 2nd for $Y
-                let mSec = p.match(/2nd.*?(?:for|at).*?\$([0-9.]+)/);
-                if (mSec) return (originalPrice + parseFloat(mSec[1])) / 2;
-
-                // 2. Buy X save Y / 買 X 慳 Y
-                let mSave = p.match(/(?:buy|買)?.*?([0-9]+).*?(?:save|慳).*?\$?([0-9.]+)/);
-                if (mSave) return ((originalPrice * parseInt(mSave[1])) - parseFloat(mSave[2])) / parseInt(mSave[1]);
-                
-                // 3. X for $Y / Buy X for $Y
-                let mFor1 = p.match(/([0-9]+).*?(?:for|at)\s*\$([0-9.]+)/);
-                if (mFor1) return parseFloat(mFor1[2]) / parseInt(mFor1[1]);
-                
-                // 4. $Y 任揀 X 件
-                let mFor2 = p.match(/\$?([0-9.]+).*?(?:任[揀擇買選])([0-9]+)/);
-                if (mFor2) return parseFloat(mFor2[1]) / parseInt(mFor2[2]);
-
-                // 5. % off / 折扣
-                let mPerc = p.match(/([0-9.]+)%\s*(?:off|折扣)/);
-                if (mPerc) return originalPrice * (1 - (parseFloat(mPerc[1]) / 100));
-
-                // 6. 打折 (中文限定)
-                let mDisc = p.match(/([0-9.]+)(?:折)/);
-                if (mDisc) {
-                    let val = parseFloat(mDisc[1]);
-                    return originalPrice * (val >= 10 ? val / 100 : val / 10);
+                let p = enPromoText.toLowerCase().replace(/\s+/g, ' ');
+                let mSave = p.match(/buy\s*([0-9]+).*?save.*?\$([0-9.]+)/);
+                if (mSave) {
+                    let qty = parseInt(mSave[1]);
+                    let disc = parseFloat(mSave[2]);
+                    if (qty > 0) return ((originalPrice * qty) - disc) / qty;
                 }
-
-                // 7. Add/Buy X get Y free / 買 X 送 Y (解決 Add 盲點)
-                let mFree = p.match(/(?:buy|買|add).*?([0-9]+).*?(?:get|送).*?([0-9]+)/);
+                let mFor = p.match(/([0-9]+).*?for\s*\$([0-9.]+)/);
+                if (mFor) {
+                    let qty = parseInt(mFor[1]);
+                    let price = parseFloat(mFor[2]);
+                    if (qty > 0) return price / qty;
+                }
+                let mOff = p.match(/([0-9.]+)%\s*off/);
+                if (mOff) {
+                    let perc = parseFloat(mOff[1]);
+                    return originalPrice * (1 - (perc / 100));
+                }
+                let mFree = p.match(/buy\s*([0-9]+).*?get\s*([0-9]+).*?free/);
                 if (mFree) {
                     let buy = parseInt(mFree[1]);
                     let free = parseInt(mFree[2]);
                     return (originalPrice * buy) / (buy + free);
                 }
-
-                // 8. Half price / 50% for 2nd / 半價 (解決 50% for 2nd 盲點)
-                if (p.includes('half') || p.includes('半價') || p.includes('半价') || p.includes('50%for2nd')) {
+                if (p.includes('half price')) {
                     return (originalPrice * 1.5) / 2;
                 }
-
-                // 9. Y件$X / Y items at $X
-                let mTotal3 = p.match(/(?:buy|買)?\s*([0-9]+)\s*(?:件|包|盒|排|支|罐|筒|樽|at|items|item|pcs|pc).*?\$([0-9.]+)/);
-                if (mTotal3 && !p.includes('save') && !p.includes('慳')) return parseFloat(mTotal3[2]) / parseInt(mTotal3[1]);
-
                 return null;
             } catch(e) { return null; }
         }
@@ -267,10 +251,9 @@
                                 let extractedDisplay = extractDeepPromoText(p[key], currentLang);
                                 if (extractedDisplay && extractedDisplay !== "[object Object]") { 
                                     promoDisplay = extractedDisplay; 
-                                    
                                     if (typeof p[key] === 'object' && p[key]['en']) {
                                         promoCalcEn = p[key]['en'];
-                                    } else if (typeof p[key] === 'string' && /save|for|off|free|half|add|second/i.test(p[key])) {
+                                    } else if (typeof p[key] === 'string' && /save|for|off|free|half/.test(p[key].toLowerCase())) {
                                         promoCalcEn = p[key]; 
                                     }
                                     break; 
@@ -287,7 +270,6 @@
                                         let extractedDisplay = extractDeepPromoText(smPromo, currentLang);
                                         if (extractedDisplay && extractedDisplay !== "[object Object]") {
                                             promoDisplay = extractedDisplay;
-                                            
                                             if (smPromo['en']) promoCalcEn = smPromo['en'];
                                             else if (smPromo.description && smPromo.description['en']) promoCalcEn = smPromo.description['en'];
                                             break;
@@ -302,7 +284,7 @@
                             supermarket: smName, 
                             price: p.price ?? '--', 
                             promoDisplay: promoDisplay,
-                            promoCalc: promoCalcEn || promoDisplay // 雙重保障
+                            promoCalc: promoCalcEn 
                         });
                     });
                 }
