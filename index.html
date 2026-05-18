@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>超市精明格價網 | Supermarket Price Navigator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -102,27 +105,26 @@
             'en': { 'WELLCOME': 'Wellcome', 'PARKNSHOP': 'PARKnSHOP', 'JASONS': 'Jasons', 'MARKETPLACE': 'Market Place', 'AEON': 'AEON', 'Watsons': 'Watsons', 'MANNINGS': 'Mannings', 'USELECT': 'U-Select' }
         };
 
+        // 💡 強化版圖案字典：更精準的字眼配對，確保不會全部顯示 🛍️
         const catStyles = [
-            { keywords: ['米', '食油', 'rice', 'oil', '肉'], icon: '🍚', bg: 'from-amber-100 to-orange-100', text: 'text-orange-900', border: 'border-orange-200' },
-            { keywords: ['奶類', '奶类', 'dairy', '蛋', 'egg'], icon: '🥚', bg: 'from-yellow-100 to-amber-100', text: 'text-amber-900', border: 'border-yellow-300' },
+            { keywords: ['米', '食油', '罐頭', 'rice', 'oil', 'meat'], icon: '🍚', bg: 'from-amber-100 to-orange-100', text: 'text-orange-900', border: 'border-orange-200' },
+            { keywords: ['奶類', '奶类', '大豆', '蛋', 'dairy', 'egg', 'soy'], icon: '🥚', bg: 'from-yellow-100 to-amber-100', text: 'text-amber-900', border: 'border-yellow-300' },
             { keywords: ['粉麵', '粉面', '冷凍', '冷冻', 'noodle', 'frozen'], icon: '🍜', bg: 'from-sky-100 to-indigo-100', text: 'text-indigo-900', border: 'border-indigo-200' },
-            { keywords: ['家居', 'household', '寵物', '宠物', 'pet'], icon: '🧻', bg: 'from-purple-100 to-fuchsia-100', text: 'text-fuchsia-900', border: 'border-fuchsia-200' },
-            { keywords: ['個人', '个人', 'personal'], icon: '🧴', bg: 'from-teal-100 to-emerald-100', text: 'text-teal-900', border: 'border-teal-200' },
-            { keywords: ['嬰兒', '婴儿', 'baby', '奶粉'], icon: '🍼', bg: 'from-pink-100 to-rose-100', text: 'text-rose-900', border: 'border-rose-200' },
-            { keywords: ['糖果', '餅乾', '饼干', 'candies', 'snack', 'biscuit'], icon: '🍫', bg: 'from-rose-100 to-pink-200', text: 'text-rose-900', border: 'border-rose-300' },
+            { keywords: ['家居', '寵物', '宠物', 'household', 'pet'], icon: '🧻', bg: 'from-purple-100 to-fuchsia-100', text: 'text-fuchsia-900', border: 'border-fuchsia-200' },
+            { keywords: ['個人護理', '个人护理', 'personal'], icon: '🧴', bg: 'from-teal-100 to-emerald-100', text: 'text-teal-900', border: 'border-teal-200' },
+            { keywords: ['奶粉', '嬰兒', '婴儿', 'baby', 'infant'], icon: '🍼', bg: 'from-pink-100 to-rose-100', text: 'text-rose-900', border: 'border-rose-200' },
+            { keywords: ['糖果', '餅乾', '饼干', '小食', 'candies', 'snack', 'biscuit'], icon: '🍫', bg: 'from-rose-100 to-pink-200', text: 'text-rose-900', border: 'border-rose-300' },
             { keywords: ['飲品', '饮品', 'drink', 'beverage'], icon: '🧃', bg: 'from-cyan-100 to-blue-100', text: 'text-blue-900', border: 'border-blue-200' },
             { keywords: ['酒', 'beer', 'wine', 'spirit'], icon: '🍷', bg: 'from-fuchsia-100 to-purple-200', text: 'text-purple-900', border: 'border-purple-300' },
-            { keywords: ['麵包', '面包', 'bakery', 'cereal', 'spread'], icon: '🍞', bg: 'from-orange-100 to-amber-200', text: 'text-orange-900', border: 'border-orange-300' }
+            { keywords: ['麵包', '面包', '蛋糕', 'bakery', 'cereal', 'spread'], icon: '🍞', bg: 'from-orange-100 to-amber-200', text: 'text-orange-900', border: 'border-orange-300' }
         ];
 
-        // 💡 強化版資料讀取機制 (防止 Vercel 緩存或設定錯誤)
         async function init() {
             try {
                 document.getElementById('loadingText').innerText = uiText[currentLang].loading;
                 let data = null;
                 
                 try {
-                    // 策略 1: 絕對路徑 + 時間戳 (避免 Vercel 緩存或 vercel.json 影響)
                     const localUrl = '/pricewatch.json?t=' + new Date().getTime();
                     const localResponse = await fetch(localUrl);
                     if (localResponse.ok) {
@@ -132,16 +134,13 @@
                     }
                 } catch (localError) {
                     console.warn("本地檔案讀取失敗，啟動備用 API...");
-                    
                     try {
-                        // 策略 2: AllOrigins Proxy
                         const liveUrl = 'https://online-price-watch.consumer.org.hk/opw/opendata/pricewatch.json';
                         const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(liveUrl)}`;
                         const proxyResponse = await fetch(proxyUrl);
-                        if (!proxyResponse.ok) throw new Error('Proxy 1 failed');
+                        if (!proxyResponse.ok) throw new Error('Proxy failed');
                         data = await proxyResponse.json();
-                    } catch (proxyError1) {
-                        // 策略 3: Corsproxy.io
+                    } catch (proxyError) {
                         const liveUrl = 'https://online-price-watch.consumer.org.hk/opw/opendata/pricewatch.json';
                         const proxyUrl2 = 'https://corsproxy.io/?' + encodeURIComponent(liveUrl);
                         const proxyResponse2 = await fetch(proxyUrl2);
@@ -150,7 +149,7 @@
                     }
                 }
 
-                if (!data) throw new Error('No data retrieved from any source');
+                if (!data) throw new Error('No data retrieved');
                 
                 rawApiData = data;
                 changeLanguage('zh-Hant');
@@ -257,23 +256,27 @@
             addBotMessage(welcomeText);
         }
 
-        // 🤖 超級智能版閑聊過濾器 (Fuzzy Match + Length Filter)
+        // 🤖 升級版閑聊過濾器：加入英文縮寫支援
         function checkSmallTalk(query) {
-            // 清除標點符號與空格，只對比純文字
-            const q = query.toLowerCase().replace(/[.,!?。，！？\s]/g, '');
+            const rawQ = query.toLowerCase().trim();
             
-            // 💡 如果句子太長（超過15個字），通常係真正嘅搜尋，直接跳出過濾器
-            if (q.length > 15) return null; 
+            // 清除標點符號與空格，只對比純文字
+            const q = rawQ.replace(/[.,!?。，！？\s]/g, '');
+            
+            if (q.length > 20) return null; 
 
-            // 包含以下字眼即觸發對應回應
-            const greetings = ['你好', 'hi', 'hello', '早晨', '早上好', '午安', '晚安', '哈囉', 'hola', 'hey', '早', '嗨'];
-            const thanks = ['唔該', '多謝', 'thank', 'thx', 'tq', '謝謝', '谢谢'];
+            // 💡 針對帶有空格的英文句子/縮寫進行優先比對
+            if (rawQ.includes('how are you') || rawQ.includes('how r u') || rawQ.includes('whats up') || rawQ.includes('how do you do')) {
+                return uiText[currentLang].replyGreeting;
+            }
+
+            const greetings = ['你好', 'hi', 'hello', '早晨', '早上好', '午安', '晚安', '哈囉', 'hola', 'hey', '早', '嗨', 'howru'];
+            const thanks = ['唔該', '多謝', 'thank', 'thx', 'tq', '謝謝', '谢谢', 'appreciate'];
             const tests = ['test', '測試', '测试', '123', 'testing'];
 
-            // 使用 some + includes 做到模糊配對 (例如 "好，多謝你呀" 包含 "多謝")
             if (greetings.some(kw => q.includes(kw))) return uiText[currentLang].replyGreeting;
             if (thanks.some(kw => q.includes(kw))) return uiText[currentLang].replyThanks;
-            if (tests.some(kw => q === kw)) return uiText[currentLang].replyTest; // Test 保留嚴格配對，避免誤傷
+            if (tests.some(kw => q === kw)) return uiText[currentLang].replyTest; 
             
             return null;
         }
