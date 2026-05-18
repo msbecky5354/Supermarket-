@@ -12,7 +12,7 @@
         .clickable-card:active { transform: scale(0.95); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         
         @keyframes pulse-lightning {
             0%, 100% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 2px #fbbf24); }
@@ -21,7 +21,7 @@
         .lightning-icon { animation: pulse-lightning 2s infinite ease-in-out; display: inline-block; }
     </style>
 </head>
-<body class="bg-slate-50 h-[100dvh] flex flex-col font-sans text-slate-900 overflow-hidden w-full">
+<body class="bg-slate-50 h-[100dvh] flex flex-col font-sans text-slate-900 overflow-hidden w-full text-[15px]">
 
     <header class="bg-white border-b flex-none z-30 px-4 py-3 shadow-sm relative">
         <div class="max-w-2xl mx-auto flex justify-between items-center">
@@ -68,7 +68,7 @@
                 </button>
                 <h2 id="chatTitle" class="font-bold text-slate-800 truncate text-[15px] flex items-center"></h2>
             </div>
-            <div id="chatMessages" class="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4"></div>
+            <div id="chatMessages" class="flex-1 overflow-y-auto no-scrollbar p-4 space-y-5"></div>
             <div class="bg-white border-t p-3 pb-[max(16px,env(safe-area-inset-bottom))] flex-none shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
                 <form id="chatForm" class="flex gap-2 max-w-2xl mx-auto" onsubmit="event.preventDefault(); submitChat();">
                     <input type="text" id="chatInput" class="flex-1 px-4 py-3.5 bg-slate-100 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-[15px]" autocomplete="off">
@@ -94,9 +94,9 @@
         let selectedCat1 = null; 
 
         const uiText = {
-            'zh-Hant': { title: "香港生活百貨價格神器", badge: "政府數據連線", subLabel: "今日即時行情", mainCat: "第一步：選擇主分類", sortTip: "常用優先", back: "返回", loading: "讀取中...", error: "載入失敗", send: "搜尋", placeholder: "搜尋貨品/牌子...", chatWelcome: "您選擇了", chatAsk: "想搵咩貨品？<br><span class='text-xs text-slate-500 mt-1 block'>（或輸入「全部」）</span>", chatNoResult: "找不到貨品。", chatFound: "神器為您找到：", chatShowAll: "所有貨品清單：", replyGreeting: "你好！我係格價助手 🤖", replyThanks: "唔使客氣！" },
-            'zh-Hans': { title: "香港生活百货价格神器", badge: "政府数据连线", subLabel: "今日即时行情", mainCat: "第一步：选择主分类", sortTip: "常用優先", back: "返回", loading: "读取中...", error: "加载失败", send: "搜索", placeholder: "搜索商品/品牌...", chatWelcome: "您选择了", chatAsk: "想找什么商品？<br><span class='text-xs text-slate-500 mt-1 block'>（或输入「全部」）</span>", chatNoResult: "找不到商品。", chatFound: "神器为您找到：", chatShowAll: "商品清单：", replyGreeting: "你好！我是比价助手 🤖", replyThanks: "不用客气！" },
-            'en': { title: "HK Artifact", badge: "Gov Data Link", subLabel: "Live Daily Prices", mainCat: "Step 1: Select Category", sortTip: "Frequent First", back: "Back", loading: "Loading...", error: "Failed", send: "Search", placeholder: "Type product name...", chatWelcome: "Selected", chatAsk: "What are you looking for?<br><span class='text-xs text-slate-500 mt-1 block'>(Or type 'all')</span>", chatNoResult: "No results.", chatFound: "Found:", chatShowAll: "Full List:", replyGreeting: "Hello! I am your AI 🤖", replyThanks: "You're welcome!" }
+            'zh-Hant': { title: "香港生活百貨價格神器", badge: "政府數據連線", subLabel: "今日即時行情", mainCat: "第一步：選擇主分類", sortTip: "常用優先", back: "返回", loading: "同步中...", error: "載入失敗", send: "搜尋", placeholder: "搜尋貨品/牌子...", chatWelcome: "您選擇了", chatAsk: "想搵咩貨品？", chatFound: "神器為您找到：", chatShowAll: "所有貨品清單：", replyGreeting: "你好！我係格價助手 🤖", replyThanks: "唔使客氣！" },
+            'zh-Hans': { title: "香港生活百货价格神器", badge: "政府数据连线", subLabel: "今日即时行情", mainCat: "第一步：选择主分类", sortTip: "常用優先", back: "返回", loading: "启动中...", error: "加载失败", send: "搜索", placeholder: "搜索商品/品牌...", chatWelcome: "您选择了", chatAsk: "想找什么商品？", chatFound: "神器为您找到：", chatShowAll: "商品清单：", replyGreeting: "你好！我是比价助手 🤖", replyThanks: "不用客气！" },
+            'en': { title: "HK Artifact", badge: "Gov Data Link", subLabel: "Live Daily Prices", mainCat: "Step 1: Select Category", sortTip: "Frequent First", back: "Back", loading: "Loading...", error: "Failed", send: "Search", placeholder: "Type product name...", chatWelcome: "Selected", chatAsk: "What are you looking for?", chatFound: "Found:", chatShowAll: "Full List:", replyGreeting: "Hello! I am your AI 🤖", replyThanks: "You're welcome!" }
         };
 
         const supermarketDict = {
@@ -123,20 +123,14 @@
             return String(str).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
         }
 
-        // 🧠 核心：深度遞迴解碼器 (層層剝開 JSON 搵優惠)
         function extractDeepPromoText(val, lang) {
             if (!val) return "";
             if (typeof val === 'string') return val.trim();
-            if (Array.isArray(val)) {
-                return val.map(v => extractDeepPromoText(v, lang)).filter(v => v !== "").join('; ');
-            }
+            if (Array.isArray(val)) return val.map(v => extractDeepPromoText(v, lang)).filter(v => v !== "").join('; ');
             if (typeof val === 'object') {
                 if (val[lang]) return extractDeepPromoText(val[lang], lang);
                 if (val['zh-Hant']) return extractDeepPromoText(val['zh-Hant'], lang);
-                if (val.promotionName) return extractDeepPromoText(val.promotionName, lang);
                 if (val.description) return extractDeepPromoText(val.description, lang);
-                if (val.name) return extractDeepPromoText(val.name, lang);
-                
                 let vals = Object.values(val);
                 if (vals.length > 0) return extractDeepPromoText(vals[0], lang);
             }
@@ -147,34 +141,27 @@
             if (!promoText || isNaN(originalPrice)) return null;
             try {
                 let p = promoText.replace(/\s+/g, ''); 
-                let avg = null;
-                let m1 = p.match(/\$([0-9.]+).*?(?:任[揀擇買])?([0-9]+)[件包盒排支罐筒樽]/);
+                let m1 = p.match(/\$([0-9.]+).*?([0-9]+)[件包盒排支罐筒樽]/);
                 if (m1) return parseFloat(m1[1]) / parseInt(m1[2]);
                 let m2 = p.match(/([0-9]+)[件包盒排支罐筒樽].*?\$([0-9.]+)/);
                 if (m2) return parseFloat(m2[2]) / parseInt(m2[1]);
                 let m3 = p.match(/買([0-9]+)[件包盒排支罐筒樽].*?慳.*?\$([0-9.]+)/);
                 if (m3) {
-                    let qty = parseInt(m3[1]);
-                    let discount = parseFloat(m3[2]);
-                    if (qty > 0) return ((originalPrice * qty) - discount) / qty;
+                    let qty = parseInt(m3[1]); let disc = parseFloat(m3[2]);
+                    if (qty > 0) return ((originalPrice * qty) - disc) / qty;
                 }
-                if (p.includes('第2件半價') || p.includes('第二件半價')) return (originalPrice * 1.5) / 2;
-                if (p.includes('買一送一') || p.includes('買1送1')) return originalPrice / 2;
-                let m4 = p.match(/買([0-9]+)[件包盒排支罐筒樽].*?([0-9.]+)折/);
-                if (m4) return originalPrice * (parseFloat(m4[2]) / 10);
+                if (p.includes('半價') || p.includes('半价')) return (originalPrice * 1.5) / 2;
+                if (p.includes('一送一') || p.includes('1送1')) return originalPrice / 2;
                 return null;
             } catch(e) { return null; }
         }
 
         async function init() {
             try {
-                document.getElementById('loadingText').innerText = uiText[currentLang].loading;
                 let data = null;
-                try {
-                    const localResponse = await fetch('/pricewatch.json?t=' + new Date().getTime());
-                    if (localResponse.ok) data = await localResponse.json();
-                    else throw new Error('Local fail');
-                } catch (e) {
+                const localResponse = await fetch('/pricewatch.json?t=' + new Date().getTime());
+                if (localResponse.ok) data = await localResponse.json();
+                else {
                     const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent('https://online-price-watch.consumer.org.hk/opw/opendata/pricewatch.json')}`;
                     const res = await fetch(proxyUrl);
                     data = await res.json();
@@ -204,27 +191,16 @@
 
         function buildStructuredData() {
             structuredData = {};
-            
             rawApiData.forEach(item => {
                 let cat1 = item.cat1Name?.[currentLang] || item.cat1Name?.['zh-Hant'];
                 if (!cat1) return;
-                let cat2 = item.cat3Name?.[currentLang] || item.cat2Name?.[currentLang] || item.cat2Name?.['zh-Hant'] || 'Other';
-                
+                let cat2 = item.cat3Name?.[currentLang] || item.cat2Name?.[currentLang] || 'Other';
                 let name = item.name?.[currentLang] || item.name?.['zh-Hant'] || 'Unknown';
                 let enName = item.name?.['en'] || '';
-                
                 let brandObj = item.brand || item.brandName || '';
-                let localBrand = '';
-                let enBrand = '';
-                
-                if (typeof brandObj === 'string') {
-                    localBrand = brandObj;
-                    enBrand = brandObj;
-                } else if (brandObj) {
-                    localBrand = brandObj[currentLang] || brandObj['zh-Hant'] || '';
-                    enBrand = brandObj['en'] || '';
-                }
-                
+                let localBrand = (typeof brandObj === 'object') ? (brandObj[currentLang] || brandObj['zh-Hant'] || '') : brandObj;
+                let enBrand = (typeof brandObj === 'object') ? (brandObj['en'] || '') : brandObj;
+
                 if (!structuredData[cat1]) structuredData[cat1] = {};
                 if (!structuredData[cat1][cat2]) structuredData[cat1][cat2] = {};
                 if (!structuredData[cat1][cat2][name]) {
@@ -234,57 +210,23 @@
                         prices: [] 
                     };
                 }
-                
                 if (Array.isArray(item.prices)) {
                     item.prices.forEach(p => {
                         let smName = supermarketDict[currentLang][p.supermarketCode] || p.supermarketCode;
                         let promo = "";
-                        
-                        // 🚀 執行深度遞迴掃描
-                        const promoKeys = ['promotions', 'promotion', 'offer', 'offers', 'discount', 'discounts', 'promotionDesc', 'promotionName', 'itemOffsetText', 'remarks'];
+                        const promoKeys = ['promotions', 'promotion', 'offer', 'promotionDesc', 'promotionName', 'itemOffsetText'];
                         for (let key of promoKeys) {
                             if (p[key]) {
                                 let extracted = extractDeepPromoText(p[key], currentLang);
-                                if (extracted && extracted !== "[object Object]") {
-                                    promo = extracted;
-                                    break;
-                                }
+                                if (extracted && extracted !== "[object Object]") { promo = extracted; break; }
                             }
                         }
-                        
-                        if (!promo) {
-                            const itemKeys = ['promotions', 'offers', 'discounts'];
-                            for (let key of itemKeys) {
-                                if (Array.isArray(item[key])) {
-                                    const smPromo = item[key].find(pr => pr.supermarketCode === p.supermarketCode || pr.code === p.supermarketCode);
-                                    if (smPromo) {
-                                        let extracted = extractDeepPromoText(smPromo, currentLang);
-                                        if (extracted && extracted !== "[object Object]") {
-                                            promo = extracted;
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
                         structuredData[cat1][cat2][name].prices.push({ 
-                            rawCode: p.supermarketCode, 
-                            supermarket: smName, 
-                            price: p.price ?? '--',
-                            promo: promo 
+                            rawCode: p.supermarketCode, supermarket: smName, price: p.price ?? '--', promo: promo 
                         });
                     });
                 }
             });
-        }
-
-        function getCatStyle(catName) {
-            const lowerName = catName.toLowerCase();
-            for (let style of catStyles) {
-                if (style.keywords.some(kw => lowerName.includes(kw.toLowerCase()))) return style;
-            }
-            return { icon: '📦', bg: 'from-slate-100 to-slate-200', text: 'text-slate-800', border: 'border-slate-300' };
         }
 
         function renderLevel1() {
@@ -293,73 +235,64 @@
             const sorted = Object.keys(structuredData).sort((a, b) => (history[b]||0) - (history[a]||0) || a.localeCompare(b));
             sorted.forEach(cat1 => {
                 const style = getCatStyle(cat1);
-                const clickCount = history[cat1] || 0;
                 const card = document.createElement('div');
-                card.className = `clickable-card bg-gradient-to-br ${style.bg} p-3 rounded-[2rem] shadow-sm border ${style.border} cursor-pointer transition-all flex flex-col items-center justify-center text-center aspect-square relative overflow-hidden`;
-                card.innerHTML = `<div class="text-4xl mb-2">${style.icon}</div><span class="font-bold ${style.text} text-[13px] leading-snug line-clamp-3 px-1">${cat1}</span>`;
-                card.onclick = () => { 
-                    history[cat1] = (history[cat1]||0)+1; 
-                    localStorage.setItem('cat_usage_history', JSON.stringify(history));
-                    startChat(cat1);
-                };
+                card.className = `clickable-card bg-gradient-to-br ${style.bg} p-3 rounded-[2rem] shadow-sm border ${style.border} cursor-pointer transition-all flex flex-col items-center justify-center text-center aspect-square overflow-hidden relative`;
+                card.innerHTML = `<div class="text-4xl mb-2">${style.icon}</div><span class="font-bold ${style.text} text-[13px] leading-snug line-clamp-2 px-1">${cat1}</span>`;
+                card.onclick = () => { history[cat1] = (history[cat1]||0)+1; localStorage.setItem('cat_usage_history', JSON.stringify(history)); startChat(cat1); };
                 level1Container.appendChild(card);
             });
         }
 
-        function showLevel1() { chatSection.classList.add('hidden'); level1Section.classList.remove('hidden'); selectedCat1 = null; renderLevel1(); }
+        function getCatStyle(catName) {
+            const lowerName = catName.toLowerCase();
+            for (let style of catStyles) { if (style.keywords.some(kw => lowerName.includes(kw.toLowerCase()))) return style; }
+            return { icon: '📦', bg: 'from-slate-100 to-slate-200', text: 'text-slate-800', border: 'border-slate-300' };
+        }
+
+        function showLevel1() { chatSection.classList.add('hidden'); level1Section.classList.remove('hidden'); renderLevel1(); }
 
         function startChat(cat1) {
-            selectedCat1 = cat1;
-            level1Section.classList.add('hidden');
-            chatSection.classList.remove('hidden');
+            selectedCat1 = cat1; chatSection.classList.remove('hidden'); level1Section.classList.add('hidden');
             const style = getCatStyle(cat1);
             chatTitle.innerHTML = `<span class="mr-1.5">${style.icon}</span> ${cat1}`;
             chatMessages.innerHTML = '';
             addBotMessage(`${uiText[currentLang].chatWelcome} <strong class="text-blue-600">${style.icon} ${cat1}</strong>。<br>${uiText[currentLang].chatAsk}`);
         }
 
-        function checkSmallTalk(query) {
-            const q = query.toLowerCase().replace(/[.,!?。，！？\s]/g, '');
-            if (q.length > 15) return null;
-            if (['你好', 'hi', 'hello'].some(kw => q.includes(kw))) return uiText[currentLang].replyGreeting;
-            if (['多謝', 'thank', '謝謝'].some(kw => q.includes(kw))) return uiText[currentLang].replyThanks;
-            return null;
+        function submitChat() {
+            const q = chatInput.value.trim(); if (!q) return;
+            addUserMessage(q); chatInput.value = ''; chatInput.blur();
+            setTimeout(() => {
+                const talk = checkSmallTalk(q);
+                if (talk) addBotMessage(talk); else performScopedSearch(q);
+            }, 300);
         }
 
-        function submitChat() {
-            const query = chatInput.value.trim();
-            if (!query) return;
-            addUserMessage(query);
-            chatInput.value = '';
-            chatInput.blur();
-            setTimeout(() => {
-                const talk = checkSmallTalk(query);
-                if (talk) addBotMessage(talk);
-                else performScopedSearch(query);
-            }, 300);
+        function checkSmallTalk(q) {
+            const low = q.toLowerCase();
+            if (['你好', 'hi', 'hello'].some(kw => low.includes(kw))) return uiText[currentLang].replyGreeting;
+            if (['多謝', 'thank', '謝謝'].some(kw => low.includes(kw))) return uiText[currentLang].replyThanks;
+            return null;
         }
 
         function performScopedSearch(query) {
             const q = normalizeStr(query);
-            const isShowAll = ['所有', '全部', 'all', 'list'].some(kw => q.includes(normalizeStr(kw)));
-            
-            let resultsHTML = '';
+            const isAll = ['所有', '全部', 'all', 'list'].some(kw => q.includes(normalizeStr(kw)));
+            let html = '';
             Object.keys(structuredData[selectedCat1]).forEach(cat2 => {
                 Object.keys(structuredData[selectedCat1][cat2]).forEach(pName => {
                     const info = structuredData[selectedCat1][cat2][pName];
-                    if (isShowAll || info.searchKeywords.includes(q)) {
-                        resultsHTML += generateProductCardHTML(pName, info);
-                    }
+                    if (isAll || info.searchKeywords.includes(q)) html += generateProductCardHTML(pName, info);
                 });
             });
-            if (!resultsHTML) addBotMessage(uiText[currentLang].chatNoResult);
-            else addBotMessage(isShowAll ? uiText[currentLang].chatShowAll : uiText[currentLang].chatFound, resultsHTML);
+            if (!html) addBotMessage(uiText[currentLang].chatNoResult);
+            else addBotMessage(isAll ? uiText[currentLang].chatShowAll : uiText[currentLang].chatFound, html);
         }
 
         function addBotMessage(text, cardsHTML = null) {
             const wrapper = document.createElement('div');
             wrapper.className = 'flex flex-col items-start w-full';
-            wrapper.innerHTML = `<div class="flex items-end gap-2 max-w-[90%]"><div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-lg shadow-sm border border-blue-200">🤖</div><div class="bg-white border border-slate-200 text-slate-800 px-4 py-3 rounded-2xl rounded-bl-sm shadow-sm text-[15px]">${text}</div></div>${cardsHTML ? `<div class="w-full pl-10 mt-3 space-y-4">${cardsHTML}</div>` : ''}`;
+            wrapper.innerHTML = `<div class="flex items-end gap-2 max-w-[90%]"><div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-lg shadow-sm border border-blue-200">🤖</div><div class="bg-white border border-slate-200 text-slate-800 px-4 py-3 rounded-2xl rounded-bl-sm shadow-sm text-[15px]">${text}</div></div>${cardsHTML ? `<div class="w-full mt-4 space-y-5">${cardsHTML}</div>` : ''}`;
             chatMessages.appendChild(wrapper);
             chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
         }
@@ -372,44 +305,38 @@
             chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
         }
 
+        // 💡 核心修正：單行列表排版
         function generateProductCardHTML(pName, info) {
             let valid = info.prices.map(p => parseFloat(p.price)).filter(pr => !isNaN(pr));
             let min = valid.length > 0 ? Math.min(...valid) : null;
-            const priceTags = info.prices.map(p => {
+            const priceList = info.prices.map(p => {
                 let parsed = parseFloat(p.price);
                 let isLowest = (!isNaN(parsed) && parsed === min && valid.length > 1);
-                let cls = 'bg-slate-50 text-slate-700 border-slate-200';
-                if (p.rawCode === 'WELLCOME') cls = 'bg-red-50 text-red-700 border-red-200';
-                else if (p.rawCode === 'PARKNSHOP') cls = 'bg-yellow-50 text-yellow-800 border-yellow-300';
-                else if (p.rawCode === 'AEON') cls = 'bg-purple-50 text-purple-700 border-purple-200';
-                else if (p.rawCode === 'MANNINGS' || p.rawCode === 'Watsons' || p.rawCode === 'LUNGFUNG') cls = 'bg-blue-50 text-blue-700 border-blue-200';
+                let cls = 'border-slate-100 bg-slate-50/50';
+                let textCls = 'text-slate-600';
+                if (p.rawCode === 'WELLCOME') { cls = 'border-red-100 bg-red-50/30'; textCls = 'text-red-700'; }
+                else if (p.rawCode === 'PARKNSHOP') { cls = 'border-yellow-200 bg-yellow-50/30'; textCls = 'text-yellow-800'; }
+                else if (p.rawCode === 'AEON') { cls = 'border-purple-100 bg-purple-50/30'; textCls = 'text-purple-700'; }
+                else if (['MANNINGS','Watsons','LUNGFUNG'].includes(p.rawCode)) { cls = 'border-blue-100 bg-blue-50/30'; textCls = 'text-blue-700'; }
                 
-                let avgHtml = '';
-                const avgPrice = calculateAvgPrice(p.promo, parsed);
-                if (avgPrice && avgPrice > 0 && avgPrice < parsed) {
-                    avgHtml = `<span class="ml-auto bg-red-100 text-red-700 px-1.5 py-0.5 rounded text-[10px] font-black shrink-0 whitespace-nowrap">折合 $${avgPrice.toFixed(1)}/件</span>`;
-                }
-
-                const promoRow = p.promo ? `
-                    <div class="mt-1.5 pt-1.5 border-t border-red-200/60 flex items-center justify-between gap-1 w-full">
-                        <div class="flex items-start gap-1 min-w-0">
-                            <span class="text-[10px] shrink-0">🏷️</span>
-                            <span class="text-[11px] leading-tight text-red-600 font-bold break-words">${p.promo}</span>
-                        </div>
-                        ${avgHtml}
-                    </div>` : '';
+                let avg = calculateAvgPrice(p.promo, parsed);
+                let avgLabel = avg ? `<span class="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-black shadow-sm ml-1">💰 折合 $${avg.toFixed(1)}/件</span>` : '';
 
                 return `
-                <div class="flex flex-col p-2.5 rounded-xl border flex-1 min-w-[45%] ${cls} ${isLowest ? 'ring-2 ring-green-400 font-bold bg-white scale-[1.02] shadow-sm z-10' : 'opacity-90'}">
-                    <div class="flex items-center justify-between">
-                        <span class="text-[11px] font-bold">${p.supermarket}</span> 
-                        <span class="text-[15px]">$${isNaN(parsed) ? p.price : parsed.toFixed(1)}${isLowest ? '👍' : ''}</span>
+                <div class="flex flex-col p-3 rounded-2xl border ${cls} ${isLowest ? 'ring-2 ring-green-400 bg-white scale-[1.01] shadow-md z-10' : ''} transition-all">
+                    <div class="flex justify-between items-center w-full">
+                        <span class="font-black text-[13px] ${textCls} flex items-center gap-1">${p.supermarket}</span>
+                        <span class="text-[17px] font-black text-slate-800">$${isNaN(parsed) ? p.price : parsed.toFixed(1)}${isLowest ? ' <span class="text-lg">👍</span>' : ''}</span>
                     </div>
-                    ${promoRow}
+                    ${p.promo ? `
+                    <div class="mt-2 flex flex-wrap items-center gap-1">
+                        <span class="text-[11px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-md border border-red-100">🏷️ ${p.promo}</span>
+                        ${avgLabel}
+                    </div>` : ''}
                 </div>`;
             }).join('');
             
-            return `<div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-200 flex flex-col gap-3 relative overflow-hidden"><div class="flex gap-3 items-center"><div class="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center text-xl border border-slate-100 shadow-inner">🛒</div><div class="flex-1 min-w-0"><div class="text-[11px] text-blue-500 font-extrabold uppercase truncate">${info.brand || '&nbsp;'}</div><h3 class="font-bold text-slate-800 text-[15px] leading-snug">${pName}</h3></div></div><div class="flex flex-wrap gap-2 mt-1">${priceTags}</div></div>`;
+            return `<div class="bg-white p-5 rounded-[2.5rem] shadow-sm border border-slate-200 flex flex-col gap-4 relative overflow-hidden"><div class="flex gap-4 items-start"><div class="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-2xl border border-slate-100 shadow-inner shrink-0">🛒</div><div class="flex-1 min-w-0"><div class="text-[11px] text-blue-500 font-black tracking-widest uppercase mb-1">${info.brand || '&nbsp;'}</div><h3 class="font-bold text-slate-800 text-[16px] leading-tight">${pName}</h3></div></div><div class="flex flex-col gap-2.5">${priceList}</div></div>`;
         }
 
         init();
