@@ -14,12 +14,23 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
         
-        /* ⚡ 價格神器動畫 */
+        /* ⚡ 價格神器專屬動畫 */
         @keyframes pulse-lightning {
             0%, 100% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 2px #fbbf24); }
             50% { opacity: 0.7; transform: scale(1.1); filter: drop-shadow(0 0 8px #fbbf24); }
         }
         .lightning-icon { animation: pulse-lightning 2s infinite ease-in-out; display: inline-block; }
+        
+        /* 🎁 優惠標籤微動畫 */
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        .promo-badge {
+            background: linear-gradient(90deg, #ef4444 25%, #f87171 50%, #ef4444 75%);
+            background-size: 200% 100%;
+            animation: shimmer 3s infinite linear;
+        }
     </style>
 </head>
 <body class="bg-slate-50 h-[100dvh] flex flex-col font-sans text-slate-900 overflow-hidden w-full">
@@ -28,7 +39,7 @@
         <div class="max-w-2xl mx-auto flex justify-between items-center">
             <div class="flex flex-col">
                 <div class="flex items-center gap-1.5">
-                    <span class="text-xl lightning-icon">🚀</span>
+                    <span class="text-xl lightning-icon">⚡</span>
                     <h1 id="appTitle" class="text-base md:text-lg bg-gradient-to-r from-indigo-600 to-blue-700 bg-clip-text text-transparent font-black tracking-wide">香港生活百貨價格神器</h1>
                 </div>
                 <div class="flex items-center gap-1.5 mt-0.5 pl-7">
@@ -58,7 +69,7 @@
                 <span id="sortTip" class="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full font-bold">常用優先</span>
             </div>
             <div id="level1Container" class="grid grid-cols-2 gap-4">
-                <div id="loadingText" class="text-center p-4 text-slate-400 text-sm col-span-2">正在同步最新行情...</div>
+                <div id="loadingText" class="text-center p-4 text-slate-400 text-sm col-span-2">正在啟動價格神器...</div>
             </div>
         </section>
 
@@ -95,9 +106,9 @@
         let selectedCat1 = null; 
 
         const uiText = {
-            'zh-Hant': { title: "香港生活百貨價格神器", badge: "政府數據連線", subLabel: "今日即時行情", mainCat: "第一步：選擇主分類", sortTip: "常用優先", back: "返回", loading: "讀取中...", error: "載入失敗", send: "搜尋", placeholder: "搜尋貨品/牌子...", chatWelcome: "您選擇了", chatAsk: "想搵咩貨品？<br><span class='text-xs text-slate-500 mt-1 block'>（或輸入「全部」）</span>", chatNoResult: "找不到貨品。", chatFound: "神器為您找到：", chatShowAll: "所有貨品清單：", replyGreeting: "你好！我係格價助手 🤖", replyThanks: "唔使客氣！" },
-            'zh-Hans': { title: "香港生活百货价格神器", badge: "政府数据连线", subLabel: "今日即时行情", mainCat: "第一步：选择主分类", sortTip: "常用優先", back: "返回", loading: "读取中...", error: "加载失败", send: "搜索", placeholder: "搜索商品/品牌...", chatWelcome: "您选择了", chatAsk: "想找什么商品？<br><span class='text-xs text-slate-500 mt-1 block'>（或输入「全部」）</span>", chatNoResult: "找不到商品。", chatFound: "神器为您找到：", chatShowAll: "商品清单：", replyGreeting: "你好！我是比价助手 🤖", replyThanks: "不用客气！" },
-            'en': { title: "HK Artifact", badge: "Gov Data Link", subLabel: "Live Daily Prices", mainCat: "Step 1: Select Category", sortTip: "Frequent First", back: "Back", loading: "Loading...", error: "Failed", send: "Search", placeholder: "Type product or brand...", chatWelcome: "Selected", chatAsk: "What are you looking for?<br><span class='text-xs text-slate-500 mt-1 block'>(Or type 'all')</span>", chatNoResult: "No results.", chatFound: "Found:", chatShowAll: "Full List:", replyGreeting: "Hello! I am your AI 🤖", replyThanks: "You're welcome!" }
+            'zh-Hant': { title: "香港生活百貨價格神器", badge: "政府數據連線", subLabel: "今日即時行情", mainCat: "第一步：選擇主分類", sortTip: "常用優先", back: "返回", loading: "啟動中...", error: "載入失敗", send: "搜尋", placeholder: "輸入名稱...", chatWelcome: "您選擇了", chatAsk: "想搵咩貨品？<br><span class='text-xs text-slate-500 mt-1 block'>（或輸入「全部」）</span>", chatSearching: "尋找中...", chatNoResult: "找不到貨品，請確保分類正確。", chatFound: "神器為您找到：", chatShowAll: "所有貨品清單：", replyGreeting: "你好！我係格價助手 🤖", replyThanks: "唔使客氣！", replyTest: "系統 OK 🟢", replyEmotion: "哈哈！我只係幫你格價嘅 AI 🤖" },
+            'zh-Hans': { title: "香港生活百货价格神器", badge: "政府数据连线", subLabel: "今日即时行情", mainCat: "第一步：选择主分类", sortTip: "常用優先", back: "返回", loading: "启动中...", error: "加载失败", send: "搜索", placeholder: "输入名称...", chatWelcome: "您选择了", chatAsk: "想找什么商品？<br><span class='text-xs text-slate-500 mt-1 block'>（或输入「全部」）</span>", chatSearching: "寻找中...", chatNoResult: "找不到商品。", chatFound: "神器为您找到：", chatShowAll: "商品清单：", replyGreeting: "你好！我是比价助手 🤖", replyThanks: "不用客气！", replyTest: "系统 OK 🟢", replyEmotion: "哈哈！我是幫您比價的 AI 🤖" },
+            'en': { title: "HK Artifact", badge: "Gov Data Link", subLabel: "Live Daily Prices", mainCat: "Step 1: Select Category", sortTip: "Frequent First", back: "Back", loading: "Starting...", error: "Failed", send: "Search", placeholder: "Type name...", chatWelcome: "Selected", chatAsk: "What are you looking for?<br><span class='text-xs text-slate-500 mt-1 block'>(Or type 'all')</span>", chatSearching: "Searching...", chatNoResult: "No results.", chatFound: "Found:", chatShowAll: "Full List:", replyGreeting: "Hello! I am your AI 🤖", replyThanks: "Welcome!", replyTest: "System OK 🟢", replyEmotion: "Haha!" }
         };
 
         const supermarketDict = {
@@ -107,27 +118,17 @@
         };
 
         const catStyles = [
-            { keywords: ['奶粉', '嬰兒', 'baby'], icon: '🍼', bg: 'from-pink-100 to-rose-100', text: 'text-rose-900', border: 'border-rose-200' },
-            { keywords: ['麵包', '面包', '糕', 'bakery'], icon: '🍞', bg: 'from-orange-100 to-amber-200', text: 'text-orange-900', border: 'border-orange-300' },
-            { keywords: ['米', '油', '罐', 'rice', 'oil'], icon: '🍚', bg: 'from-amber-100 to-orange-100', text: 'text-orange-900', border: 'border-orange-200' },
-            { keywords: ['奶', '蛋', 'dairy', 'egg'], icon: '🥚', bg: 'from-yellow-100 to-amber-100', text: 'text-amber-900', border: 'border-yellow-300' },
-            { keywords: ['粉', '麵', '面', '冷', 'noodle'], icon: '🍜', bg: 'from-sky-100 to-indigo-100', text: 'text-indigo-900', border: 'border-indigo-200' },
-            { keywords: ['居', '寵', 'pet'], icon: '🧻', bg: 'from-purple-100 to-fuchsia-100', text: 'text-fuchsia-900', border: 'border-fuchsia-200' },
-            { keywords: ['護理', '护理', 'personal'], icon: '🧴', bg: 'from-teal-100 to-emerald-100', text: 'text-teal-900', border: 'border-teal-200' },
-            { keywords: ['糖', '餅', '饼', '食', 'snack'], icon: '🍫', bg: 'from-rose-100 to-pink-200', text: 'text-rose-900', border: 'border-rose-300' },
-            { keywords: ['飲', 'drink'], icon: '🧃', bg: 'from-cyan-100 to-blue-100', text: 'text-blue-900', border: 'border-blue-200' },
-            { keywords: ['酒', 'wine', 'beer'], icon: '🍷', bg: 'from-fuchsia-100 to-purple-200', text: 'text-purple-900', border: 'border-purple-300' }
+            { keywords: ['奶粉', '嬰兒', '婴儿', 'baby', 'infant'], icon: '🍼', bg: 'from-pink-100 to-rose-100', text: 'text-rose-900', border: 'border-rose-200' },
+            { keywords: ['麵包', '面包', '蛋糕', 'bakery', 'cereal', 'spread'], icon: '🍞', bg: 'from-orange-100 to-amber-200', text: 'text-orange-900', border: 'border-orange-300' },
+            { keywords: ['米', '油', '罐', 'rice', 'oil', 'meat'], icon: '🍚', bg: 'from-amber-100 to-orange-100', text: 'text-orange-900', border: 'border-orange-200' },
+            { keywords: ['奶', '大豆', '蛋', 'dairy', 'egg', 'soy'], icon: '🥚', bg: 'from-yellow-100 to-amber-100', text: 'text-amber-900', border: 'border-yellow-300' },
+            { keywords: ['粉', '麵', '面', '冷', 'noodle', 'frozen'], icon: '🍜', bg: 'from-sky-100 to-indigo-100', text: 'text-indigo-900', border: 'border-indigo-200' },
+            { keywords: ['居', '寵', '宠', 'household', 'pet'], icon: '🧻', bg: 'from-purple-100 to-fuchsia-100', text: 'text-fuchsia-900', border: 'border-fuchsia-200' },
+            { keywords: ['護理', '护理', 'personal', 'care'], icon: '🧴', bg: 'from-teal-100 to-emerald-100', text: 'text-teal-900', border: 'border-teal-200' },
+            { keywords: ['糖', '餅', '饼', '食', 'candies', 'snack', 'biscuit'], icon: '🍫', bg: 'from-rose-100 to-pink-200', text: 'text-rose-900', border: 'border-rose-300' },
+            { keywords: ['飲', '饮', 'drink', 'beverage'], icon: '🧃', bg: 'from-cyan-100 to-blue-100', text: 'text-blue-900', border: 'border-blue-200' },
+            { keywords: ['酒', 'beer', 'wine', 'spirit'], icon: '🍷', bg: 'from-fuchsia-100 to-purple-200', text: 'text-purple-900', border: 'border-purple-300' }
         ];
-
-        // 💡 無死角字元清洗功能 (清除聲調、特殊符號)
-        function normalizeStr(str) {
-            if (!str) return "";
-            return String(str)
-                .normalize("NFD") // 將 Ä 分解為 A 和 ¨
-                .replace(/[\u0300-\u036f]/g, "") // 移除所有聲調與 umlaut
-                .toLowerCase()
-                .trim();
-        }
 
         function recordCategoryClick(catName) {
             let history = JSON.parse(localStorage.getItem('cat_usage_history') || '{}');
@@ -173,81 +174,26 @@
 
         function buildStructuredData() {
             structuredData = {};
-            
-            function extractText(val) {
-                if (!val) return "";
-                if (typeof val === 'string') return val.trim();
-                if (Array.isArray(val)) {
-                    return val.map(v => {
-                        if (typeof v === 'string') return v;
-                        if (typeof v === 'object' && v !== null) return v[currentLang] || v['zh-Hant'] || v.description || v.name || Object.values(v)[0];
-                        return "";
-                    }).filter(v => v).join('; ');
-                }
-                if (typeof val === 'object') {
-                    return val[currentLang] || val['zh-Hant'] || val['zh-Hans'] || val.description || val.name || Object.values(val)[0] || "";
-                }
-                return String(val);
-            }
-
             rawApiData.forEach(item => {
                 let cat1 = item.cat1Name?.[currentLang] || item.cat1Name?.['zh-Hant'];
                 if (!cat1) return;
                 let cat2 = item.cat3Name?.[currentLang] || item.cat2Name?.[currentLang] || item.cat2Name?.['zh-Hant'] || 'Other';
-                
                 let name = item.name?.[currentLang] || item.name?.['zh-Hant'] || 'Unknown';
-                
-                // 🚀 新增：提取英文名與牌子，建立無死角搜索詞庫
-                let enName = item.name?.['en'] || '';
-                
-                let brandObj = item.brand || item.brandName || '';
-                let localBrand = '';
-                let enBrand = '';
-                
-                if (typeof brandObj === 'string') {
-                    localBrand = brandObj;
-                    enBrand = brandObj;
-                } else if (brandObj) {
-                    localBrand = brandObj[currentLang] || brandObj['zh-Hant'] || '';
-                    enBrand = brandObj['en'] || '';
-                }
-                
+                let brand = item.brand?.[currentLang] || item.brand?.['zh-Hant'] || '';
                 if (!structuredData[cat1]) structuredData[cat1] = {};
                 if (!structuredData[cat1][cat2]) structuredData[cat1][cat2] = {};
                 if (!structuredData[cat1][cat2][name]) {
-                    // 將所有可能的搜尋字眼儲存起來
-                    structuredData[cat1][cat2][name] = { 
-                        brand: localBrand, 
-                        searchKeywords: normalizeStr(`${name} ${enName} ${localBrand} ${enBrand}`),
-                        prices: [] 
-                    };
+                    structuredData[cat1][cat2][name] = { brand, prices: [] };
                 }
-                
                 if (Array.isArray(item.prices)) {
                     item.prices.forEach(p => {
                         let smName = supermarketDict[currentLang][p.supermarketCode] || p.supermarketCode;
+                        
+                        // 💡 終極抓取：偵測所有可能的優惠欄位
                         let promo = "";
-                        
-                        const priceKeys = ['promotions', 'promotion', 'offer', 'offers', 'discount', 'discounts', 'promotionDesc', 'promotionName', 'itemOffsetText', 'remarks'];
-                        for (let key of priceKeys) {
-                            if (p[key]) {
-                                promo = extractText(p[key]);
-                                if (promo) break;
-                            }
-                        }
-                        
-                        if (!promo) {
-                            const itemKeys = ['promotions', 'offers', 'discounts'];
-                            for (let key of itemKeys) {
-                                if (Array.isArray(item[key])) {
-                                    const smPromo = item[key].find(pr => pr.supermarketCode === p.supermarketCode || pr.code === p.supermarketCode);
-                                    if (smPromo) {
-                                        promo = extractText(smPromo.description || smPromo.name || smPromo.promo || smPromo);
-                                        if (promo) break;
-                                    }
-                                }
-                            }
-                        }
+                        if (p.promotionName) promo = p.promotionName[currentLang] || p.promotionName['zh-Hant'] || p.promotionName;
+                        if (!promo && p.itemOffsetText) promo = p.itemOffsetText[currentLang] || p.itemOffsetText['zh-Hant'] || p.itemOffsetText;
+                        if (!promo && p.promotion) promo = p.promotion; // 處理字串格式
 
                         structuredData[cat1][cat2][name].prices.push({ 
                             rawCode: p.supermarketCode, 
@@ -271,17 +217,20 @@
         function renderLevel1() {
             level1Container.innerHTML = '';
             const history = JSON.parse(localStorage.getItem('cat_usage_history') || '{}');
-            const sorted = Object.keys(structuredData).sort((a, b) => (history[b]||0) - (history[a]||0) || a.localeCompare(b));
-            sorted.forEach(cat1 => {
+            const categoriesL1 = Object.keys(structuredData).sort((a, b) => {
+                const countA = history[a] || 0;
+                const countB = history[b] || 0;
+                if (countB !== countA) return countB - countA;
+                return a.localeCompare(b);
+            });
+            categoriesL1.forEach(cat1 => {
                 const style = getCatStyle(cat1);
+                const clickCount = history[cat1] || 0;
                 const card = document.createElement('div');
-                card.className = `clickable-card bg-gradient-to-br ${style.bg} p-3 rounded-[2rem] shadow-sm border ${style.border} cursor-pointer transition-all flex flex-col items-center justify-center text-center aspect-square relative overflow-hidden`;
-                card.innerHTML = `<div class="text-4xl mb-2">${style.icon}</div><span class="font-bold ${style.text} text-[13px] leading-snug line-clamp-3 px-1">${cat1}</span>`;
-                card.onclick = () => { 
-                    history[cat1] = (history[cat1]||0)+1; 
-                    localStorage.setItem('cat_usage_history', JSON.stringify(history));
-                    startChat(cat1);
-                };
+                card.className = `clickable-card bg-gradient-to-br ${style.bg} p-3 rounded-[2rem] shadow-sm border ${style.border} cursor-pointer transition-all flex flex-col items-center justify-center text-center aspect-square overflow-hidden relative`;
+                const favIndicator = clickCount > 0 ? `<div class="absolute top-3 right-3 w-1.5 h-1.5 bg-indigo-500 rounded-full opacity-40"></div>` : '';
+                card.innerHTML = `${favIndicator}<div class="text-4xl mb-2">${style.icon}</div><span class="font-bold ${style.text} text-[13px] leading-snug line-clamp-3 px-1">${cat1}</span>`;
+                card.onclick = () => { recordCategoryClick(cat1); startChat(cat1); };
                 level1Container.appendChild(card);
             });
         }
@@ -300,9 +249,10 @@
 
         function checkSmallTalk(query) {
             const q = query.toLowerCase().replace(/[.,!?。，！？\s]/g, '');
-            if (q.length > 15) return null;
-            if (['你好', 'hi', 'hello'].some(kw => q.includes(kw))) return uiText[currentLang].replyGreeting;
-            if (['多謝', 'thank', '謝謝'].some(kw => q.includes(kw))) return uiText[currentLang].replyThanks;
+            if (q.length > 20) return null;
+            if (['omg', 'wow', 'haha', 'lol', '天啊', '救命'].some(kw => q.includes(kw))) return uiText[currentLang].replyEmotion;
+            if (['你好', 'hi', 'hello', '早晨', 'howru'].some(kw => q.includes(kw))) return uiText[currentLang].replyGreeting;
+            if (['唔該', '多謝', 'thank', '謝謝'].some(kw => q.includes(kw))) return uiText[currentLang].replyThanks;
             return null;
         }
 
@@ -319,20 +269,15 @@
             }, 300);
         }
 
-        // 🚀 終極搜尋：透過 normalizeStr 比對，無視標點與中英限制
         function performScopedSearch(query) {
-            const q = normalizeStr(query);
-            const isShowAll = ['所有', '全部', 'all', 'list'].some(kw => q.includes(normalizeStr(kw)));
-            
+            const q = query.toLowerCase();
+            const isShowAll = ['所有', '全部', 'all', 'list', '清單'].some(kw => q.includes(kw));
             let resultsHTML = '';
             Object.keys(structuredData[selectedCat1]).forEach(cat2 => {
                 Object.keys(structuredData[selectedCat1][cat2]).forEach(pName => {
                     const info = structuredData[selectedCat1][cat2][pName];
-                    
-                    // 只要「名字 + 英文名 + 牌子 + 英文牌子」裡面包含用戶輸入的字，就中！
-                    if (isShowAll || info.searchKeywords.includes(q)) {
+                    if (isShowAll || pName.toLowerCase().includes(q) || (info.brand && info.brand.toLowerCase().includes(q)))
                         resultsHTML += generateProductCardHTML(pName, info);
-                    }
                 });
             });
             if (!resultsHTML) addBotMessage(uiText[currentLang].chatNoResult);
@@ -367,23 +312,21 @@
                 else if (p.rawCode === 'AEON') cls = 'bg-purple-50 text-purple-700 border-purple-200';
                 else if (p.rawCode === 'MANNINGS' || p.rawCode === 'Watsons' || p.rawCode === 'LUNGFUNG') cls = 'bg-blue-50 text-blue-700 border-blue-200';
                 
-                const promoRow = p.promo ? `
-                    <div class="mt-1.5 pt-1.5 border-t border-red-200/60 flex items-start gap-1">
-                        <span class="text-[10px]">🏷️</span>
-                        <span class="text-[11px] leading-tight text-red-600 font-bold break-words">${p.promo}</span>
+                // 💡 核心升級：精美紅金優惠標籤 (🎁 加上 Shimmer 動效)
+                const promoText = p.promo ? `
+                    <div class="promo-badge text-[10px] mt-2 leading-tight text-white font-black p-1.5 rounded-lg shadow-sm flex items-start gap-1">
+                        <span>🎁</span><span>${p.promo}</span>
                     </div>` : '';
 
-                return `
-                <div class="flex flex-col p-2.5 rounded-xl border flex-1 min-w-[45%] ${cls} ${isLowest ? 'ring-2 ring-green-400 font-bold bg-white scale-[1.02] shadow-sm z-10' : 'opacity-90'}">
+                return `<div class="flex flex-col p-2.5 rounded-xl border flex-1 min-w-[45%] ${cls} ${isLowest ? 'ring-2 ring-green-400 font-bold bg-white scale-[1.02] shadow-sm z-10' : 'opacity-90'}">
                     <div class="flex items-center justify-between">
                         <span class="text-[11px] font-bold">${p.supermarket}</span> 
                         <span class="text-[15px]">$${isNaN(parsed) ? p.price : parsed.toFixed(1)}${isLowest ? '👍' : ''}</span>
                     </div>
-                    ${promoRow}
+                    ${promoText}
                 </div>`;
             }).join('');
-            
-            return `<div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-200 flex flex-col gap-3 relative overflow-hidden"><div class="flex gap-3 items-center"><div class="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center text-xl border border-slate-100 shadow-inner">🛒</div><div class="flex-1 min-w-0"><div class="text-[11px] text-blue-500 font-extrabold uppercase truncate">${info.brand || '&nbsp;'}</div><h3 class="font-bold text-slate-800 text-[15px] leading-snug">${pName}</h3></div></div><div class="flex flex-wrap gap-2 mt-1">${priceTags}</div></div>`;
+            return `<div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-200 flex flex-col gap-3 relative"><div class="flex gap-3 items-center"><div class="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center text-xl border border-slate-100 shadow-inner">🛒</div><div class="flex-1 min-w-0"><div class="text-[11px] text-blue-500 font-extrabold uppercase truncate">${info.brand || '&nbsp;'}</div><h3 class="font-bold text-slate-800 text-[15px] leading-snug">${pName}</h3></div></div><div class="flex flex-wrap gap-2 mt-1">${priceTags}</div></div>`;
         }
 
         init();
