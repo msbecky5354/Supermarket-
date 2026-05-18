@@ -126,14 +126,13 @@
                 .toLowerCase();
         }
 
-        // 🧠 深度遞迴掃描器：可指定優先語言
         function extractDeepPromoText(val, targetLang) {
             if (!val) return "";
             if (typeof val === 'string') return val.trim();
             if (Array.isArray(val)) return val.map(v => extractDeepPromoText(v, targetLang)).filter(v => v !== "").join('; ');
             if (typeof val === 'object') {
                 if (val[targetLang]) return extractDeepPromoText(val[targetLang], targetLang);
-                // 如果搵唔到指定語言，強制 Fallback 去繁體中文，確保唔會漏
+                // Fallback 只係為咗 Display，運算時如果無英文就寧願唔計
                 if (val['zh-Hant']) return extractDeepPromoText(val['zh-Hant'], targetLang);
                 if (val.description) return extractDeepPromoText(val.description, targetLang);
                 let vals = Object.values(val);
@@ -142,61 +141,48 @@
             return String(val);
         }
 
-        // 🧠 計算引擎：而家主要食英文 (promoCalc)
-        function calculateAvgPrice(promoText, originalPrice) {
-            if (!promoText || isNaN(originalPrice)) return null;
+        // 🧠 極簡純英文計算引擎 (Pure English Math Engine)
+        // 唔再需要理會咩「件、包、盒、支、任擇、慳、半價」，乾淨俐落！
+        function calculateAvgPrice(enPromoText, originalPrice) {
+            if (!enPromoText || isNaN(originalPrice)) return null;
             try {
-                let p = promoText.toLowerCase().replace(/\s+/g, ' '); 
-                p = p.replace(/一/g, '1').replace(/二/g, '2').replace(/三/g, '3').replace(/兩/g, '2');
-                
-                // 1. Buy X save Y / 買X慳Y
-                let mSave = p.match(/(?:買|buy)?\s*([0-9]+)\s*(?:件|包|盒|排|支|罐|筒|樽|to|for)?.*?(?:慳|save).*?\$?([0-9.]+)/);
+                // 轉細楷，清理多餘空格
+                let p = enPromoText.toLowerCase().replace(/\s+/g, ' ');
+
+                // 1. Buy X save Y (e.g. "Buy 2 to save $10.00", "Buy 2 item(s) save $27.00")
+                let mSave = p.match(/buy\s*([0-9]+).*?save.*?\$([0-9.]+)/);
                 if (mSave) {
-                    let qty = parseInt(mSave[1]); 
+                    let qty = parseInt(mSave[1]);
                     let disc = parseFloat(mSave[2]);
                     if (qty > 0) return ((originalPrice * qty) - disc) / qty;
                 }
 
-                // 2. 2nd half price / 半價
-                if (p.includes('半價') || p.includes('半价') || p.includes('half price')) {
-                    return (originalPrice * 1.5) / 2;
+                // 2. X for $Y (e.g. "2 for $16.00", "Buy 2 items for $138.00")
+                let mFor = p.match(/([0-9]+).*?for\s*\$([0-9.]+)/);
+                if (mFor) {
+                    let qty = parseInt(mFor[1]);
+                    let price = parseFloat(mFor[2]);
+                    if (qty > 0) return price / qty;
                 }
 
-                // 3. Buy X get Y / 買X送Y
-                let mFree = p.match(/(?:買|buy)\s*([0-9]+)\s*(?:送|get)\s*([0-9]+)/);
+                // 3. X% off (e.g. "15% off", "Buy 2 get 15% off")
+                let mOff = p.match(/([0-9.]+)%\s*off/);
+                if (mOff) {
+                    let perc = parseFloat(mOff[1]);
+                    return originalPrice * (1 - (perc / 100));
+                }
+
+                // 4. Buy X get Y free (e.g. "Buy 1 get 1 free")
+                let mFree = p.match(/buy\s*([0-9]+).*?get\s*([0-9]+).*?free/);
                 if (mFree) {
-                    let buy = parseInt(mFree[1]); 
+                    let buy = parseInt(mFree[1]);
                     let free = parseInt(mFree[2]);
                     return (originalPrice * buy) / (buy + free);
                 }
 
-                // 4. X折 (中文限定)
-                let mDisc = p.match(/([0-9.]+)(?:折)/);
-                if (mDisc && p.match(/[0-9]+[件包盒排支罐筒樽]/)) { 
-                    let discVal = parseFloat(mDisc[1]);
-                    let multiplier = discVal >= 10 ? discVal / 100 : discVal / 10;
-                    return originalPrice * multiplier;
-                }
-
-                // 5. X% off / X%折扣
-                let mPerc = p.match(/([0-9.]+)%\s*(?:折扣|off)/);
-                if (mPerc) {
-                    let offVal = parseFloat(mPerc[1]);
-                    return originalPrice * (1 - (offVal / 100));
-                }
-
-                // 6. X for $Y (英文最標準: "2 for $16.00")
-                let mTotalEn = p.match(/([0-9]+)\s*for\s*\$([0-9.]+)/);
-                if (mTotalEn) return parseFloat(mTotalEn[2]) / parseInt(mTotalEn[1]);
-
-                // 6.5 $X任揀Y件 (中文格式)
-                let mTotal1 = p.match(/\$?([0-9.]+)\s*(?:任[揀擇買選])\s*([0-9]+)\s*[件包盒排支罐筒樽]/);
-                if (mTotal1) return parseFloat(mTotal1[1]) / parseInt(mTotal1[2]);
-
-                // 7. Y件$X
-                let mTotal2 = p.match(/([0-9]+)\s*(?:件|包|盒|排|支|罐|筒|樽|at).*?\$?([0-9.]+)/);
-                if (mTotal2 && !p.includes('save') && !p.includes('慳')) {
-                    return parseFloat(mTotal2[2]) / parseInt(mTotal2[1]);
+                // 5. Half price (e.g. "2nd half price")
+                if (p.includes('half price')) {
+                    return (originalPrice * 1.5) / 2;
                 }
 
                 return null;
@@ -257,27 +243,35 @@
                         prices: [] 
                     };
                 }
+                
                 if (Array.isArray(item.prices)) {
                     item.prices.forEach(p => {
                         let smName = supermarketDict[currentLang][p.supermarketCode] || p.supermarketCode;
                         
-                        // 💡 雙引擎分離架構：提取顯示文 (Display) 同 運算文 (Calc)
                         let promoDisplay = "";
-                        let promoCalc = "";
+                        let promoCalcEn = ""; // 專門儲存純英文版本作計算用
                         
                         const promoKeys = ['promotions', 'promotion', 'offer', 'promotionDesc', 'promotionName', 'itemOffsetText'];
+                        
+                        // 第一重：掃描價錢層
                         for (let key of promoKeys) {
                             if (p[key]) {
                                 let extractedDisplay = extractDeepPromoText(p[key], currentLang);
                                 if (extractedDisplay && extractedDisplay !== "[object Object]") { 
                                     promoDisplay = extractedDisplay; 
-                                    // 核心：嘗試提取英文版作為運算基礎
-                                    promoCalc = extractDeepPromoText(p[key], 'en') || promoDisplay;
+                                    
+                                    // 強行提取 'en' 語言，如果冇就留空，唔好 fallback 去中文搞亂 Regex
+                                    if (typeof p[key] === 'object' && p[key]['en']) {
+                                        promoCalcEn = p[key]['en'];
+                                    } else if (typeof p[key] === 'string' && /save|for|off|free|half/.test(p[key].toLowerCase())) {
+                                        promoCalcEn = p[key]; // 如果本身就係英文字串
+                                    }
                                     break; 
                                 }
                             }
                         }
 
+                        // 第二重：掃描根目錄層
                         if (!promoDisplay) {
                             const itemKeys = ['promotions', 'offers', 'discounts'];
                             for (let key of itemKeys) {
@@ -287,7 +281,9 @@
                                         let extractedDisplay = extractDeepPromoText(smPromo, currentLang);
                                         if (extractedDisplay && extractedDisplay !== "[object Object]") {
                                             promoDisplay = extractedDisplay;
-                                            promoCalc = extractDeepPromoText(smPromo, 'en') || promoDisplay;
+                                            
+                                            if (smPromo['en']) promoCalcEn = smPromo['en'];
+                                            else if (smPromo.description && smPromo.description['en']) promoCalcEn = smPromo.description['en'];
                                             break;
                                         }
                                     }
@@ -300,7 +296,7 @@
                             supermarket: smName, 
                             price: p.price ?? '--', 
                             promoDisplay: promoDisplay,
-                            promoCalc: promoCalc // 保存專門用黎計數嘅大腦變數
+                            promoCalc: promoCalcEn // 將純英文餵畀引擎
                         });
                     });
                 }
@@ -399,13 +395,12 @@
                 else if (p.rawCode === 'AEON') { cls = 'border-purple-100 bg-purple-50/30'; textCls = 'text-purple-700'; }
                 else if (['MANNINGS','Watsons','LUNGFUNG'].includes(p.rawCode)) { cls = 'border-blue-100 bg-blue-50/30'; textCls = 'text-blue-700'; }
                 
-                // 💡 使用英文 Promo 文字 (promoCalc) 做計算
+                // 💡 餵入大腦嘅係純英文 (promoCalc)，但顯示出嚟嘅係當前語言 (promoDisplay)
                 let avg = calculateAvgPrice(p.promoCalc, parsed);
                 let avgText = currentLang === 'en' ? 'Avg' : '折合';
                 let eaText = currentLang === 'en' ? 'ea' : '件';
                 let avgLabel = avg ? `<span class="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-black shadow-sm ml-1 shrink-0 whitespace-nowrap">💰 ${avgText} $${avg.toFixed(1)}/${eaText}</span>` : '';
 
-                // 💡 依然使用中文 (或當前語言) 做顯示 (promoDisplay)
                 return `
                 <div class="flex flex-col p-3 rounded-2xl border ${cls} ${isLowest ? 'ring-2 ring-green-400 bg-white scale-[1.01] shadow-md z-10' : ''} transition-all">
                     <div class="flex justify-between items-center w-full">
