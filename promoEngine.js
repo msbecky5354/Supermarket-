@@ -1,6 +1,6 @@
-// promoEngine.js - 神器專屬運算大腦 (100% 英文覆蓋版)
+// promoEngine.js - 100% 純英文運算大腦版 (已清除所有中文過濾)
 
-// 💡 搜尋強化：移除非字母、數字及中文字元
+// 💡 搜尋強化：移除非字母、數字及中文字元 (呢個保留中文係因為用家搜尋時會打中文)
 function normalizeStr(str) {
     if (!str) return "";
     return String(str)
@@ -15,9 +15,11 @@ function extractDeepPromoText(val, targetLang) {
     if (!val) return "";
     if (typeof val === 'string') return val.trim();
     if (Array.isArray(val)) return val.map(v => extractDeepPromoText(v, targetLang)).filter(v => v !== "").join('; ');
+    
     if (typeof val === 'object') {
         if (val[targetLang]) return extractDeepPromoText(val[targetLang], targetLang);
-        if (val['zh-Hant']) return extractDeepPromoText(val['zh-Hant'], targetLang);
+        // 修正：如果系統指明要抽 'en'，就絕對唔會 Fallback 去 'zh-Hant'
+        if (targetLang !== 'en' && val['zh-Hant']) return extractDeepPromoText(val['zh-Hant'], targetLang);
         if (val.description) return extractDeepPromoText(val.description, targetLang);
         let vals = Object.values(val);
         if (vals.length > 0) return extractDeepPromoText(vals[0], targetLang);
@@ -25,61 +27,46 @@ function extractDeepPromoText(val, targetLang) {
     return String(val);
 }
 
-// 🧠 中英無死角終極引擎
+// 🧠 100% 純英文無死角引擎
 function calculateAvgPrice(enPromoText, originalPrice) {
     if (!enPromoText || isNaN(originalPrice)) return null;
     try {
+        // 清理多餘空格，全部轉細楷
         let p = enPromoText.toLowerCase().replace(/\s+/g, ' '); 
-        p = p.replace(/一/g, '1').replace(/二/g, '2').replace(/三/g, '3').replace(/兩/g, '2');
         
-        // 1. Buy X save Y / 買 X 慳 Y
-        let mSave = p.match(/(?:buy|買)?.*?([0-9]+).*?(?:save|慳).*?\$?([0-9.]+)/);
+        // 1. Buy X save Y (e.g., "Buy 2 item(s) save $27.00")
+        let mSave = p.match(/buy.*?([0-9]+).*?save.*?\$?([0-9.]+)/);
         if (mSave) return ((originalPrice * parseInt(mSave[1])) - parseFloat(mSave[2])) / parseInt(mSave[1]);
         
-        // 🌟 2. Buy Second for $X (修復全場唯一漏網之魚)
+        // 2. Buy Second for $X (e.g., "Buy Second for $1.00")
         let m2ndFor = p.match(/(?:buy\s*)?(?:second|2nd).*?for\s*\$([0-9.]+)/);
         if (m2ndFor) return (originalPrice + parseFloat(m2ndFor[1])) / 2;
 
-        // 3. X for $Y / Buy X for $Y
+        // 3. X for $Y / Buy X for $Y / X at $Y (e.g., "2 for $16.00", "Buy 2 at $54.00")
         let mFor1 = p.match(/([0-9]+).*?(?:for|at)\s*\$([0-9.]+)/);
-        if (mFor1) return parseFloat(mFor1[2]) / parseInt(mFor1[1]);
+        if (mFor1 && !p.includes('save')) return parseFloat(mFor1[2]) / parseInt(mFor1[1]);
         
-        // 4. $Y 任揀 X 件
-        let mFor2 = p.match(/\$?([0-9.]+).*?(?:任[揀擇買選])([0-9]+)/);
-        if (mFor2) return parseFloat(mFor2[1]) / parseInt(mFor2[2]);
-
-        // 5. 買 X件 $Y
-        let mFor3 = p.match(/(?:買)?([0-9]+)[件包盒排支罐筒樽杯].*?\$([0-9.]+)/);
-        if (mFor3 && !p.includes('save') && !p.includes('慳')) return parseFloat(mFor3[2]) / parseInt(mFor3[1]);
-
-        // 6. 2nd Item % off / 第二件半價 (防禦屈臣氏/萬寧伏位)
-        let m2ndPerc = p.match(/(?:2nd|第二).*?([0-9.]+)%|([0-9.]+)%.*?(?:2nd|第二)/);
+        // 4. 2nd Item % off (e.g., "2nd item for 50% off", "50% for 2nd")
+        let m2ndPerc = p.match(/(?:2nd).*?([0-9.]+)%|([0-9.]+)%.*?(?:2nd)/);
         if (m2ndPerc) {
             let perc = parseFloat(m2ndPerc[1] || m2ndPerc[2]);
             return (originalPrice * (2 - (perc / 100))) / 2;
         }
 
-        // 7. % off / 折扣
-        let mPerc = p.match(/([0-9.]+)%\s*(?:off|折扣)/);
+        // 5. % off (e.g., "15% off")
+        let mPerc = p.match(/([0-9.]+)%\s*off/);
         if (mPerc) return originalPrice * (1 - (parseFloat(mPerc[1]) / 100));
 
-        // 8. 打折
-        let mDisc = p.match(/([0-9.]+)(?:折)/);
-        if (mDisc) {
-            let val = parseFloat(mDisc[1]);
-            return originalPrice * (val >= 10 ? val / 100 : val / 10);
-        }
-
-        // 🌟 9. Buy/Add X get Y free (修復 Add 2 item(s) to cart and get 1 free)
-        let mFree = p.match(/(?:buy|add|買).*?([0-9]+).*?(?:get|送|free).*?([0-9]+)/);
+        // 6. Buy/Add X get Y free (e.g., "Add 2 item(s) to cart and get 1 free")
+        let mFree = p.match(/(?:buy|add).*?([0-9]+).*?(?:get|free).*?([0-9]+)/);
         if (mFree) {
             let buy = parseInt(mFree[1]);
             let free = parseInt(mFree[2]);
             return (originalPrice * buy) / (buy + free);
         }
 
-        // 10. Half price / 半價
-        if (p.includes('half') || p.includes('半價') || p.includes('半价')) return (originalPrice * 1.5) / 2;
+        // 7. Half price (e.g., "2nd half price")
+        if (p.includes('half')) return (originalPrice * 1.5) / 2;
 
         return null;
     } catch(e) { return null; }
