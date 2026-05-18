@@ -72,7 +72,6 @@
         let currentLang = 'zh-Hant';
         let selectedCat1 = null; 
 
-        // 提示語微調，引導用戶可以打字或找全部
         const uiText = {
             'zh-Hant': { 
                 title: "超市價格導航", mainCat: "第一步：選擇主分類", back: "返回", loading: "正在讀取超市數據...", error: "數據載入失敗，請確認 pricewatch.json 存在", send: "搜尋", placeholder: "輸入貨品名稱...",
@@ -232,15 +231,8 @@
 
         function performScopedSearch(query) {
             const q = query.toLowerCase();
-            
-            // 💡 升級：自然語言模糊比對 (Fuzzy Match)
-            // 這些字眼只要「包含」在句子裡就會觸發 (例如: "我要晒全部", "睇所有")
             const containsKeywords = ['所有', '全部', '清單', '清单', 'show all', 'list', 'everything', '我要晒', '睇晒', '任何'];
-            
-            // 這些字眼必須「完全相等」才觸發，避免誤傷 (例如: 避免 "全脂牛奶" 觸發了 "全")
             const exactKeywords = ['全', 'all', '*', '晒', '睇'];
-
-            // 判斷是否為「顯示全部」的意圖
             const isShowAll = containsKeywords.some(kw => q.includes(kw)) || exactKeywords.includes(q);
 
             let resultsHTML = '';
@@ -252,7 +244,6 @@
                     const brand = (productInfo.brand || '').toLowerCase();
                     const name = pName.toLowerCase();
 
-                    // 如果是查看全部，或者是名稱/品牌有中，就加入列表
                     if (isShowAll || name.includes(q) || brand.includes(q)) {
                         count++;
                         resultsHTML += generateProductCardHTML(pName, productInfo);
@@ -303,12 +294,18 @@
         }
 
         function generateProductCardHTML(pName, productInfo) {
+            // 💡 1. 篩選出有效價錢
             let validPrices = productInfo.prices.map(p => parseFloat(p.price)).filter(price => !isNaN(price));
+            
+            // 💡 2. 計算有效報價的數量，判斷是否有對比空間
+            let hasComparison = validPrices.length > 1;
             let minPrice = validPrices.length > 0 ? Math.min(...validPrices) : null;
 
             const priceTags = productInfo.prices.map(p => {
                 let parsed = parseFloat(p.price);
-                let isLowest = (!isNaN(parsed) && parsed === minPrice && minPrice !== null);
+                
+                // 💡 3. 只有當 "有效報價大於 1" 的時候，才允許顯示「最低價」的高光效果
+                let isLowest = (!isNaN(parsed) && parsed === minPrice && minPrice !== null && hasComparison);
                 
                 let colorClass = 'bg-slate-50 text-slate-700 border-slate-200';
                 if (p.rawCode === 'WELLCOME') colorClass = 'bg-red-50 text-red-700 border-red-200';
