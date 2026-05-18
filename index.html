@@ -214,13 +214,35 @@
                     item.prices.forEach(p => {
                         let smName = supermarketDict[currentLang][p.supermarketCode] || p.supermarketCode;
                         let promo = "";
-                        const promoKeys = ['promotions', 'promotion', 'offer', 'promotionDesc', 'promotionName', 'itemOffsetText'];
+                        
+                        // 第一重掃描：價錢物件內部
+                        const promoKeys = ['promotions', 'promotion', 'offer', 'offers', 'discount', 'discounts', 'promotionDesc', 'promotionName', 'itemOffsetText', 'remarks'];
                         for (let key of promoKeys) {
                             if (p[key]) {
                                 let extracted = extractDeepPromoText(p[key], currentLang);
                                 if (extracted && extracted !== "[object Object]") { promo = extracted; break; }
                             }
                         }
+
+                        // 💡 關鍵修正：第二重掃描！(剛才唔小心漏咗加番入去)
+                        // 如果價錢層冇優惠，就去 Root 層 (item) 嘅陣列度搵！
+                        if (!promo) {
+                            const itemKeys = ['promotions', 'offers', 'discounts'];
+                            for (let key of itemKeys) {
+                                if (Array.isArray(item[key])) {
+                                    // 靠 supermarketCode 匹配番呢間超市嘅優惠
+                                    const smPromo = item[key].find(pr => pr.supermarketCode === p.supermarketCode || pr.code === p.supermarketCode);
+                                    if (smPromo) {
+                                        let extracted = extractDeepPromoText(smPromo, currentLang);
+                                        if (extracted && extracted !== "[object Object]") {
+                                            promo = extracted;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
                         structuredData[cat1][cat2][name].prices.push({ 
                             rawCode: p.supermarketCode, supermarket: smName, price: p.price ?? '--', promo: promo 
                         });
@@ -305,7 +327,6 @@
             chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
         }
 
-        // 💡 核心修正：單行列表排版
         function generateProductCardHTML(pName, info) {
             let valid = info.prices.map(p => parseFloat(p.price)).filter(pr => !isNaN(pr));
             let min = valid.length > 0 ? Math.min(...valid) : null;
@@ -320,7 +341,7 @@
                 else if (['MANNINGS','Watsons','LUNGFUNG'].includes(p.rawCode)) { cls = 'border-blue-100 bg-blue-50/30'; textCls = 'text-blue-700'; }
                 
                 let avg = calculateAvgPrice(p.promo, parsed);
-                let avgLabel = avg ? `<span class="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-black shadow-sm ml-1">💰 折合 $${avg.toFixed(1)}/件</span>` : '';
+                let avgLabel = avg ? `<span class="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-black shadow-sm ml-1 shrink-0 whitespace-nowrap">💰 折合 $${avg.toFixed(1)}/件</span>` : '';
 
                 return `
                 <div class="flex flex-col p-3 rounded-2xl border ${cls} ${isLowest ? 'ring-2 ring-green-400 bg-white scale-[1.01] shadow-md z-10' : ''} transition-all">
@@ -329,8 +350,8 @@
                         <span class="text-[17px] font-black text-slate-800">$${isNaN(parsed) ? p.price : parsed.toFixed(1)}${isLowest ? ' <span class="text-lg">👍</span>' : ''}</span>
                     </div>
                     ${p.promo ? `
-                    <div class="mt-2 flex flex-wrap items-center gap-1">
-                        <span class="text-[11px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-md border border-red-100">🏷️ ${p.promo}</span>
+                    <div class="mt-2 flex flex-wrap sm:flex-nowrap items-center justify-between gap-1 w-full">
+                        <span class="text-[11px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-md border border-red-100 break-words w-full sm:w-auto">🏷️ ${p.promo}</span>
                         ${avgLabel}
                     </div>` : ''}
                 </div>`;
