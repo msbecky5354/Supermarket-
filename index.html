@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>香港超市精明格價網 | Supermarket Price Navigator</title>
+    <title>香港生活百貨價格神器 | HK Essentials Price Artifact</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .clickable-card:active { transform: scale(0.95); }
@@ -19,14 +19,15 @@
 
     <header class="bg-white border-b flex-none z-30 px-4 py-3 shadow-sm relative">
         <div class="max-w-2xl mx-auto flex justify-between items-center">
+            
             <div class="flex flex-col">
                 <div class="flex items-center gap-1.5">
-                    <span class="text-xl md:text-2xl">⚡</span>
-                    <h1 id="appTitle" class="text-base md:text-lg bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent font-black tracking-wide">超市精明格價網</h1>
+                    <span class="text-xl">🚀</span>
+                    <h1 id="appTitle" class="text-base md:text-lg bg-gradient-to-r from-indigo-600 to-blue-700 bg-clip-text text-transparent font-black tracking-wide">香港生活百貨價格神器</h1>
                 </div>
                 <div class="flex items-center gap-1.5 mt-0.5 pl-7">
                     <span id="dataSourceBadge" class="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200/60 shadow-sm tracking-wider uppercase">
-                        香港政府超市數據
+                        政府數據連線
                     </span>
                     <span id="todayStatusLabel" class="text-[10px] text-slate-400 font-medium tracking-wide">今日即時行情</span>
                 </div>
@@ -51,7 +52,7 @@
                 <span id="sortTip" class="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full font-bold">常用優先</span>
             </div>
             <div id="level1Container" class="grid grid-cols-2 gap-4">
-                <div id="loadingText" class="text-center p-4 text-slate-400 text-sm col-span-2">正在同步最新數據...</div>
+                <div id="loadingText" class="text-center p-4 text-slate-400 text-sm col-span-2">正在讀取數據神器...</div>
             </div>
         </section>
 
@@ -89,16 +90,17 @@
         let currentLang = 'zh-Hant';
         let selectedCat1 = null; 
 
+        // 字典正名更新
         const uiText = {
-            'zh-Hant': { title: "超市精明格價網", badge: "香港政府超市數據", subLabel: "今日即時行情", mainCat: "第一步：選擇主分類", sortTip: "常用優先", back: "返回", loading: "同步中...", error: "載入失敗", send: "搜尋", placeholder: "輸入名稱...", chatWelcome: "您選擇了", chatAsk: "想搵咩貨品？<br><span class='text-xs text-slate-500 mt-1 block'>（或輸入「全部」）</span>", chatSearching: "尋找中...", chatNoResult: "找不到貨品。", chatFound: "為您找到：", chatShowAll: "該分類下的所有貨品：", replyGreeting: "你好！我係格價助手 🤖，今日想搵咩？", replyThanks: "唔使客氣！仲有咩可以幫你？", replyTest: "系統運作正常 🟢", replyEmotion: "哈哈！我只係幫你格價嘅 AI 🤖" },
-            'zh-Hans': { title: "超市精明格价网", badge: "香港政府超市数据", subLabel: "今日即时行情", mainCat: "第一步：选择主分类", sortTip: "常用優先", back: "返回", loading: "同步中...", error: "加载失败", send: "搜索", placeholder: "输入名称...", chatWelcome: "您选择了", chatAsk: "想找什么商品？<br><span class='text-xs text-slate-500 mt-1 block'>（或输入「全部」）</span>", chatSearching: "寻找中...", chatNoResult: "找不到商品。", chatFound: "为您找到：", chatShowAll: "该分类下的所有商品：", replyGreeting: "你好！我是比价助手 🤖，今天想找什么？", replyThanks: "不用客气！还有什麼可以帮您？", replyTest: "系统运作正常 🟢", replyEmotion: "哈哈！我只是帮您比价的 AI 🤖" },
-            'en': { title: "Price Navigator", badge: "HK Gov Supermarket Data", subLabel: "Live Daily Prices", mainCat: "Step 1: Select Category", sortTip: "Frequent First", back: "Back", loading: "Syncing...", error: "Failed to load", send: "Search", placeholder: "Type name...", chatWelcome: "Selected", chatAsk: "What are you looking for?<br><span class='text-xs text-slate-500 mt-1 block'>(Or type 'all')</span>", chatSearching: "Searching...", chatNoResult: "No results.", chatFound: "Found:", chatShowAll: "All items in this category:", replyGreeting: "Hello! I am your Price Assistant 🤖", replyThanks: "You're welcome! Anything else?", replyTest: "System OK 🟢", replyEmotion: "Haha! I am just your Price AI 🤖" }
+            'zh-Hant': { title: "香港生活百貨價格神器", badge: "政府數據連線", subLabel: "今日即時行情", mainCat: "第一步：選擇主分類", sortTip: "常用優先", back: "返回", loading: "正在啟動價格神器...", error: "數據載入失敗", send: "搜尋", placeholder: "輸入名稱...", chatWelcome: "您選擇了", chatAsk: "想搵咩貨品？<br><span class='text-xs text-slate-500 mt-1 block'>（或輸入「全部」）</span>", chatSearching: "尋找中...", chatNoResult: "找不到貨品。", chatFound: "神器為您找到：", chatShowAll: "該分類下的所有清單：", replyGreeting: "你好！我係格價助手 🤖，今日想搵咩神器？", replyThanks: "唔使客氣！仲有咩幫到你？", replyTest: "神器運作正常 🟢", replyEmotion: "哈哈！我只係一個幫你慳錢嘅 AI 🤖" },
+            'zh-Hans': { title: "香港生活百货价格神器", badge: "政府数据连线", subLabel: "今日即时行情", mainCat: "第一步：选择主分类", sortTip: "常用优先", back: "返回", loading: "正在启动价格神器...", error: "数据加载失败", send: "搜索", placeholder: "输入名称...", chatWelcome: "您选择了", chatAsk: "想找什么商品？<br><span class='text-xs text-slate-500 mt-1 block'>（或输入「全部」）</span>", chatSearching: "寻找中...", chatNoResult: "找不到商品。", chatFound: "神器为您找到：", chatShowAll: "该分类下的所有清单：", replyGreeting: "你好！我是比价助手 🤖，今天想找什么？", replyThanks: "不用客气！还有什麼可以帮您？", replyTest: "神器运作正常 🟢", replyEmotion: "哈哈！我只是個幫您省錢的 AI 🤖" },
+            'en': { title: "HK Essentials Price Artifact", badge: "Gov Data Link", subLabel: "Live Daily Prices", mainCat: "Step 1: Select Category", sortTip: "Frequent First", back: "Back", loading: "Starting Artifact...", error: "Failed to load", send: "Search", placeholder: "Type name...", chatWelcome: "Selected", chatAsk: "What are you looking for?<br><span class='text-xs text-slate-500 mt-1 block'>(Or type 'all')</span>", chatSearching: "Searching...", chatNoResult: "No results.", chatFound: "Found by Artifact:", chatShowAll: "All items in this category:", replyGreeting: "Hello! I am your Price Assistant 🤖", replyThanks: "You're welcome! Anything else?", replyTest: "System OK 🟢", replyEmotion: "Haha! I am just your smart Price AI 🤖" }
         };
 
         const supermarketDict = {
-            'zh-Hant': { 'WELLCOME': '惠康', 'PARKNSHOP': '百佳', 'JASONS': 'Jasons', 'MARKETPLACE': 'Market Place', 'AEON': 'AEON', 'Watsons': '屈臣氏', 'MANNINGS': '萬寧', 'USELECT': 'U購' },
-            'zh-Hans': { 'WELLCOME': '惠康', 'PARKNSHOP': '百佳', 'JASONS': 'Jasons', 'MARKETPLACE': 'Market Place', 'AEON': 'AEON', 'Watsons': '屈臣氏', 'MANNINGS': '万宁', 'USELECT': 'U购' },
-            'en': { 'WELLCOME': 'Wellcome', 'PARKNSHOP': 'PARKnSHOP', 'JASONS': 'Jasons', 'MARKETPLACE': 'Market Place', 'AEON': 'AEON', 'Watsons': 'Watsons', 'MANNINGS': 'Mannings', 'USELECT': 'U-Select' }
+            'zh-Hant': { 'WELLCOME': '惠康', 'PARKNSHOP': '百佳', 'JASONS': 'Jasons', 'MARKETPLACE': 'Market Place', 'AEON': 'AEON', 'Watsons': '屈臣氏', 'MANNINGS': '萬寧', 'USELECT': 'U購', 'LUNGFUNG': '龍豐' },
+            'zh-Hans': { 'WELLCOME': '惠康', 'PARKNSHOP': '百佳', 'JASONS': 'Jasons', 'MARKETPLACE': 'Market Place', 'AEON': 'AEON', 'Watsons': '屈臣氏', 'MANNINGS': '万宁', 'USELECT': 'U购', 'LUNGFUNG': '龙丰' },
+            'en': { 'WELLCOME': 'Wellcome', 'PARKNSHOP': 'PARKnSHOP', 'JASONS': 'Jasons', 'MARKETPLACE': 'Market Place', 'AEON': 'AEON', 'Watsons': 'Watsons', 'MANNINGS': 'Mannings', 'USELECT': 'U-Select', 'LUNGFUNG': 'Lung Fung' }
         };
 
         const catStyles = [
@@ -114,7 +116,6 @@
             { keywords: ['酒', 'beer', 'wine', 'spirit'], icon: '🍷', bg: 'from-fuchsia-100 to-purple-200', text: 'text-purple-900', border: 'border-purple-300' }
         ];
 
-        // 💡 記憶功能：記錄分類點擊次數
         function recordCategoryClick(catName) {
             let history = JSON.parse(localStorage.getItem('cat_usage_history') || '{}');
             history[catName] = (history[catName] || 0) + 1;
@@ -184,17 +185,12 @@
             for (let style of catStyles) {
                 if (style.keywords.some(kw => lowerName.includes(kw.toLowerCase()))) return style;
             }
-            return { icon: '🛍️', bg: 'from-slate-100 to-slate-200', text: 'text-slate-800', border: 'border-slate-300' };
+            return { icon: '📦', bg: 'from-slate-100 to-slate-200', text: 'text-slate-800', border: 'border-slate-300' };
         }
 
-        // 💡 核心改動：渲染時根據點擊次數排序
         function renderLevel1() {
             level1Container.innerHTML = '';
-            
-            // 讀取點擊歷史
             const history = JSON.parse(localStorage.getItem('cat_usage_history') || '{}');
-            
-            // 排序邏輯：點擊次數降序 -> 字母順序
             const categoriesL1 = Object.keys(structuredData).sort((a, b) => {
                 const countA = history[a] || 0;
                 const countB = history[b] || 0;
@@ -207,29 +203,14 @@
                 const clickCount = history[cat1] || 0;
                 const card = document.createElement('div');
                 card.className = `clickable-card bg-gradient-to-br ${style.bg} p-3 rounded-[2rem] shadow-sm border ${style.border} cursor-pointer transition-all flex flex-col items-center justify-center text-center aspect-square overflow-hidden relative`;
-                
-                // 如果有點擊次數，在右上角加一個淡淡的小點標示它是常用分類
-                const favIndicator = clickCount > 0 ? `<div class="absolute top-3 right-3 w-1.5 h-1.5 bg-blue-400 rounded-full opacity-50"></div>` : '';
-
-                card.innerHTML = `
-                    ${favIndicator}
-                    <div class="text-4xl mb-2">${style.icon}</div>
-                    <span class="font-bold ${style.text} text-[13px] leading-snug line-clamp-3 px-1">${cat1}</span>
-                `;
-                card.onclick = () => {
-                    recordCategoryClick(cat1); // 記錄點擊
-                    startChat(cat1);
-                };
+                const favIndicator = clickCount > 0 ? `<div class="absolute top-3 right-3 w-1.5 h-1.5 bg-indigo-500 rounded-full opacity-40"></div>` : '';
+                card.innerHTML = `${favIndicator}<div class="text-4xl mb-2">${style.icon}</div><span class="font-bold ${style.text} text-[13px] leading-snug line-clamp-3 px-1">${cat1}</span>`;
+                card.onclick = () => { recordCategoryClick(cat1); startChat(cat1); };
                 level1Container.appendChild(card);
             });
         }
 
-        function showLevel1() { 
-            chatSection.classList.add('hidden'); 
-            level1Section.classList.remove('hidden'); 
-            selectedCat1 = null; 
-            renderLevel1(); // 返回時刷新一次首頁，確保最新的排序立即生效
-        }
+        function showLevel1() { chatSection.classList.add('hidden'); level1Section.classList.remove('hidden'); selectedCat1 = null; renderLevel1(); }
 
         function startChat(cat1) {
             selectedCat1 = cat1;
@@ -244,12 +225,9 @@
         function checkSmallTalk(query) {
             const q = query.toLowerCase().replace(/[.,!?。，！？\s]/g, '');
             if (q.length > 20) return null;
-            const exclamations = ['omg', 'wow', 'haha', 'lol', '天啊', '救命'];
-            if (exclamations.some(kw => q.includes(kw))) return uiText[currentLang].replyEmotion;
-            const greetings = ['你好', 'hi', 'hello', '早晨', 'howru'];
-            if (greetings.some(kw => q.includes(kw))) return uiText[currentLang].replyGreeting;
-            const thanks = ['唔該', '多謝', 'thank', '謝謝'];
-            if (thanks.some(kw => q.includes(kw))) return uiText[currentLang].replyThanks;
+            if (['omg', 'wow', 'haha', 'lol', '天啊', '救命'].some(kw => q.includes(kw))) return uiText[currentLang].replyEmotion;
+            if (['你好', 'hi', 'hello', '早晨', 'howru'].some(kw => q.includes(kw))) return uiText[currentLang].replyGreeting;
+            if (['唔該', '多謝', 'thank', '謝謝'].some(kw => q.includes(kw))) return uiText[currentLang].replyThanks;
             return null;
         }
 
@@ -307,6 +285,7 @@
                 if (p.rawCode === 'WELLCOME') cls = 'bg-red-50 text-red-700 border-red-200';
                 else if (p.rawCode === 'PARKNSHOP') cls = 'bg-yellow-50 text-yellow-800 border-yellow-300';
                 else if (p.rawCode === 'AEON') cls = 'bg-purple-50 text-purple-700 border-purple-200';
+                else if (p.rawCode === 'MANNINGS' || p.rawCode === 'Watsons' || p.rawCode === 'LUNGFUNG') cls = 'bg-blue-50 text-blue-700 border-blue-200';
                 return `<div class="flex items-center justify-between text-[13px] px-3 py-2 rounded-xl border whitespace-nowrap flex-1 min-w-[45%] ${cls} ${isLowest ? 'ring-2 ring-green-400 font-bold bg-white scale-[1.02]' : 'opacity-80'}"><span>${p.supermarket}</span> <span class="ml-2 text-[15px]">$${isNaN(parsed) ? p.price : parsed.toFixed(1)}${isLowest ? '👍' : ''}</span></div>`;
             }).join('');
             return `<div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-200 flex flex-col gap-3 relative"><div class="flex gap-3 items-center"><div class="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center text-xl border border-slate-100 shadow-inner">🛒</div><div class="flex-1 min-w-0"><div class="text-[11px] text-blue-500 font-extrabold uppercase truncate">${info.brand || '&nbsp;'}</div><h3 class="font-bold text-slate-800 text-[15px] leading-snug">${pName}</h3></div></div><div class="flex flex-wrap gap-2 mt-1">${priceTags}</div></div>`;
