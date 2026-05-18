@@ -50,7 +50,6 @@
     </header>
 
     <main class="flex-1 overflow-hidden w-full max-w-2xl mx-auto relative flex flex-col">
-        
         <section id="level1Section" class="absolute inset-0 overflow-y-auto no-scrollbar p-5 pb-24 bg-slate-50/50">
             <div class="flex justify-between items-center mb-5">
                 <h2 id="mainCatLabel" class="text-sm font-bold text-slate-500 uppercase tracking-wider">第一步：選擇主分類</h2>
@@ -96,7 +95,7 @@
         const uiText = {
             'zh-Hant': { title: "香港生活百貨價格神器", badge: "政府數據連線", subLabel: "今日即時行情", mainCat: "第一步：選擇主分類", sortTip: "常用優先", back: "返回", loading: "讀取中...", error: "載入失敗", send: "搜尋", placeholder: "搜尋貨品/牌子...", chatWelcome: "您選擇了", chatAsk: "想搵咩貨品？", chatFound: "神器為您找到：", chatShowAll: "所有貨品清單：", replyGreeting: "你好！我係格價助手 🤖", replyThanks: "唔使客氣！" },
             'zh-Hans': { title: "香港生活百货价格神器", badge: "政府数据连线", subLabel: "今日即时行情", mainCat: "第一步：选择主分类", sortTip: "常用優先", back: "返回", loading: "启动中...", error: "加载失败", send: "搜索", placeholder: "搜索商品/品牌...", chatWelcome: "您选择了", chatAsk: "想找什么商品？", chatFound: "神器为您找到：", chatShowAll: "商品清单：", replyGreeting: "你好！我是比价助手 🤖", replyThanks: "不用客气！" },
-            'en': { title: "HK Artifact", badge: "Gov Data Link", subLabel: "Live Daily Prices", mainCat: "Step 1: Select Category", sortTip: "Frequent First", back: "Back", loading: "Loading...", error: "Failed", send: "Search", placeholder: "Type product name...", chatWelcome: "Selected", chatAsk: "What are you looking for?", chatFound: "Found:", chatShowAll: "Full List:", replyGreeting: "Hello! I am your AI 🤖", replyThanks: "You're welcome!" }
+            'en': { title: "Price Navigator", badge: "HK Open Data", subLabel: "Live Daily Prices", mainCat: "Step 1: Select Category", sortTip: "Frequent First", back: "Back", loading: "Loading...", error: "Failed", send: "Search", placeholder: "Type product or brand...", chatWelcome: "Selected", chatAsk: "What are you looking for?", chatFound: "Found:", chatShowAll: "Full List:", replyGreeting: "Hello! I am your AI 🤖", replyThanks: "You're welcome!" }
         };
 
         const supermarketDict = {
@@ -120,66 +119,85 @@
 
         function normalizeStr(str) {
             if (!str) return "";
-            return String(str).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+            return String(str)
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "") 
+                .toLowerCase();
         }
 
-        function extractDeepPromoText(val, lang) {
+        // 🧠 深度遞迴掃描器：可指定優先語言
+        function extractDeepPromoText(val, targetLang) {
             if (!val) return "";
             if (typeof val === 'string') return val.trim();
-            if (Array.isArray(val)) return val.map(v => extractDeepPromoText(v, lang)).filter(v => v !== "").join('; ');
+            if (Array.isArray(val)) return val.map(v => extractDeepPromoText(v, targetLang)).filter(v => v !== "").join('; ');
             if (typeof val === 'object') {
-                if (val[lang]) return extractDeepPromoText(val[lang], lang);
-                if (val['zh-Hant']) return extractDeepPromoText(val['zh-Hant'], lang);
-                if (val.description) return extractDeepPromoText(val.description, lang);
+                if (val[targetLang]) return extractDeepPromoText(val[targetLang], targetLang);
+                // 如果搵唔到指定語言，強制 Fallback 去繁體中文，確保唔會漏
+                if (val['zh-Hant']) return extractDeepPromoText(val['zh-Hant'], targetLang);
+                if (val.description) return extractDeepPromoText(val.description, targetLang);
                 let vals = Object.values(val);
-                if (vals.length > 0) return extractDeepPromoText(vals[0], lang);
+                if (vals.length > 0) return extractDeepPromoText(vals[0], targetLang);
             }
             return String(val);
         }
 
-        // 🧠 修復版：智能語義計算引擎 (優先處理「慳」、「送」、「折」)
+        // 🧠 計算引擎：而家主要食英文 (promoCalc)
         function calculateAvgPrice(promoText, originalPrice) {
             if (!promoText || isNaN(originalPrice)) return null;
             try {
-                let p = promoText.replace(/\s+/g, ''); 
+                let p = promoText.toLowerCase().replace(/\s+/g, ' '); 
+                p = p.replace(/一/g, '1').replace(/二/g, '2').replace(/三/g, '3').replace(/兩/g, '2');
                 
-                // 1. 買 X 件慳 $Y (例如：買2件慳$27.00) -> 必須最優先！
-                let mSave = p.match(/([0-9]+)[件包盒排支罐筒樽].*?慳.*?\$?([0-9.]+)/);
+                // 1. Buy X save Y / 買X慳Y
+                let mSave = p.match(/(?:買|buy)?\s*([0-9]+)\s*(?:件|包|盒|排|支|罐|筒|樽|to|for)?.*?(?:慳|save).*?\$?([0-9.]+)/);
                 if (mSave) {
                     let qty = parseInt(mSave[1]); 
                     let disc = parseFloat(mSave[2]);
                     if (qty > 0) return ((originalPrice * qty) - disc) / qty;
                 }
 
-                // 2. 第2件半價 / 第二件半價
-                if (p.includes('第2件半價') || p.includes('第二件半價') || p.includes('第2件半价')) {
+                // 2. 2nd half price / 半價
+                if (p.includes('半價') || p.includes('半价') || p.includes('half price')) {
                     return (originalPrice * 1.5) / 2;
                 }
 
-                // 3. 買一送一 / 買X送Y
-                if (p.includes('買一送一') || p.includes('買1送1') || p.includes('买一送一')) {
-                    return originalPrice / 2;
-                }
-                let mFree = p.match(/買([0-9]+)送([0-9]+)/);
+                // 3. Buy X get Y / 買X送Y
+                let mFree = p.match(/(?:買|buy)\s*([0-9]+)\s*(?:送|get)\s*([0-9]+)/);
                 if (mFree) {
-                    let buy = parseInt(mFree[1]);
+                    let buy = parseInt(mFree[1]); 
                     let free = parseInt(mFree[2]);
                     return (originalPrice * buy) / (buy + free);
                 }
 
-                // 4. X件Y折 (例如：買2件8折)
-                let mDisc = p.match(/([0-9]+)[件包盒排支罐筒樽].*?([0-9.]+)折/);
-                if (mDisc) {
-                    return originalPrice * (parseFloat(mDisc[2]) / 10);
+                // 4. X折 (中文限定)
+                let mDisc = p.match(/([0-9.]+)(?:折)/);
+                if (mDisc && p.match(/[0-9]+[件包盒排支罐筒樽]/)) { 
+                    let discVal = parseFloat(mDisc[1]);
+                    let multiplier = discVal >= 10 ? discVal / 100 : discVal / 10;
+                    return originalPrice * multiplier;
                 }
 
-                // 5. $X 任揀/買 Y件 (例如：$16任擇2件)
-                let mTotal1 = p.match(/\$([0-9.]+).*?(?:任[揀擇買])?([0-9]+)[件包盒排支罐筒樽]/);
+                // 5. X% off / X%折扣
+                let mPerc = p.match(/([0-9.]+)%\s*(?:折扣|off)/);
+                if (mPerc) {
+                    let offVal = parseFloat(mPerc[1]);
+                    return originalPrice * (1 - (offVal / 100));
+                }
+
+                // 6. X for $Y (英文最標準: "2 for $16.00")
+                let mTotalEn = p.match(/([0-9]+)\s*for\s*\$([0-9.]+)/);
+                if (mTotalEn) return parseFloat(mTotalEn[2]) / parseInt(mTotalEn[1]);
+
+                // 6.5 $X任揀Y件 (中文格式)
+                let mTotal1 = p.match(/\$?([0-9.]+)\s*(?:任[揀擇買選])\s*([0-9]+)\s*[件包盒排支罐筒樽]/);
                 if (mTotal1) return parseFloat(mTotal1[1]) / parseInt(mTotal1[2]);
 
-                // 6. X件 $Y (例如：2件$26) -> 必須放最後，否則會誤判「慳」
-                let mTotal2 = p.match(/([0-9]+)[件包盒排支罐筒樽].*?\$([0-9.]+)/);
-                if (mTotal2) return parseFloat(mTotal2[2]) / parseInt(mTotal2[1]);
+                // 7. Y件$X
+                let mTotal2 = p.match(/([0-9]+)\s*(?:件|包|盒|排|支|罐|筒|樽|at).*?\$?([0-9.]+)/);
+                if (mTotal2 && !p.includes('save') && !p.includes('慳')) {
+                    return parseFloat(mTotal2[2]) / parseInt(mTotal2[1]);
+                }
 
                 return null;
             } catch(e) { return null; }
@@ -242,24 +260,34 @@
                 if (Array.isArray(item.prices)) {
                     item.prices.forEach(p => {
                         let smName = supermarketDict[currentLang][p.supermarketCode] || p.supermarketCode;
-                        let promo = "";
+                        
+                        // 💡 雙引擎分離架構：提取顯示文 (Display) 同 運算文 (Calc)
+                        let promoDisplay = "";
+                        let promoCalc = "";
+                        
                         const promoKeys = ['promotions', 'promotion', 'offer', 'promotionDesc', 'promotionName', 'itemOffsetText'];
                         for (let key of promoKeys) {
                             if (p[key]) {
-                                let extracted = extractDeepPromoText(p[key], currentLang);
-                                if (extracted && extracted !== "[object Object]") { promo = extracted; break; }
+                                let extractedDisplay = extractDeepPromoText(p[key], currentLang);
+                                if (extractedDisplay && extractedDisplay !== "[object Object]") { 
+                                    promoDisplay = extractedDisplay; 
+                                    // 核心：嘗試提取英文版作為運算基礎
+                                    promoCalc = extractDeepPromoText(p[key], 'en') || promoDisplay;
+                                    break; 
+                                }
                             }
                         }
 
-                        if (!promo) {
+                        if (!promoDisplay) {
                             const itemKeys = ['promotions', 'offers', 'discounts'];
                             for (let key of itemKeys) {
                                 if (Array.isArray(item[key])) {
                                     const smPromo = item[key].find(pr => pr.supermarketCode === p.supermarketCode || pr.code === p.supermarketCode);
                                     if (smPromo) {
-                                        let extracted = extractDeepPromoText(smPromo, currentLang);
-                                        if (extracted && extracted !== "[object Object]") {
-                                            promo = extracted;
+                                        let extractedDisplay = extractDeepPromoText(smPromo, currentLang);
+                                        if (extractedDisplay && extractedDisplay !== "[object Object]") {
+                                            promoDisplay = extractedDisplay;
+                                            promoCalc = extractDeepPromoText(smPromo, 'en') || promoDisplay;
                                             break;
                                         }
                                     }
@@ -268,7 +296,11 @@
                         }
 
                         structuredData[cat1][cat2][name].prices.push({ 
-                            rawCode: p.supermarketCode, supermarket: smName, price: p.price ?? '--', promo: promo 
+                            rawCode: p.supermarketCode, 
+                            supermarket: smName, 
+                            price: p.price ?? '--', 
+                            promoDisplay: promoDisplay,
+                            promoCalc: promoCalc // 保存專門用黎計數嘅大腦變數
                         });
                     });
                 }
@@ -354,9 +386,12 @@
         function generateProductCardHTML(pName, info) {
             let valid = info.prices.map(p => parseFloat(p.price)).filter(pr => !isNaN(pr));
             let min = valid.length > 0 ? Math.min(...valid) : null;
+            let allSamePrice = valid.length > 1 && valid.every(v => v === valid[0]);
+
             const priceList = info.prices.map(p => {
                 let parsed = parseFloat(p.price);
-                let isLowest = (!isNaN(parsed) && parsed === min && valid.length > 1);
+                let isLowest = (!isNaN(parsed) && parsed === min && valid.length > 1 && !allSamePrice);
+                
                 let cls = 'border-slate-100 bg-slate-50/50';
                 let textCls = 'text-slate-600';
                 if (p.rawCode === 'WELLCOME') { cls = 'border-red-100 bg-red-50/30'; textCls = 'text-red-700'; }
@@ -364,18 +399,22 @@
                 else if (p.rawCode === 'AEON') { cls = 'border-purple-100 bg-purple-50/30'; textCls = 'text-purple-700'; }
                 else if (['MANNINGS','Watsons','LUNGFUNG'].includes(p.rawCode)) { cls = 'border-blue-100 bg-blue-50/30'; textCls = 'text-blue-700'; }
                 
-                let avg = calculateAvgPrice(p.promo, parsed);
-                let avgLabel = avg ? `<span class="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-black shadow-sm ml-1 shrink-0 whitespace-nowrap">💰 折合 $${avg.toFixed(1)}/件</span>` : '';
+                // 💡 使用英文 Promo 文字 (promoCalc) 做計算
+                let avg = calculateAvgPrice(p.promoCalc, parsed);
+                let avgText = currentLang === 'en' ? 'Avg' : '折合';
+                let eaText = currentLang === 'en' ? 'ea' : '件';
+                let avgLabel = avg ? `<span class="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-black shadow-sm ml-1 shrink-0 whitespace-nowrap">💰 ${avgText} $${avg.toFixed(1)}/${eaText}</span>` : '';
 
+                // 💡 依然使用中文 (或當前語言) 做顯示 (promoDisplay)
                 return `
                 <div class="flex flex-col p-3 rounded-2xl border ${cls} ${isLowest ? 'ring-2 ring-green-400 bg-white scale-[1.01] shadow-md z-10' : ''} transition-all">
                     <div class="flex justify-between items-center w-full">
                         <span class="font-black text-[13px] ${textCls} flex items-center gap-1">${p.supermarket}</span>
                         <span class="text-[17px] font-black text-slate-800">$${isNaN(parsed) ? p.price : parsed.toFixed(1)}${isLowest ? ' <span class="text-lg">👍</span>' : ''}</span>
                     </div>
-                    ${p.promo ? `
+                    ${p.promoDisplay ? `
                     <div class="mt-2 flex flex-wrap sm:flex-nowrap items-center justify-between gap-1 w-full">
-                        <span class="text-[11px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-md border border-red-100 break-words w-full sm:w-auto">🏷️ ${p.promo}</span>
+                        <span class="text-[11px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-md border border-red-100 break-words w-full sm:w-auto">🏷️ ${p.promoDisplay}</span>
                         ${avgLabel}
                     </div>` : ''}
                 </div>`;
