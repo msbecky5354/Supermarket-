@@ -17,9 +17,9 @@ jobs:
 
       - name: Download JSON
         run: |
-          curl -o data/pricewatch.json "https://你的下載網址/file.json"
+          curl -o data/pricewatch.json "https://online-price-watch.consumer.org.hk/opw/opendata/pricewatch.json"
           # 或者用 wget
-          # wget -O data/pricewatch.json "https://你的下載網址/file.json"
+          # wget -O data/pricewatch.json "https://online-price-watch.consumer.org.hk/opw/opendata/pricewatch.json"
 
       - name: Commit and push if changed
         run: |
