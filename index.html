@@ -20,10 +20,9 @@
         }
         .lightning-icon { animation: pulse-lightning 2s infinite ease-in-out; display: inline-block; }
 
-        /* 🌟 新增：星星閃爍動畫 */
         @keyframes star-blink {
             0%, 100% { opacity: 1; transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 3px #fde047); }
-            50% { opacity: 0.5; transform: scale(1.25) rotate(15deg); filter: drop-shadow(0 0 8px #eab308); }
+            50% { opacity: 0.5; transform: scale(1.3) rotate(15deg); filter: drop-shadow(0 0 8px #eab308); }
         }
         .star-blink { animation: star-blink 1.5s infinite ease-in-out; display: inline-block; }
     </style>
@@ -126,7 +125,11 @@
 
         function normalizeStr(str) {
             if (!str) return "";
-            return String(str).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "").toLowerCase();
+            return String(str)
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "") 
+                .toLowerCase();
         }
 
         function extractDeepPromoText(val, targetLang) {
@@ -143,36 +146,50 @@
             return String(val);
         }
 
-        function calculateAvgPrice(enPromoText, originalPrice) {
-            if (!enPromoText || isNaN(originalPrice)) return null;
+        // 🧠 中英無死角終極引擎
+        function calculateAvgPrice(promoText, originalPrice) {
+            if (!promoText || isNaN(originalPrice)) return null;
             try {
-                let p = enPromoText.toLowerCase().replace(/\s+/g, ' ');
-                let mSave = p.match(/buy\s*([0-9]+).*?save.*?\$([0-9.]+)/);
-                if (mSave) {
-                    let qty = parseInt(mSave[1]);
-                    let disc = parseFloat(mSave[2]);
-                    if (qty > 0) return ((originalPrice * qty) - disc) / qty;
+                let p = promoText.toLowerCase().replace(/\s+/g, ' '); 
+                p = p.replace(/一/g, '1').replace(/二/g, '2').replace(/三/g, '3').replace(/兩/g, '2');
+                
+                // 1. Buy X save Y / 買 X 慳 Y
+                let mSave = p.match(/(?:buy|買)?.*?([0-9]+).*?(?:save|慳).*?\$?([0-9.]+)/);
+                if (mSave) return ((originalPrice * parseInt(mSave[1])) - parseFloat(mSave[2])) / parseInt(mSave[1]);
+                
+                // 2. X for $Y / Buy X for $Y / $Y 任揀 X 件
+                let mFor1 = p.match(/([0-9]+).*?(?:for|at)\s*\$([0-9.]+)/);
+                if (mFor1) return parseFloat(mFor1[2]) / parseInt(mFor1[1]);
+                
+                let mFor2 = p.match(/\$?([0-9.]+).*?(?:任[揀擇買選])([0-9]+)/);
+                if (mFor2) return parseFloat(mFor2[1]) / parseInt(mFor2[2]);
+
+                // 3. % off / 折扣
+                let mPerc = p.match(/([0-9.]+)%\s*(?:off|折扣)/);
+                if (mPerc) return originalPrice * (1 - (parseFloat(mPerc[1]) / 100));
+
+                // 4. 打折 (中文限定)
+                let mDisc = p.match(/([0-9.]+)(?:折)/);
+                if (mDisc) {
+                    let val = parseFloat(mDisc[1]);
+                    return originalPrice * (val >= 10 ? val / 100 : val / 10);
                 }
-                let mFor = p.match(/([0-9]+).*?for\s*\$([0-9.]+)/);
-                if (mFor) {
-                    let qty = parseInt(mFor[1]);
-                    let price = parseFloat(mFor[2]);
-                    if (qty > 0) return price / qty;
-                }
-                let mOff = p.match(/([0-9.]+)%\s*off/);
-                if (mOff) {
-                    let perc = parseFloat(mOff[1]);
-                    return originalPrice * (1 - (perc / 100));
-                }
-                let mFree = p.match(/buy\s*([0-9]+).*?get\s*([0-9]+).*?free/);
+
+                // 5. Buy X get Y free / 買 X 送 Y
+                let mFree = p.match(/(?:buy|買).*?([0-9]+).*?(?:get|送).*?([0-9]+)/);
                 if (mFree) {
                     let buy = parseInt(mFree[1]);
                     let free = parseInt(mFree[2]);
                     return (originalPrice * buy) / (buy + free);
                 }
-                if (p.includes('half price')) {
-                    return (originalPrice * 1.5) / 2;
-                }
+
+                // 6. Half price / 半價
+                if (p.includes('half') || p.includes('半價') || p.includes('半价')) return (originalPrice * 1.5) / 2;
+
+                // 7. Y件$X / Y at $X (容錯 Buy 2 at $54.00)
+                let mTotal3 = p.match(/(?:buy|買)?\s*([0-9]+)\s*(?:件|包|盒|排|支|罐|筒|樽|at|items|item|pcs|pc).*?\$([0-9.]+)/);
+                if (mTotal3 && !p.includes('save') && !p.includes('慳')) return parseFloat(mTotal3[2]) / parseInt(mTotal3[1]);
+
                 return null;
             } catch(e) { return null; }
         }
@@ -235,17 +252,19 @@
                 if (Array.isArray(item.prices)) {
                     item.prices.forEach(p => {
                         let smName = supermarketDict[currentLang][p.supermarketCode] || p.supermarketCode;
+                        
                         let promoDisplay = "";
                         let promoCalcEn = ""; 
                         
                         const promoKeys = ['promotions', 'promotion', 'offer', 'promotionDesc', 'promotionName', 'itemOffsetText'];
+                        
+                        // 💡 提取資料，唔再用蠢過濾器！有咩食咩，交畀強大嘅 Regex 去處理！
                         for (let key of promoKeys) {
                             if (p[key]) {
                                 let extractedDisplay = extractDeepPromoText(p[key], currentLang);
                                 if (extractedDisplay && extractedDisplay !== "[object Object]") { 
                                     promoDisplay = extractedDisplay; 
-                                    if (typeof p[key] === 'object' && p[key]['en']) promoCalcEn = p[key]['en'];
-                                    else if (typeof p[key] === 'string' && /save|for|off|free|half/.test(p[key].toLowerCase())) promoCalcEn = p[key];
+                                    promoCalcEn = extractDeepPromoText(p[key], 'en') || promoDisplay;
                                     break; 
                                 }
                             }
@@ -260,8 +279,7 @@
                                         let extractedDisplay = extractDeepPromoText(smPromo, currentLang);
                                         if (extractedDisplay && extractedDisplay !== "[object Object]") {
                                             promoDisplay = extractedDisplay;
-                                            if (smPromo['en']) promoCalcEn = smPromo['en'];
-                                            else if (smPromo.description && smPromo.description['en']) promoCalcEn = smPromo.description['en'];
+                                            promoCalcEn = extractDeepPromoText(smPromo, 'en') || promoDisplay;
                                             break;
                                         }
                                     }
@@ -358,13 +376,11 @@
         }
 
         function generateProductCardHTML(pName, info) {
-            // 💡 預先掃描所有有效價錢 (單件標價 vs 折合價)
             let validPrices = [];
             info.prices.forEach(p => {
                 let parsed = parseFloat(p.price);
                 if (!isNaN(parsed)) {
                     let avg = calculateAvgPrice(p.promoCalc, parsed);
-                    // 如果有折合價且更平，就用折合價；否則用單件標價
                     validPrices.push((avg && avg > 0 && avg < parsed) ? avg : parsed);
                 }
             });
@@ -377,8 +393,6 @@
 
             const priceList = info.prices.map(p => {
                 let parsed = parseFloat(p.price);
-                
-                // 👍 單件最平邏輯 (基本要求)
                 let isLowestBase = (!isNaN(parsed) && parsed === minBasePrice && info.prices.length > 1 && !allSameBasePrice);
                 
                 let cls = 'border-slate-100 bg-slate-50/50';
@@ -394,11 +408,8 @@
                 let avgLabel = '';
 
                 if (avg && avg > 0 && avg < parsed) {
-                    // 🌟 判斷呢個折合價係咪「全場最抵」(絕對最低價)
                     let isAbsoluteLowest = (minEffectivePrice !== null && Math.abs(avg - minEffectivePrice) < 0.01 && validPrices.length > 1 && !allSameEffectivePrice);
-                    
                     let starHtml = isAbsoluteLowest ? `<span class="star-blink ml-1 text-[13px]">⭐</span>` : '';
-                    
                     avgLabel = `<span class="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-black shadow-sm ml-1 shrink-0 whitespace-nowrap flex items-center">💰 ${avgText} $${avg.toFixed(1)}/${eaText}${starHtml}</span>`;
                 }
 
