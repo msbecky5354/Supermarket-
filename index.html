@@ -13,16 +13,22 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        
+        /* 💡 應要求加入的 Logo 閃爍動畫 */
+        @keyframes pulse-lightning {
+            0%, 100% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 2px #fbbf24); }
+            50% { opacity: 0.7; transform: scale(1.1); filter: drop-shadow(0 0 8px #fbbf24); }
+        }
+        .lightning-icon { animation: pulse-lightning 2s infinite ease-in-out; display: inline-block; }
     </style>
 </head>
 <body class="bg-slate-50 h-[100dvh] flex flex-col font-sans text-slate-900 overflow-hidden w-full">
 
     <header class="bg-white border-b flex-none z-30 px-4 py-3 shadow-sm relative">
         <div class="max-w-2xl mx-auto flex justify-between items-center">
-            
             <div class="flex flex-col">
                 <div class="flex items-center gap-1.5">
-                    <span class="text-xl">🚀</span>
+                    <span class="text-xl lightning-icon">⚡</span>
                     <h1 id="appTitle" class="text-base md:text-lg bg-gradient-to-r from-indigo-600 to-blue-700 bg-clip-text text-transparent font-black tracking-wide">香港生活百貨價格神器</h1>
                 </div>
                 <div class="flex items-center gap-1.5 mt-0.5 pl-7">
@@ -52,7 +58,7 @@
                 <span id="sortTip" class="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full font-bold">常用優先</span>
             </div>
             <div id="level1Container" class="grid grid-cols-2 gap-4">
-                <div id="loadingText" class="text-center p-4 text-slate-400 text-sm col-span-2">正在讀取數據神器...</div>
+                <div id="loadingText" class="text-center p-4 text-slate-400 text-sm col-span-2">正在啟動價格神器...</div>
             </div>
         </section>
 
@@ -63,9 +69,7 @@
                 </button>
                 <h2 id="chatTitle" class="font-bold text-slate-800 truncate text-[15px] flex items-center"></h2>
             </div>
-
             <div id="chatMessages" class="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4"></div>
-
             <div class="bg-white border-t p-3 pb-[max(16px,env(safe-area-inset-bottom))] flex-none shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
                 <form id="chatForm" class="flex gap-2 max-w-2xl mx-auto" onsubmit="event.preventDefault(); submitChat();">
                     <input type="text" id="chatInput" class="flex-1 px-4 py-3.5 bg-slate-100 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-[15px]" autocomplete="off">
@@ -90,11 +94,10 @@
         let currentLang = 'zh-Hant';
         let selectedCat1 = null; 
 
-        // 字典正名更新
         const uiText = {
-            'zh-Hant': { title: "香港生活百貨價格神器", badge: "政府數據連線", subLabel: "今日即時行情", mainCat: "第一步：選擇主分類", sortTip: "常用優先", back: "返回", loading: "正在啟動價格神器...", error: "數據載入失敗", send: "搜尋", placeholder: "輸入名稱...", chatWelcome: "您選擇了", chatAsk: "想搵咩貨品？<br><span class='text-xs text-slate-500 mt-1 block'>（或輸入「全部」）</span>", chatSearching: "尋找中...", chatNoResult: "找不到貨品。", chatFound: "神器為您找到：", chatShowAll: "該分類下的所有清單：", replyGreeting: "你好！我係格價助手 🤖，今日想搵咩神器？", replyThanks: "唔使客氣！仲有咩幫到你？", replyTest: "神器運作正常 🟢", replyEmotion: "哈哈！我只係一個幫你慳錢嘅 AI 🤖" },
-            'zh-Hans': { title: "香港生活百货价格神器", badge: "政府数据连线", subLabel: "今日即时行情", mainCat: "第一步：选择主分类", sortTip: "常用优先", back: "返回", loading: "正在启动价格神器...", error: "数据加载失败", send: "搜索", placeholder: "输入名称...", chatWelcome: "您选择了", chatAsk: "想找什么商品？<br><span class='text-xs text-slate-500 mt-1 block'>（或输入「全部」）</span>", chatSearching: "寻找中...", chatNoResult: "找不到商品。", chatFound: "神器为您找到：", chatShowAll: "该分类下的所有清单：", replyGreeting: "你好！我是比价助手 🤖，今天想找什么？", replyThanks: "不用客气！还有什麼可以帮您？", replyTest: "神器运作正常 🟢", replyEmotion: "哈哈！我只是個幫您省錢的 AI 🤖" },
-            'en': { title: "HK Essentials Price Artifact", badge: "Gov Data Link", subLabel: "Live Daily Prices", mainCat: "Step 1: Select Category", sortTip: "Frequent First", back: "Back", loading: "Starting Artifact...", error: "Failed to load", send: "Search", placeholder: "Type name...", chatWelcome: "Selected", chatAsk: "What are you looking for?<br><span class='text-xs text-slate-500 mt-1 block'>(Or type 'all')</span>", chatSearching: "Searching...", chatNoResult: "No results.", chatFound: "Found by Artifact:", chatShowAll: "All items in this category:", replyGreeting: "Hello! I am your Price Assistant 🤖", replyThanks: "You're welcome! Anything else?", replyTest: "System OK 🟢", replyEmotion: "Haha! I am just your smart Price AI 🤖" }
+            'zh-Hant': { title: "香港生活百貨價格神器", badge: "政府數據連線", subLabel: "今日即時行情", mainCat: "第一步：選擇主分類", sortTip: "常用優先", back: "返回", loading: "正在啟動價格神器...", error: "數據載入失敗", send: "搜尋", placeholder: "輸入名稱...", chatWelcome: "您選擇了", chatAsk: "想搵咩貨品？<br><span class='text-xs text-slate-500 mt-1 block'>（或輸入「全部」）</span>", chatSearching: "尋找中...", chatNoResult: "找不到貨品。", chatFound: "神器為您找到：", chatShowAll: "該分類下的所有清單：", replyGreeting: "你好！我係格價助手 🤖，今日想搵咩？", replyThanks: "唔使客氣！仲有咩幫到你？", replyTest: "神器運作正常 🟢", replyEmotion: "哈哈！我係一個專心幫你格價嘅 AI 🤖" },
+            'zh-Hans': { title: "香港生活百货价格神器", badge: "政府数据连线", subLabel: "今日即时行情", mainCat: "第一步：选择主分类", sortTip: "常用優先", back: "返回", loading: "正在启动价格神器...", error: "数据加载失败", send: "搜索", placeholder: "输入名称...", chatWelcome: "您选择了", chatAsk: "想找什么商品？<br><span class='text-xs text-slate-500 mt-1 block'>（或输入「全部」）</span>", chatSearching: "寻找中...", chatNoResult: "找不到商品。", chatFound: "神器为您找到：", chatShowAll: "该分类下的所有商品：", replyGreeting: "你好！我是比价助手 🤖，今天想找什么？", replyThanks: "不用客气！还有什麼可以帮您？", replyTest: "神器运作正常 🟢", replyEmotion: "哈哈！我是幫您比價的 AI 🤖" },
+            'en': { title: "HK Essentials Artifact", badge: "Gov Data Link", subLabel: "Live Daily Prices", mainCat: "Step 1: Select Category", sortTip: "Frequent First", back: "Back", loading: "Starting Artifact...", error: "Failed to load", send: "Search", placeholder: "Type name...", chatWelcome: "Selected", chatAsk: "What are you looking for?<br><span class='text-xs text-slate-500 mt-1 block'>(Or type 'all')</span>", chatSearching: "Searching...", chatNoResult: "No results.", chatFound: "Found:", chatShowAll: "Full List:", replyGreeting: "Hello! I am your Price Assistant 🤖", replyThanks: "You're welcome!", replyTest: "System OK 🟢", replyEmotion: "Haha! I am your price AI 🤖" }
         };
 
         const supermarketDict = {
@@ -168,13 +171,18 @@
                 let brand = item.brand?.[currentLang] || item.brand?.['zh-Hant'] || '';
                 if (!structuredData[cat1]) structuredData[cat1] = {};
                 if (!structuredData[cat1][cat2]) structuredData[cat1][cat2] = {};
-                if (!structuredData[cat1][cat2][name]) {
-                    structuredData[cat1][cat2][name] = { brand, prices: [] };
-                }
+                if (!structuredData[cat1][cat2][name]) structuredData[cat1][cat2][name] = { brand, prices: [] };
                 if (Array.isArray(item.prices)) {
                     item.prices.forEach(p => {
                         let smName = supermarketDict[currentLang][p.supermarketCode] || p.supermarketCode;
-                        structuredData[cat1][cat2][name].prices.push({ rawCode: p.supermarketCode, supermarket: smName, price: p.price ?? '--' });
+                        // 💡 抓取優惠字眼 (Promotion Name)
+                        let promo = p.promotionName?.[currentLang] || p.promotionName?.['zh-Hant'] || "";
+                        structuredData[cat1][cat2][name].prices.push({ 
+                            rawCode: p.supermarketCode, 
+                            supermarket: smName, 
+                            price: p.price ?? '--',
+                            promo: promo 
+                        });
                     });
                 }
             });
@@ -197,7 +205,6 @@
                 if (countB !== countA) return countB - countA;
                 return a.localeCompare(b);
             });
-
             categoriesL1.forEach(cat1 => {
                 const style = getCatStyle(cat1);
                 const clickCount = history[cat1] || 0;
@@ -275,6 +282,7 @@
             chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
         }
 
+        // 💡 核心升級：加入優惠資訊顯示
         function generateProductCardHTML(pName, info) {
             let valid = info.prices.map(p => parseFloat(p.price)).filter(pr => !isNaN(pr));
             let min = valid.length > 0 ? Math.min(...valid) : null;
@@ -286,7 +294,17 @@
                 else if (p.rawCode === 'PARKNSHOP') cls = 'bg-yellow-50 text-yellow-800 border-yellow-300';
                 else if (p.rawCode === 'AEON') cls = 'bg-purple-50 text-purple-700 border-purple-200';
                 else if (p.rawCode === 'MANNINGS' || p.rawCode === 'Watsons' || p.rawCode === 'LUNGFUNG') cls = 'bg-blue-50 text-blue-700 border-blue-200';
-                return `<div class="flex items-center justify-between text-[13px] px-3 py-2 rounded-xl border whitespace-nowrap flex-1 min-w-[45%] ${cls} ${isLowest ? 'ring-2 ring-green-400 font-bold bg-white scale-[1.02]' : 'opacity-80'}"><span>${p.supermarket}</span> <span class="ml-2 text-[15px]">$${isNaN(parsed) ? p.price : parsed.toFixed(1)}${isLowest ? '👍' : ''}</span></div>`;
+                
+                // 如果有優惠資訊，顯示一個精緻的小文字
+                const promoText = p.promo ? `<div class="text-[10px] mt-1 leading-tight text-orange-600 font-bold break-words max-w-full">${p.promo}</div>` : '';
+
+                return `<div class="flex flex-col p-2.5 rounded-xl border flex-1 min-w-[45%] ${cls} ${isLowest ? 'ring-2 ring-green-400 font-bold bg-white scale-[1.02]' : 'opacity-90'}">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[12px]">${p.supermarket}</span> 
+                        <span class="text-[14px]">$${isNaN(parsed) ? p.price : parsed.toFixed(1)}${isLowest ? '👍' : ''}</span>
+                    </div>
+                    ${promoText}
+                </div>`;
             }).join('');
             return `<div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-200 flex flex-col gap-3 relative"><div class="flex gap-3 items-center"><div class="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center text-xl border border-slate-100 shadow-inner">🛒</div><div class="flex-1 min-w-0"><div class="text-[11px] text-blue-500 font-extrabold uppercase truncate">${info.brand || '&nbsp;'}</div><h3 class="font-bold text-slate-800 text-[15px] leading-snug">${pName}</h3></div></div><div class="flex flex-wrap gap-2 mt-1">${priceTags}</div></div>`;
         }
