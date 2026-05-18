@@ -2,20 +2,19 @@
 <html lang="zh-HK">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>超市精明格價網 | Supermarket Price Navigator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .clickable-card:active { transform: scale(0.95); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        /* 避免長文字超出卡片 */
         .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
     </style>
 </head>
-<body class="bg-slate-50 h-screen flex flex-col font-sans text-slate-900 overflow-hidden">
+<body class="bg-slate-50 h-[100dvh] flex flex-col font-sans text-slate-900 overflow-hidden w-full">
 
-    <header class="bg-white border-b flex-none z-20 p-4 shadow-sm">
+    <header class="bg-white border-b flex-none z-30 p-4 shadow-sm relative">
         <div class="max-w-2xl mx-auto flex justify-between items-center">
             <h1 id="appTitle" class="text-xl bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent font-bold tracking-wide">超市價格導航</h1>
             <div class="flex items-center gap-3">
@@ -29,16 +28,16 @@
         </div>
     </header>
 
-    <main class="flex-1 overflow-hidden w-full max-w-2xl mx-auto relative">
+    <main class="flex-1 overflow-hidden w-full max-w-2xl mx-auto relative flex flex-col">
         
-        <section id="level1Section" class="h-full overflow-y-auto no-scrollbar p-5 pb-20 bg-slate-50/50">
+        <section id="level1Section" class="absolute inset-0 overflow-y-auto no-scrollbar p-5 pb-24 bg-slate-50/50">
             <h2 id="mainCatLabel" class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-5">第一步：選擇主分類</h2>
             <div id="level1Container" class="grid grid-cols-2 gap-4">
                 <div id="loadingText" class="text-center p-4 text-slate-400 text-sm col-span-2">正在處理超市真實數據...</div>
             </div>
         </section>
 
-        <section id="chatSection" class="hidden h-full flex flex-col bg-slate-50">
+        <section id="chatSection" class="hidden absolute inset-0 flex flex-col bg-slate-50 z-20">
             <div class="bg-white border-b px-4 py-3 flex items-center shadow-sm flex-none z-10">
                 <button onclick="showLevel1()" class="text-blue-600 font-medium flex items-center bg-blue-50 px-3 py-1.5 rounded-xl mr-3 active:scale-95 transition">
                     ← <span id="backBtnText" class="ml-1">返回</span>
@@ -48,8 +47,8 @@
 
             <div id="chatMessages" class="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4"></div>
 
-            <div class="bg-white border-t p-3 flex-none pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-10">
-                <form id="chatForm" class="flex gap-2" onsubmit="event.preventDefault(); submitChat();">
+            <div class="bg-white border-t p-3 pb-[max(16px,env(safe-area-inset-bottom))] flex-none shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
+                <form id="chatForm" class="flex gap-2 max-w-2xl mx-auto" onsubmit="event.preventDefault(); submitChat();">
                     <input type="text" id="chatInput" class="flex-1 px-4 py-3.5 bg-slate-100 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-[15px]" autocomplete="off">
                     <button type="submit" class="bg-blue-600 text-white px-5 rounded-2xl font-bold shadow-sm active:scale-95 transition flex items-center justify-center">
                         <span id="sendBtnText">搜尋</span>
@@ -94,7 +93,6 @@
             'en': { 'WELLCOME': 'Wellcome', 'PARKNSHOP': 'PARKnSHOP', 'JASONS': 'Jasons', 'MARKETPLACE': 'Market Place', 'AEON': 'AEON', 'Watsons': 'Watsons', 'MANNINGS': 'Mannings', 'USELECT': 'U-Select' }
         };
 
-        // 🎨 升級版多語言關鍵字配對 (支援繁、簡、英)
         const catStyles = [
             { keywords: ['米', '食油', 'rice', 'oil', '肉'], icon: '🍚', bg: 'from-amber-100 to-orange-100', text: 'text-orange-900', border: 'border-orange-200' },
             { keywords: ['奶類', '奶类', 'dairy', '蛋', 'egg'], icon: '🥚', bg: 'from-yellow-100 to-amber-100', text: 'text-amber-900', border: 'border-yellow-300' },
@@ -168,7 +166,6 @@
             });
         }
 
-        // 動態比對關鍵字抓取樣式
         function getCatStyle(catName) {
             const lowerName = catName.toLowerCase();
             for (let style of catStyles) {
@@ -188,7 +185,6 @@
                 
                 card.className = `clickable-card bg-gradient-to-br ${style.bg} p-3 rounded-[2rem] shadow-sm border ${style.border} cursor-pointer hover:shadow-md transition-all flex flex-col items-center justify-center text-center aspect-square relative overflow-hidden`;
                 
-                // 修改了字體大小為 text-[13px] 並加入了 line-clamp-3 防止文字溢出
                 card.innerHTML = `
                     <div class="absolute inset-0 bg-white/20 rounded-[2rem] opacity-0 hover:opacity-100 transition-opacity"></div>
                     <div class="text-4xl mb-2 drop-shadow-sm transform group-hover:scale-110 transition-transform">${style.icon}</div>
@@ -217,7 +213,8 @@
             const welcomeText = `${uiText[currentLang].chatWelcome} <strong class="text-blue-600">${cat1}</strong>。<br>${uiText[currentLang].chatAsk}`;
             addBotMessage(welcomeText);
             
-            setTimeout(() => chatInput.focus(), 100);
+            // 手機版不需要自動 focus，避免鍵盤突然彈出遮擋畫面
+            // setTimeout(() => chatInput.focus(), 100);
         }
 
         function submitChat() {
@@ -226,6 +223,9 @@
 
             addUserMessage(query);
             chatInput.value = '';
+            
+            // 提交後收起鍵盤 (優化手機體驗)
+            chatInput.blur();
 
             setTimeout(() => {
                 performScopedSearch(query);
