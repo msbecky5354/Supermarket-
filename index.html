@@ -14,6 +14,8 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="價格神器">
     
+    <script src="promoEngine.js?v=2"></script>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .clickable-card:active { transform: scale(0.95); }
@@ -130,59 +132,6 @@
             { keywords: ['酒', 'wine', 'beer'], icon: '🍷', bg: 'from-fuchsia-100 to-purple-200', text: 'text-purple-900', border: 'border-purple-300' }
         ];
 
-        function normalizeStr(str) {
-            if (!str) return "";
-            return String(str).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "").toLowerCase();
-        }
-
-        function extractDeepPromoText(val, targetLang) {
-            if (!val) return "";
-            if (typeof val === 'string') return val.trim();
-            if (Array.isArray(val)) return val.map(v => extractDeepPromoText(v, targetLang)).filter(v => v !== "").join('; ');
-            if (typeof val === 'object') {
-                if (val[targetLang]) return extractDeepPromoText(val[targetLang], targetLang);
-                if (val['zh-Hant']) return extractDeepPromoText(val['zh-Hant'], targetLang);
-                if (val.description) return extractDeepPromoText(val.description, targetLang);
-                let vals = Object.values(val);
-                if (vals.length > 0) return extractDeepPromoText(vals[0], targetLang);
-            }
-            return String(val);
-        }
-
-        function calculateAvgPrice(enPromoText, originalPrice) {
-            if (!enPromoText || isNaN(originalPrice)) return null;
-            try {
-                let p = enPromoText.toLowerCase().replace(/\s+/g, ' ');
-                let mSave = p.match(/buy\s*([0-9]+).*?save.*?\$([0-9.]+)/);
-                if (mSave) {
-                    let qty = parseInt(mSave[1]);
-                    let disc = parseFloat(mSave[2]);
-                    if (qty > 0) return ((originalPrice * qty) - disc) / qty;
-                }
-                let mFor = p.match(/([0-9]+).*?for\s*\$([0-9.]+)/);
-                if (mFor) {
-                    let qty = parseInt(mFor[1]);
-                    let price = parseFloat(mFor[2]);
-                    if (qty > 0) return price / qty;
-                }
-                let mOff = p.match(/([0-9.]+)%\s*off/);
-                if (mOff) {
-                    let perc = parseFloat(mOff[1]);
-                    return originalPrice * (1 - (perc / 100));
-                }
-                let mFree = p.match(/buy\s*([0-9]+).*?get\s*([0-9]+).*?free/);
-                if (mFree) {
-                    let buy = parseInt(mFree[1]);
-                    let free = parseInt(mFree[2]);
-                    return (originalPrice * buy) / (buy + free);
-                }
-                if (p.includes('half price')) {
-                    return (originalPrice * 1.5) / 2;
-                }
-                return null;
-            } catch(e) { return null; }
-        }
-
         async function init() {
             try {
                 let data = null;
@@ -233,6 +182,7 @@
                 if (!structuredData[cat1][cat2][name]) {
                     structuredData[cat1][cat2][name] = { 
                         brand: localBrand, 
+                        // 呼叫 promoEngine.js 內的 normalizeStr
                         searchKeywords: normalizeStr(`${name} ${enName} ${localBrand} ${enBrand}`),
                         prices: [] 
                     };
@@ -248,12 +198,13 @@
                         
                         for (let key of promoKeys) {
                             if (p[key]) {
+                                // 呼叫 promoEngine.js 內的 extractDeepPromoText
                                 let extractedDisplay = extractDeepPromoText(p[key], currentLang);
                                 if (extractedDisplay && extractedDisplay !== "[object Object]") { 
                                     promoDisplay = extractedDisplay; 
                                     if (typeof p[key] === 'object' && p[key]['en']) {
                                         promoCalcEn = p[key]['en'];
-                                    } else if (typeof p[key] === 'string' && /save|for|off|free|half/.test(p[key].toLowerCase())) {
+                                    } else if (typeof p[key] === 'string' && /save|for|off|free|half|2nd/.test(p[key].toLowerCase())) {
                                         promoCalcEn = p[key]; 
                                     }
                                     break; 
@@ -372,6 +323,7 @@
             info.prices.forEach(p => {
                 let parsed = parseFloat(p.price);
                 if (!isNaN(parsed)) {
+                    // 呼叫 promoEngine.js 內的 calculateAvgPrice
                     let avg = calculateAvgPrice(p.promoCalc, parsed);
                     validPrices.push((avg && avg > 0 && avg < parsed) ? avg : parsed);
                 }
