@@ -15,7 +15,7 @@
     <meta name="apple-mobile-web-app-title" content="價格神器">
     
     <script src="lang.js?v=1"></script>
-    <script src="promoEngine.js?v=5"></script>
+    <script src="promoEngine.js?v=3"></script>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -238,6 +238,12 @@
             });
         }
 
+        function getCatStyle(catName) {
+            const lowerName = catName.toLowerCase();
+            for (let style of catStyles) { if (style.keywords.some(kw => lowerName.includes(kw.toLowerCase()))) return style; }
+            return { icon: '📦', bg: 'from-slate-100 to-slate-200', text: 'text-slate-800', border: 'border-slate-300' };
+        }
+
         function showLevel1() { chatSection.classList.add('hidden'); level1Section.classList.remove('hidden'); renderLevel1(); }
 
         function startChat(cat1) {
@@ -267,13 +273,6 @@
         function performScopedSearch(query) {
             const q = normalizeStr(query);
             const isAll = ['所有', '全部', 'all', 'list'].some(kw => q.includes(normalizeStr(kw)));
-            
-            // 🛑 終極防禦：防止單丁/雙丁英文字母引發「字母大爆炸」
-            if (/^[a-z]{1,2}$/.test(q) && !isAll) {
-                addBotMessage(`你輸入嘅英文字「${query}」太短啦！為咗精準啲，請輸入最少 3 個英文字母（例如打完整牌子名），或者直接輸入中文字啦！🕵️‍♂️`);
-                return;
-            }
-
             let html = '';
             Object.keys(structuredData[selectedCat1]).forEach(cat2 => {
                 Object.keys(structuredData[selectedCat1][cat2]).forEach(pName => {
