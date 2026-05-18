@@ -33,7 +33,7 @@
         <section id="level1Section" class="absolute inset-0 overflow-y-auto no-scrollbar p-5 pb-24 bg-slate-50/50">
             <h2 id="mainCatLabel" class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-5">第一步：選擇主分類</h2>
             <div id="level1Container" class="grid grid-cols-2 gap-4">
-                <div id="loadingText" class="text-center p-4 text-slate-400 text-sm col-span-2">正在讀取超市數據...</div>
+                <div id="loadingText" class="text-center p-4 text-slate-400 text-sm col-span-2">正在處理超市真實數據...</div>
             </div>
         </section>
 
@@ -72,18 +72,28 @@
         let currentLang = 'zh-Hant';
         let selectedCat1 = null; 
 
+        // 加入閑聊回應的多語言字典
         const uiText = {
             'zh-Hant': { 
                 title: "超市價格導航", mainCat: "第一步：選擇主分類", back: "返回", loading: "正在同步最新超市數據...", error: "數據載入失敗，請檢查網絡連線。", send: "搜尋", placeholder: "輸入貨品名稱...",
-                chatWelcome: "您選擇了", chatAsk: "請問想尋找什麼貨品？<br><span class='text-xs text-slate-500 mt-1 block'>（可輸入名稱，或留言「全部」查看清單）</span>", chatSearching: "尋找中...", chatNoResult: "找不到相關貨品，請嘗試其他字眼。", chatFound: "為您找到以下貨品：", chatShowAll: "為您列出該分類下的所有貨品："
+                chatWelcome: "您選擇了", chatAsk: "請問想尋找什麼貨品？<br><span class='text-xs text-slate-500 mt-1 block'>（可輸入名稱，或留言「全部」查看清單）</span>", chatSearching: "尋找中...", chatNoResult: "找不到相關貨品，請嘗試其他字眼。", chatFound: "為您找到以下貨品：", chatShowAll: "為您列出該分類下的所有貨品：",
+                replyGreeting: "你好啊！我係超市格價小助手 🤖，今日想搵啲咩貨品呢？",
+                replyThanks: "唔使客氣！隨時為你效勞。仲想搵其他嘢嗎？",
+                replyTest: "收到你嘅測試！系統運作正常 🟢，請輸入你想搵嘅貨品啦！"
             },
             'zh-Hans': { 
                 title: "超市价格导航", mainCat: "第一步：选择主分类", back: "返回", loading: "正在同步最新超市数据...", error: "数据加载失败，请检查网络连线。", send: "搜索", placeholder: "输入商品名称...",
-                chatWelcome: "您选择了", chatAsk: "请问想寻找什么商品？<br><span class='text-xs text-slate-500 mt-1 block'>（可输入名称，或留言「全部」查看清单）</span>", chatSearching: "寻找中...", chatNoResult: "找不到相关商品，请尝试其他字眼。", chatFound: "为您找到以下商品：", chatShowAll: "为您列出该分类下的所有商品："
+                chatWelcome: "您选择了", chatAsk: "请问想寻找什么商品？<br><span class='text-xs text-slate-500 mt-1 block'>（可输入名称，或留言「全部」查看清单）</span>", chatSearching: "寻找中...", chatNoResult: "找不到相关商品，请尝试其他字眼。", chatFound: "为您找到以下商品：", chatShowAll: "为您列出该分类下的所有商品：",
+                replyGreeting: "你好啊！我是超市比价小助手 🤖，今天想找点什么商品呢？",
+                replyThanks: "不用客气！随时为您效劳。还想找其他东西吗？",
+                replyTest: "收到您的测试！系统运作正常 🟢，请输入您想找的商品吧！"
             },
             'en': { 
                 title: "Price Navigator", mainCat: "Step 1: Select Category", back: "Back", loading: "Syncing live data...", error: "Failed to load data. Please check your connection.", send: "Search", placeholder: "Type product name...",
-                chatWelcome: "You selected", chatAsk: "What product are you looking for?<br><span class='text-xs text-slate-500 mt-1 block'>(Or type 'all' to see the full list)</span>", chatSearching: "Searching...", chatNoResult: "No results found, please try another keyword.", chatFound: "Found these products for you:", chatShowAll: "Here are all products in this category:"
+                chatWelcome: "You selected", chatAsk: "What product are you looking for?<br><span class='text-xs text-slate-500 mt-1 block'>(Or type 'all' to see the full list)</span>", chatSearching: "Searching...", chatNoResult: "No results found, please try another keyword.", chatFound: "Found these products for you:", chatShowAll: "Here are all products in this category:",
+                replyGreeting: "Hello! I am your Price Navigator Assistant 🤖. What product are you looking for today?",
+                replyThanks: "You're very welcome! Always here to help. Anything else you need to find?",
+                replyTest: "Test received! System is fully operational 🟢. Please enter a product name to begin!"
             }
         };
 
@@ -106,25 +116,19 @@
             { keywords: ['麵包', '面包', 'bakery', 'cereal', 'spread'], icon: '🍞', bg: 'from-orange-100 to-amber-200', text: 'text-orange-900', border: 'border-orange-300' }
         ];
 
-        // 💡 雙重保險機制：找不到本地 JSON 就去抓取 Live API
         async function init() {
             try {
                 document.getElementById('loadingText').innerText = uiText[currentLang].loading;
-                
                 let data = null;
                 
                 try {
-                    // 策略一：先嘗試讀取本地檔案 (速度最快)
                     const localResponse = await fetch('pricewatch.json');
                     if (localResponse.ok) {
                         data = await localResponse.json();
-                        console.log("成功讀取本地數據");
                     } else {
                         throw new Error('Local file not found');
                     }
                 } catch (localError) {
-                    // 策略二：本地檔案失敗，自動啟用備用方案 (AllOrigins 代理官方 API)
-                    console.warn("本地檔案讀取失敗，啟動備用 API 抓取即時數據...");
                     const liveUrl = 'https://online-price-watch.consumer.org.hk/opw/opendata/pricewatch.json';
                     const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(liveUrl)}`;
                     
@@ -240,6 +244,30 @@
             addBotMessage(welcomeText);
         }
 
+        // 🤖 閑聊過濾器邏輯
+        function checkSmallTalk(query) {
+            const q = query.toLowerCase();
+            
+            // 定義常見閑聊關鍵字
+            const smallTalkKeys = {
+                greetings: ['你好', 'hi', 'hello', '早晨', 'hey', '你好嗎', '點呀', '早上好', '哈囉', 'hola', '你好啊'],
+                thanks: ['唔該', '多謝', 'thank you', 'thanks', '謝謝', '谢谢', 'thx'],
+                test: ['test', '測試', '测试', '123', 'testing']
+            };
+
+            // 精確配對或包含問句 (避免搜尋 "你好牌" 餅乾時被誤判)
+            if (smallTalkKeys.greetings.some(kw => q === kw || q === kw + '嗎' || q === kw + '吗')) {
+                 return uiText[currentLang].replyGreeting;
+            }
+            if (smallTalkKeys.thanks.some(kw => q === kw || q.includes(kw + '晒') || q.includes(kw + '曬'))) {
+                 return uiText[currentLang].replyThanks;
+            }
+            if (smallTalkKeys.test.some(kw => q === kw)) {
+                 return uiText[currentLang].replyTest;
+            }
+            return null; 
+        }
+
         function submitChat() {
             const query = chatInput.value.trim();
             if (!query) return;
@@ -249,7 +277,14 @@
             chatInput.blur();
 
             setTimeout(() => {
-                performScopedSearch(query);
+                // 💡 提交前先經過「閑聊過濾器」
+                const smallTalkResponse = checkSmallTalk(query);
+                
+                if (smallTalkResponse) {
+                    addBotMessage(smallTalkResponse);
+                } else {
+                    performScopedSearch(query);
+                }
             }, 300);
         }
 
