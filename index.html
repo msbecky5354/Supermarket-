@@ -19,6 +19,13 @@
             50% { opacity: 0.7; transform: scale(1.1); filter: drop-shadow(0 0 8px #fbbf24); }
         }
         .lightning-icon { animation: pulse-lightning 2s infinite ease-in-out; display: inline-block; }
+
+        /* 🌟 新增：星星閃爍動畫 */
+        @keyframes star-blink {
+            0%, 100% { opacity: 1; transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 3px #fde047); }
+            50% { opacity: 0.5; transform: scale(1.25) rotate(15deg); filter: drop-shadow(0 0 8px #eab308); }
+        }
+        .star-blink { animation: star-blink 1.5s infinite ease-in-out; display: inline-block; }
     </style>
 </head>
 <body class="bg-slate-50 h-[100dvh] flex flex-col font-sans text-slate-900 overflow-hidden w-full text-[15px]">
@@ -119,11 +126,7 @@
 
         function normalizeStr(str) {
             if (!str) return "";
-            return String(str)
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "")
-                .replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "") 
-                .toLowerCase();
+            return String(str).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, "").toLowerCase();
         }
 
         function extractDeepPromoText(val, targetLang) {
@@ -132,7 +135,6 @@
             if (Array.isArray(val)) return val.map(v => extractDeepPromoText(v, targetLang)).filter(v => v !== "").join('; ');
             if (typeof val === 'object') {
                 if (val[targetLang]) return extractDeepPromoText(val[targetLang], targetLang);
-                // Fallback 只係為咗 Display，運算時如果無英文就寧願唔計
                 if (val['zh-Hant']) return extractDeepPromoText(val['zh-Hant'], targetLang);
                 if (val.description) return extractDeepPromoText(val.description, targetLang);
                 let vals = Object.values(val);
@@ -141,50 +143,36 @@
             return String(val);
         }
 
-        // 🧠 極簡純英文計算引擎 (Pure English Math Engine)
-        // 唔再需要理會咩「件、包、盒、支、任擇、慳、半價」，乾淨俐落！
         function calculateAvgPrice(enPromoText, originalPrice) {
             if (!enPromoText || isNaN(originalPrice)) return null;
             try {
-                // 轉細楷，清理多餘空格
                 let p = enPromoText.toLowerCase().replace(/\s+/g, ' ');
-
-                // 1. Buy X save Y (e.g. "Buy 2 to save $10.00", "Buy 2 item(s) save $27.00")
                 let mSave = p.match(/buy\s*([0-9]+).*?save.*?\$([0-9.]+)/);
                 if (mSave) {
                     let qty = parseInt(mSave[1]);
                     let disc = parseFloat(mSave[2]);
                     if (qty > 0) return ((originalPrice * qty) - disc) / qty;
                 }
-
-                // 2. X for $Y (e.g. "2 for $16.00", "Buy 2 items for $138.00")
                 let mFor = p.match(/([0-9]+).*?for\s*\$([0-9.]+)/);
                 if (mFor) {
                     let qty = parseInt(mFor[1]);
                     let price = parseFloat(mFor[2]);
                     if (qty > 0) return price / qty;
                 }
-
-                // 3. X% off (e.g. "15% off", "Buy 2 get 15% off")
                 let mOff = p.match(/([0-9.]+)%\s*off/);
                 if (mOff) {
                     let perc = parseFloat(mOff[1]);
                     return originalPrice * (1 - (perc / 100));
                 }
-
-                // 4. Buy X get Y free (e.g. "Buy 1 get 1 free")
                 let mFree = p.match(/buy\s*([0-9]+).*?get\s*([0-9]+).*?free/);
                 if (mFree) {
                     let buy = parseInt(mFree[1]);
                     let free = parseInt(mFree[2]);
                     return (originalPrice * buy) / (buy + free);
                 }
-
-                // 5. Half price (e.g. "2nd half price")
                 if (p.includes('half price')) {
                     return (originalPrice * 1.5) / 2;
                 }
-
                 return null;
             } catch(e) { return null; }
         }
@@ -247,31 +235,22 @@
                 if (Array.isArray(item.prices)) {
                     item.prices.forEach(p => {
                         let smName = supermarketDict[currentLang][p.supermarketCode] || p.supermarketCode;
-                        
                         let promoDisplay = "";
-                        let promoCalcEn = ""; // 專門儲存純英文版本作計算用
+                        let promoCalcEn = ""; 
                         
                         const promoKeys = ['promotions', 'promotion', 'offer', 'promotionDesc', 'promotionName', 'itemOffsetText'];
-                        
-                        // 第一重：掃描價錢層
                         for (let key of promoKeys) {
                             if (p[key]) {
                                 let extractedDisplay = extractDeepPromoText(p[key], currentLang);
                                 if (extractedDisplay && extractedDisplay !== "[object Object]") { 
                                     promoDisplay = extractedDisplay; 
-                                    
-                                    // 強行提取 'en' 語言，如果冇就留空，唔好 fallback 去中文搞亂 Regex
-                                    if (typeof p[key] === 'object' && p[key]['en']) {
-                                        promoCalcEn = p[key]['en'];
-                                    } else if (typeof p[key] === 'string' && /save|for|off|free|half/.test(p[key].toLowerCase())) {
-                                        promoCalcEn = p[key]; // 如果本身就係英文字串
-                                    }
+                                    if (typeof p[key] === 'object' && p[key]['en']) promoCalcEn = p[key]['en'];
+                                    else if (typeof p[key] === 'string' && /save|for|off|free|half/.test(p[key].toLowerCase())) promoCalcEn = p[key];
                                     break; 
                                 }
                             }
                         }
 
-                        // 第二重：掃描根目錄層
                         if (!promoDisplay) {
                             const itemKeys = ['promotions', 'offers', 'discounts'];
                             for (let key of itemKeys) {
@@ -281,7 +260,6 @@
                                         let extractedDisplay = extractDeepPromoText(smPromo, currentLang);
                                         if (extractedDisplay && extractedDisplay !== "[object Object]") {
                                             promoDisplay = extractedDisplay;
-                                            
                                             if (smPromo['en']) promoCalcEn = smPromo['en'];
                                             else if (smPromo.description && smPromo.description['en']) promoCalcEn = smPromo.description['en'];
                                             break;
@@ -296,7 +274,7 @@
                             supermarket: smName, 
                             price: p.price ?? '--', 
                             promoDisplay: promoDisplay,
-                            promoCalc: promoCalcEn // 將純英文餵畀引擎
+                            promoCalc: promoCalcEn 
                         });
                     });
                 }
@@ -380,13 +358,28 @@
         }
 
         function generateProductCardHTML(pName, info) {
-            let valid = info.prices.map(p => parseFloat(p.price)).filter(pr => !isNaN(pr));
-            let min = valid.length > 0 ? Math.min(...valid) : null;
-            let allSamePrice = valid.length > 1 && valid.every(v => v === valid[0]);
+            // 💡 預先掃描所有有效價錢 (單件標價 vs 折合價)
+            let validPrices = [];
+            info.prices.forEach(p => {
+                let parsed = parseFloat(p.price);
+                if (!isNaN(parsed)) {
+                    let avg = calculateAvgPrice(p.promoCalc, parsed);
+                    // 如果有折合價且更平，就用折合價；否則用單件標價
+                    validPrices.push((avg && avg > 0 && avg < parsed) ? avg : parsed);
+                }
+            });
+            
+            let minBasePrice = Math.min(...info.prices.map(p => parseFloat(p.price)).filter(pr => !isNaN(pr)));
+            let minEffectivePrice = validPrices.length > 0 ? Math.min(...validPrices) : null;
+            
+            let allSameBasePrice = info.prices.filter(p=>!isNaN(parseFloat(p.price))).every(v => parseFloat(v.price) === minBasePrice);
+            let allSameEffectivePrice = validPrices.length > 1 && validPrices.every(v => Math.abs(v - validPrices[0]) < 0.01);
 
             const priceList = info.prices.map(p => {
                 let parsed = parseFloat(p.price);
-                let isLowest = (!isNaN(parsed) && parsed === min && valid.length > 1 && !allSamePrice);
+                
+                // 👍 單件最平邏輯 (基本要求)
+                let isLowestBase = (!isNaN(parsed) && parsed === minBasePrice && info.prices.length > 1 && !allSameBasePrice);
                 
                 let cls = 'border-slate-100 bg-slate-50/50';
                 let textCls = 'text-slate-600';
@@ -395,17 +388,25 @@
                 else if (p.rawCode === 'AEON') { cls = 'border-purple-100 bg-purple-50/30'; textCls = 'text-purple-700'; }
                 else if (['MANNINGS','Watsons','LUNGFUNG'].includes(p.rawCode)) { cls = 'border-blue-100 bg-blue-50/30'; textCls = 'text-blue-700'; }
                 
-                // 💡 餵入大腦嘅係純英文 (promoCalc)，但顯示出嚟嘅係當前語言 (promoDisplay)
                 let avg = calculateAvgPrice(p.promoCalc, parsed);
                 let avgText = currentLang === 'en' ? 'Avg' : '折合';
                 let eaText = currentLang === 'en' ? 'ea' : '件';
-                let avgLabel = avg ? `<span class="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-black shadow-sm ml-1 shrink-0 whitespace-nowrap">💰 ${avgText} $${avg.toFixed(1)}/${eaText}</span>` : '';
+                let avgLabel = '';
+
+                if (avg && avg > 0 && avg < parsed) {
+                    // 🌟 判斷呢個折合價係咪「全場最抵」(絕對最低價)
+                    let isAbsoluteLowest = (minEffectivePrice !== null && Math.abs(avg - minEffectivePrice) < 0.01 && validPrices.length > 1 && !allSameEffectivePrice);
+                    
+                    let starHtml = isAbsoluteLowest ? `<span class="star-blink ml-1 text-[13px]">⭐</span>` : '';
+                    
+                    avgLabel = `<span class="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-black shadow-sm ml-1 shrink-0 whitespace-nowrap flex items-center">💰 ${avgText} $${avg.toFixed(1)}/${eaText}${starHtml}</span>`;
+                }
 
                 return `
-                <div class="flex flex-col p-3 rounded-2xl border ${cls} ${isLowest ? 'ring-2 ring-green-400 bg-white scale-[1.01] shadow-md z-10' : ''} transition-all">
+                <div class="flex flex-col p-3 rounded-2xl border ${cls} ${isLowestBase ? 'ring-2 ring-green-400 bg-white scale-[1.01] shadow-md z-10' : ''} transition-all">
                     <div class="flex justify-between items-center w-full">
                         <span class="font-black text-[13px] ${textCls} flex items-center gap-1">${p.supermarket}</span>
-                        <span class="text-[17px] font-black text-slate-800">$${isNaN(parsed) ? p.price : parsed.toFixed(1)}${isLowest ? ' <span class="text-lg">👍</span>' : ''}</span>
+                        <span class="text-[17px] font-black text-slate-800">$${isNaN(parsed) ? p.price : parsed.toFixed(1)}${isLowestBase ? ' <span class="text-lg">👍</span>' : ''}</span>
                     </div>
                     ${p.promoDisplay ? `
                     <div class="mt-2 flex flex-wrap sm:flex-nowrap items-center justify-between gap-1 w-full">
