@@ -1,1 +1,30 @@
+name: Daily JSON Update
 
+on:
+  schedule:
+    - cron: '0 2 * * *'   # 每日 UTC 02:00 執行
+  workflow_dispatch:       # 容許手動觸發
+
+jobs:
+  update-json:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write      # 俾權限 push
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Download JSON
+        run: |
+          curl -o data/pricewatch.json "https://你的下載網址/file.json"
+          # 或者用 wget
+          # wget -O data/pricewatch.json "https://你的下載網址/file.json"
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/your-file.json
+          git diff --staged --quiet || git commit -m "Update JSON $(date +'%Y-%m-%d')"
+          git push
