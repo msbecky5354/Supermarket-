@@ -15,7 +15,6 @@
         <div class="max-w-2xl mx-auto flex justify-between items-center">
             <h1 id="appTitle" class="text-xl bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent font-bold">超市價格導航</h1>
             <div class="flex items-center gap-3">
-                <!-- Language Selector -->
                 <select id="langSelector" onchange="changeLanguage(this.value)" class="bg-slate-100 border-none text-sm font-medium text-slate-700 rounded-lg px-2 py-1 outline-none cursor-pointer focus:ring-2 focus:ring-blue-500">
                     <option value="zh-Hant">繁體中文</option>
                     <option value="zh-Hans">简体中文 (GB)</option>
@@ -73,11 +72,10 @@
         const backToLevel2Btn = document.getElementById('backToLevel2Btn');
         const searchBar = document.getElementById('searchBar');
 
-        let rawApiData = [];     // 儲存原始 API 數據
-        let structuredData = {}; // 儲存當前語言結構化後的數據
+        let rawApiData = [];     
+        let structuredData = {}; 
         let currentLang = 'zh-Hant';
 
-        // 靜態介面文字字典 (UI Text only, data comes from API directly)
         const uiText = {
             'zh-Hant': { 
                 title: "超市價格導航", searchPlaceholder: "搜尋貨品（如：嘉頓、蛋糕）...", mainCat: "主分類", subCatSelect: "請選擇子分類", backMain: "← 返回主分類", backSub: "← 返回子分類", noCat: "找不到分類資料", noItems: "此分類下沒有貨品。", loading: "正在處理超市真實數據...", error: "數據載入失敗", searchResult: "搜尋結果", resetSearch: "← 重設搜尋", noResult: "找不到相關貨品" 
@@ -90,21 +88,21 @@
             }
         };
 
-        // 翻譯超市代號字典 (Translate Supermarket Codes to display names)
         const supermarketDict = {
             'zh-Hant': { 'WELLCOME': '惠康', 'PARKNSHOP': '百佳', 'JASONS': 'Jasons', 'MARKETPLACE': 'Market Place', 'AEON': 'AEON', 'Watsons': '屈臣氏', 'MANNINGS': '萬寧', 'USELECT': 'U購' },
             'zh-Hans': { 'WELLCOME': '惠康', 'PARKNSHOP': '百佳', 'JASONS': 'Jasons', 'MARKETPLACE': 'Market Place', 'AEON': 'AEON', 'Watsons': '屈臣氏', 'MANNINGS': '万宁', 'USELECT': 'U购' },
             'en': { 'WELLCOME': 'Wellcome', 'PARKNSHOP': 'PARKnSHOP', 'JASONS': 'Jasons', 'MARKETPLACE': 'Market Place', 'AEON': 'AEON', 'Watsons': 'Watsons', 'MANNINGS': 'Mannings', 'USELECT': 'U-Select' }
         };
 
-        // 1. 啟動並讀取數據
+        // 1. 啟動並讀取本地數據
         async function init() {
             try {
                 document.getElementById('loadingText').innerText = uiText[currentLang].loading;
-                const targetUrl = 'https://online-price-watch.consumer.org.hk/opw/opendata/pricewatch.json';
-                const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(targetUrl);
                 
-                const response = await fetch(proxyUrl);
+                // 直接讀取同目錄下的 pricewatch.json
+                const targetUrl = 'pricewatch.json'; 
+                
+                const response = await fetch(targetUrl);
                 if (!response.ok) throw new Error('無法讀取數據');
                 
                 rawApiData = await response.json();
@@ -118,30 +116,25 @@
             }
         }
 
-        // 語言切換邏輯
         function changeLanguage(lang) {
             currentLang = lang;
             document.documentElement.lang = lang;
 
-            // 更新 UI 靜態文字
             document.getElementById('appTitle').innerText = uiText[lang].title;
             searchBar.placeholder = uiText[lang].searchPlaceholder;
             document.getElementById('mainCatLabel').innerText = uiText[lang].mainCat;
             document.getElementById('subCatLabel').innerText = uiText[lang].subCatSelect;
             backToLevel1Btn.innerText = uiText[lang].backMain;
 
-            // 清空搜尋並重新根據 JSON 中對應語言的節點建立資料庫
             searchBar.value = ''; 
             buildStructuredData();
             renderLevel1();
         }
 
-        // 直接提取 JSON 中的多語言屬性 (zh-Hant, zh-Hans, en)
         function buildStructuredData() {
             structuredData = {};
             
             rawApiData.forEach(item => {
-                // 從 API 直接拉取對應語言的字串，若無則降級回繁體
                 let cat1 = item.cat1Name?.[currentLang] || item.cat1Name?.['zh-Hant'];
                 if (!cat1) return;
                 
@@ -171,7 +164,6 @@
             });
         }
 
-        // 商品卡片生成
         function createProductCard(pName, productInfo) {
             const priceTags = productInfo.prices.map(p => {
                 let colorClass = 'bg-slate-50 text-slate-700 border-slate-200';
