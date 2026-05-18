@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>超市精明格價網</title>
+    <title>超市精明格價網 | Supermarket Price Navigator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .clickable-card:active { transform: scale(0.98); }
@@ -13,8 +13,16 @@
 
     <header class="bg-white border-b sticky top-0 z-20 p-4 shadow-sm">
         <div class="max-w-2xl mx-auto flex justify-between items-center">
-            <h1 class="text-xl bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent font-bold">超市價格導航</h1>
-            <div id="status-dot" class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+            <h1 id="appTitle" class="text-xl bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent font-bold">超市價格導航</h1>
+            <div class="flex items-center gap-3">
+                <!-- Language Selector -->
+                <select id="langSelector" onchange="changeLanguage(this.value)" class="bg-slate-100 border-none text-sm font-medium text-slate-700 rounded-lg px-2 py-1 outline-none cursor-pointer focus:ring-2 focus:ring-blue-500">
+                    <option value="zh-Hant">繁體中文</option>
+                    <option value="zh-Hans">简体中文 (GB)</option>
+                    <option value="en">English</option>
+                </select>
+                <div id="status-dot" class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+            </div>
         </div>
     </header>
 
@@ -26,18 +34,18 @@
         </div>
 
         <section id="level1Section">
-            <h2 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">主分類</h2>
+            <h2 id="mainCatLabel" class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">主分類</h2>
             <div id="level1Container" class="grid grid-cols-2 gap-3">
-                <div class="text-center p-4 text-slate-400 text-sm col-span-2">正在處理超市真實數據...</div>
+                <div id="loadingText" class="text-center p-4 text-slate-400 text-sm col-span-2">正在處理超市真實數據...</div>
             </div>
         </section>
 
         <section id="level2Section" class="hidden">
-            <button onclick="showLevel1()" class="mb-4 text-blue-600 font-medium flex items-center bg-blue-50 px-3 py-1 rounded-lg">
+            <button id="backToLevel1Btn" onclick="showLevel1()" class="mb-4 text-blue-600 font-medium flex items-center bg-blue-50 px-3 py-1 rounded-lg">
                 ← 返回主分類
             </button>
             <h2 id="level1Title" class="text-xl font-bold mb-4 text-slate-800"></h2>
-            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">請選擇子分類</h3>
+            <h3 id="subCatLabel" class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">請選擇子分類</h3>
             <div id="level2Container" class="grid grid-cols-2 gap-3"></div>
         </section>
 
@@ -61,83 +69,117 @@
         
         const level1Title = document.getElementById('level1Title');
         const level2Title = document.getElementById('level2Title');
+        const backToLevel1Btn = document.getElementById('backToLevel1Btn');
         const backToLevel2Btn = document.getElementById('backToLevel2Btn');
         const searchBar = document.getElementById('searchBar');
 
-        let structuredData = {};
+        let rawApiData = [];     // 儲存原始 API 數據
+        let structuredData = {}; // 儲存當前語言結構化後的數據
+        let currentLang = 'zh-Hant';
 
-        // 超市代號翻譯字典
-        const supermarketDict = {
-            'WELLCOME': '惠康',
-            'PARKNSHOP': '百佳',
-            'JASONS': 'Jasons',
-            'MARKETPLACE': 'Market Place',
-            'AEON': 'AEON',
-            'Watsons': '屈臣氏',
-            'MANNINGS': '萬寧',
-            'USELECT': 'U購'
+        // 靜態介面文字字典 (UI Text only, data comes from API directly)
+        const uiText = {
+            'zh-Hant': { 
+                title: "超市價格導航", searchPlaceholder: "搜尋貨品（如：嘉頓、蛋糕）...", mainCat: "主分類", subCatSelect: "請選擇子分類", backMain: "← 返回主分類", backSub: "← 返回子分類", noCat: "找不到分類資料", noItems: "此分類下沒有貨品。", loading: "正在處理超市真實數據...", error: "數據載入失敗", searchResult: "搜尋結果", resetSearch: "← 重設搜尋", noResult: "找不到相關貨品" 
+            },
+            'zh-Hans': { 
+                title: "超市价格导航", searchPlaceholder: "搜索商品（如：嘉顿、蛋糕）...", mainCat: "主分类", subCatSelect: "请选择子分类", backMain: "← 返回主分类", backSub: "← 返回子分类", noCat: "找不到分类数据", noItems: "此分类下没有商品。", loading: "正在处理超市真实数据...", error: "数据加载失败", searchResult: "搜索结果", resetSearch: "← 重置搜索", noResult: "找不到相关商品" 
+            },
+            'en': { 
+                title: "Price Navigator", searchPlaceholder: "Search (e.g., Garden, Cake)...", mainCat: "Main Categories", subCatSelect: "Select Sub-category", backMain: "← Back to Main", backSub: "← Back to Sub", noCat: "No categories found", noItems: "No products in this category.", loading: "Processing live data...", error: "Failed to load data", searchResult: "Search Results", resetSearch: "← Reset Search", noResult: "No relevant products found" 
+            }
         };
 
-        // 1. 初始化：透過 CORS 代理讀取動態消委會 JSON
+        // 翻譯超市代號字典 (Translate Supermarket Codes to display names)
+        const supermarketDict = {
+            'zh-Hant': { 'WELLCOME': '惠康', 'PARKNSHOP': '百佳', 'JASONS': 'Jasons', 'MARKETPLACE': 'Market Place', 'AEON': 'AEON', 'Watsons': '屈臣氏', 'MANNINGS': '萬寧', 'USELECT': 'U購' },
+            'zh-Hans': { 'WELLCOME': '惠康', 'PARKNSHOP': '百佳', 'JASONS': 'Jasons', 'MARKETPLACE': 'Market Place', 'AEON': 'AEON', 'Watsons': '屈臣氏', 'MANNINGS': '万宁', 'USELECT': 'U购' },
+            'en': { 'WELLCOME': 'Wellcome', 'PARKNSHOP': 'PARKnSHOP', 'JASONS': 'Jasons', 'MARKETPLACE': 'Market Place', 'AEON': 'AEON', 'Watsons': 'Watsons', 'MANNINGS': 'Mannings', 'USELECT': 'U-Select' }
+        };
+
+        // 1. 啟動並讀取數據
         async function init() {
             try {
-                // 消委會官方原始網址
+                document.getElementById('loadingText').innerText = uiText[currentLang].loading;
                 const targetUrl = 'https://online-price-watch.consumer.org.hk/opw/opendata/pricewatch.json';
-                // 加上 CORS 代理避開瀏覽器阻擋限制
                 const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(targetUrl);
                 
                 const response = await fetch(proxyUrl);
                 if (!response.ok) throw new Error('無法讀取數據');
                 
-                const rawData = await response.json();
-                
-                rawData.forEach(item => {
-                    let cat1 = item.cat1Name?.['zh-Hant'] || '未分類';
-                    let cat2 = item.cat3Name?.['zh-Hant'] || item.cat2Name?.['zh-Hant'] || '其他';
-                    let name = item.name?.['zh-Hant'] || '未知商品';
-                    let brand = item.brand?.['zh-Hant'] || '';
-
-                    if (cat1 === '未分類') return; 
-
-                    if (!structuredData[cat1]) structuredData[cat1] = {};
-                    if (!structuredData[cat1][cat2]) structuredData[cat1][cat2] = {};
-                    if (!structuredData[cat1][cat2][name]) {
-                        structuredData[cat1][cat2][name] = { brand: brand, prices: [] };
-                    }
-                    
-                    if (Array.isArray(item.prices)) {
-                        item.prices.forEach(p => {
-                            let rawCode = p.supermarketCode || '未知';
-                            let smName = supermarketDict[rawCode] || rawCode;
-                            let priceVal = p.price !== undefined && p.price !== null ? p.price : '--';
-                            
-                            structuredData[cat1][cat2][name].prices.push({
-                                supermarket: smName,
-                                price: priceVal
-                            });
-                        });
-                    }
-                });
-
-                // 數據載入後，綁定搜尋欄監聽事件
+                rawApiData = await response.json();
                 searchBar.addEventListener('input', handleSearch);
-
-                renderLevel1();
+                
+                // 初次載入
+                changeLanguage('zh-Hant');
             } catch (e) {
                 console.error(e);
-                level1Container.innerHTML = '<p class="text-red-500 text-center col-span-2 p-4 bg-red-50 rounded-lg">數據載入失敗</p>';
+                level1Container.innerHTML = `<p class="text-red-500 text-center col-span-2 p-4 bg-red-50 rounded-lg">${uiText[currentLang].error}</p>`;
             }
         }
 
-        // 獨立出商品卡片生成邏輯（100% 還原你原本的乾淨外觀設計）
+        // 語言切換邏輯
+        function changeLanguage(lang) {
+            currentLang = lang;
+            document.documentElement.lang = lang;
+
+            // 更新 UI 靜態文字
+            document.getElementById('appTitle').innerText = uiText[lang].title;
+            searchBar.placeholder = uiText[lang].searchPlaceholder;
+            document.getElementById('mainCatLabel').innerText = uiText[lang].mainCat;
+            document.getElementById('subCatLabel').innerText = uiText[lang].subCatSelect;
+            backToLevel1Btn.innerText = uiText[lang].backMain;
+
+            // 清空搜尋並重新根據 JSON 中對應語言的節點建立資料庫
+            searchBar.value = ''; 
+            buildStructuredData();
+            renderLevel1();
+        }
+
+        // 直接提取 JSON 中的多語言屬性 (zh-Hant, zh-Hans, en)
+        function buildStructuredData() {
+            structuredData = {};
+            
+            rawApiData.forEach(item => {
+                // 從 API 直接拉取對應語言的字串，若無則降級回繁體
+                let cat1 = item.cat1Name?.[currentLang] || item.cat1Name?.['zh-Hant'];
+                if (!cat1) return;
+                
+                let cat2 = item.cat3Name?.[currentLang] || item.cat2Name?.[currentLang] || item.cat2Name?.['zh-Hant'] || (currentLang === 'en' ? 'Other' : '其他');
+                let name = item.name?.[currentLang] || item.name?.['zh-Hant'] || (currentLang === 'en' ? 'Unknown Product' : '未知商品');
+                let brand = item.brand?.[currentLang] || item.brand?.['zh-Hant'] || '';
+
+                if (!structuredData[cat1]) structuredData[cat1] = {};
+                if (!structuredData[cat1][cat2]) structuredData[cat1][cat2] = {};
+                if (!structuredData[cat1][cat2][name]) {
+                    structuredData[cat1][cat2][name] = { brand: brand, prices: [] };
+                }
+                
+                if (Array.isArray(item.prices)) {
+                    item.prices.forEach(p => {
+                        let rawCode = p.supermarketCode || 'UNKNOWN';
+                        let smName = supermarketDict[currentLang][rawCode] || rawCode; 
+                        let priceVal = p.price !== undefined && p.price !== null ? p.price : '--';
+                        
+                        structuredData[cat1][cat2][name].prices.push({
+                            rawCode: rawCode, 
+                            supermarket: smName,
+                            price: priceVal
+                        });
+                    });
+                }
+            });
+        }
+
+        // 商品卡片生成
         function createProductCard(pName, productInfo) {
             const priceTags = productInfo.prices.map(p => {
                 let colorClass = 'bg-slate-50 text-slate-700 border-slate-200';
-                if (p.supermarket === '惠康') colorClass = 'bg-red-50 text-red-700 border-red-200';
-                if (p.supermarket === '百佳') colorClass = 'bg-yellow-50 text-yellow-700 border-yellow-200';
-                if (p.supermarket === 'AEON') colorClass = 'bg-purple-50 text-purple-700 border-purple-200';
+                
+                if (p.rawCode === 'WELLCOME') colorClass = 'bg-red-50 text-red-700 border-red-200';
+                if (p.rawCode === 'PARKNSHOP') colorClass = 'bg-yellow-50 text-yellow-700 border-yellow-200';
+                if (p.rawCode === 'AEON') colorClass = 'bg-purple-50 text-purple-700 border-purple-200';
 
-                // 安全防禦：如果數值是 '--'，直接輸出，否則才執行 toFixed(1) 避免程式當機
                 let parsed = parseFloat(p.price);
                 let priceText = isNaN(parsed) ? p.price : `$${parsed.toFixed(1)}`;
 
@@ -161,7 +203,6 @@
             return itemCard;
         }
 
-        // 2. 顯示第一層 (主分類)
         function renderLevel1() {
             level1Section.classList.remove('hidden');
             level2Section.classList.add('hidden');
@@ -171,7 +212,7 @@
             const categoriesL1 = Object.keys(structuredData).sort();
 
             if (categoriesL1.length === 0) {
-                level1Container.innerHTML = '<p class="text-slate-500 col-span-2 text-center">找不到分類資料</p>';
+                level1Container.innerHTML = `<p class="text-slate-500 col-span-2 text-center">${uiText[currentLang].noCat}</p>`;
                 return;
             }
 
@@ -180,14 +221,13 @@
                 card.className = 'clickable-card bg-white p-5 rounded-xl shadow-sm border border-slate-100 cursor-pointer hover:border-blue-300 flex flex-col items-center text-center';
                 card.innerHTML = `<span class="text-3xl mb-2">📁</span><span class="font-bold text-slate-700">${cat1}</span>`;
                 card.onclick = () => {
-                    searchBar.value = ''; // 切換分類時清空搜尋欄
+                    searchBar.value = ''; 
                     renderLevel2(cat1);
                 };
                 level1Container.appendChild(card);
             });
         }
 
-        // 3. 顯示第二層 (子分類)
         function renderLevel2(cat1) {
             level1Section.classList.add('hidden');
             level2Section.classList.remove('hidden');
@@ -207,14 +247,13 @@
             });
         }
 
-        // 4. 顯示第三層 (貨品列表)
         function renderProducts(cat1, cat2) {
             level1Section.classList.add('hidden');
             level2Section.classList.add('hidden');
             productSection.classList.remove('hidden');
             
             level2Title.innerText = cat2;
-            backToLevel2Btn.innerText = '← 返回子分類';
+            backToLevel2Btn.innerText = uiText[currentLang].backSub;
             backToLevel2Btn.onclick = () => renderLevel2(cat1);
             productContainer.innerHTML = '';
 
@@ -222,7 +261,7 @@
             const productNames = Object.keys(productsData).sort();
 
             if (productNames.length === 0) {
-                productContainer.innerHTML = '<p class="text-slate-500 text-center">此分類下沒有貨品。</p>';
+                productContainer.innerHTML = `<p class="text-slate-500 text-center">${uiText[currentLang].noItems}</p>`;
                 return;
             }
 
@@ -232,12 +271,11 @@
             });
         }
 
-        // 5. 處理全域即時搜尋功能
         function handleSearch(e) {
             const query = e.target.value.trim().toLowerCase();
             
             if (query === '') {
-                renderLevel1(); // 清空時退回主首頁
+                renderLevel1();
                 return;
             }
 
@@ -245,8 +283,8 @@
             level2Section.classList.add('hidden');
             productSection.classList.remove('hidden');
 
-            level2Title.innerText = `搜尋結果: "${e.target.value}"`;
-            backToLevel2Btn.innerText = '← 重設搜尋';
+            level2Title.innerText = `${uiText[currentLang].searchResult}: "${e.target.value}"`;
+            backToLevel2Btn.innerText = uiText[currentLang].resetSearch;
             backToLevel2Btn.onclick = () => {
                 searchBar.value = '';
                 renderLevel1();
@@ -255,7 +293,6 @@
             productContainer.innerHTML = '';
             let hasResults = false;
 
-            // 全域模糊比對
             Object.keys(structuredData).forEach(cat1 => {
                 Object.keys(structuredData[cat1]).forEach(cat2 => {
                     Object.keys(structuredData[cat1][cat2]).forEach(pName => {
@@ -273,7 +310,7 @@
             });
 
             if (!hasResults) {
-                productContainer.innerHTML = '<p class="text-slate-500 text-center py-8">找不到相關貨品</p>';
+                productContainer.innerHTML = `<p class="text-slate-500 text-center py-8">${uiText[currentLang].noResult}</p>`;
             }
         }
 
@@ -281,7 +318,6 @@
             renderLevel1();
         }
 
-        // 啟動載入
         init();
     </script>
 </body>
