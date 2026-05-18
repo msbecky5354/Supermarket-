@@ -42,7 +42,7 @@
                 <button onclick="showLevel1()" class="text-blue-600 font-medium flex items-center bg-blue-50 px-3 py-1.5 rounded-xl mr-3 active:scale-95 transition">
                     ← <span id="backBtnText" class="ml-1">返回</span>
                 </button>
-                <h2 id="chatTitle" class="font-bold text-slate-800 truncate text-[15px]"></h2>
+                <h2 id="chatTitle" class="font-bold text-slate-800 truncate text-[15px] flex items-center"></h2>
             </div>
 
             <div id="chatMessages" class="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4"></div>
@@ -206,15 +206,18 @@
             level1Section.classList.add('hidden');
             chatSection.classList.remove('hidden');
             
-            chatTitle.innerText = cat1;
+            // 獲取目前分類對應的 Icon
+            const style = getCatStyle(cat1);
+            
+            // 將 Icon 加到頂部標題列
+            chatTitle.innerHTML = `<span class="mr-1.5 text-lg">${style.icon}</span> <span class="truncate">${cat1}</span>`;
             chatMessages.innerHTML = ''; 
             chatInput.value = '';
 
-            const welcomeText = `${uiText[currentLang].chatWelcome} <strong class="text-blue-600">${cat1}</strong>。<br>${uiText[currentLang].chatAsk}`;
+            // 將 Icon 加到系統歡迎對話泡泡中
+            const welcomeText = `${uiText[currentLang].chatWelcome} <strong class="text-blue-600 inline-flex items-center gap-1">${style.icon} ${cat1}</strong>。<br>${uiText[currentLang].chatAsk}`;
             addBotMessage(welcomeText);
             
-            // 手機版不需要自動 focus，避免鍵盤突然彈出遮擋畫面
-            // setTimeout(() => chatInput.focus(), 100);
         }
 
         function submitChat() {
@@ -224,7 +227,6 @@
             addUserMessage(query);
             chatInput.value = '';
             
-            // 提交後收起鍵盤 (優化手機體驗)
             chatInput.blur();
 
             setTimeout(() => {
