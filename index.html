@@ -14,6 +14,7 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
         
+        /* ⚡ 價格神器動畫 */
         @keyframes pulse-lightning {
             0%, 100% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 2px #fbbf24); }
             50% { opacity: 0.7; transform: scale(1.1); filter: drop-shadow(0 0 8px #fbbf24); }
@@ -96,7 +97,7 @@
         const uiText = {
             'zh-Hant': { title: "香港生活百貨價格神器", badge: "政府數據連線", subLabel: "今日即時行情", mainCat: "第一步：選擇主分類", sortTip: "常用優先", back: "返回", loading: "讀取中...", error: "載入失敗", send: "搜尋", placeholder: "搜尋貨品/牌子...", chatWelcome: "您選擇了", chatAsk: "想搵咩貨品？<br><span class='text-xs text-slate-500 mt-1 block'>（或輸入「全部」）</span>", chatNoResult: "找不到貨品。", chatFound: "神器為您找到：", chatShowAll: "所有貨品清單：", replyGreeting: "你好！我係格價助手 🤖", replyThanks: "唔使客氣！" },
             'zh-Hans': { title: "香港生活百货价格神器", badge: "政府数据连线", subLabel: "今日即时行情", mainCat: "第一步：选择主分类", sortTip: "常用優先", back: "返回", loading: "读取中...", error: "加载失败", send: "搜索", placeholder: "搜索商品/品牌...", chatWelcome: "您选择了", chatAsk: "想找什么商品？<br><span class='text-xs text-slate-500 mt-1 block'>（或输入「全部」）</span>", chatNoResult: "找不到商品。", chatFound: "神器为您找到：", chatShowAll: "商品清单：", replyGreeting: "你好！我是比价助手 🤖", replyThanks: "不用客气！" },
-            'en': { title: "HK Artifact", badge: "Gov Data Link", subLabel: "Live Daily Prices", mainCat: "Step 1: Select Category", sortTip: "Frequent First", back: "Back", loading: "Loading...", error: "Failed", send: "Search", placeholder: "Type product name...", chatWelcome: "Selected", chatAsk: "What are you looking for?<br><span class='text-xs text-slate-500 mt-1 block'>(Or type 'all')</span>", chatNoResult: "No results.", chatFound: "Found:", chatShowAll: "Full List:", replyGreeting: "Hello! I am your AI 🤖", replyThanks: "You're welcome!" }
+            'en': { title: "HK Artifact", badge: "Gov Data Link", subLabel: "Live Daily Prices", mainCat: "Step 1: Select Category", sortTip: "Frequent First", back: "Back", loading: "Loading...", error: "Failed", send: "Search", placeholder: "Type product or brand...", chatWelcome: "Selected", chatAsk: "What are you looking for?<br><span class='text-xs text-slate-500 mt-1 block'>(Or type 'all')</span>", chatNoResult: "No results.", chatFound: "Found:", chatShowAll: "Full List:", replyGreeting: "Hello! I am your AI 🤖", replyThanks: "You're welcome!" }
         };
 
         const supermarketDict = {
@@ -117,6 +118,16 @@
             { keywords: ['飲', 'drink'], icon: '🧃', bg: 'from-cyan-100 to-blue-100', text: 'text-blue-900', border: 'border-blue-200' },
             { keywords: ['酒', 'wine', 'beer'], icon: '🍷', bg: 'from-fuchsia-100 to-purple-200', text: 'text-purple-900', border: 'border-purple-300' }
         ];
+
+        // 💡 無死角字元清洗功能 (清除聲調、特殊符號)
+        function normalizeStr(str) {
+            if (!str) return "";
+            return String(str)
+                .normalize("NFD") // 將 Ä 分解為 A 和 ¨
+                .replace(/[\u0300-\u036f]/g, "") // 移除所有聲調與 umlaut
+                .toLowerCase()
+                .trim();
+        }
 
         function recordCategoryClick(catName) {
             let history = JSON.parse(localStorage.getItem('cat_usage_history') || '{}');
@@ -163,7 +174,6 @@
         function buildStructuredData() {
             structuredData = {};
             
-            // 💡 終極解碼器：無論優惠係文字、陣列定係物件，全部強行拆解！
             function extractText(val) {
                 if (!val) return "";
                 if (typeof val === 'string') return val.trim();
@@ -184,19 +194,40 @@
                 let cat1 = item.cat1Name?.[currentLang] || item.cat1Name?.['zh-Hant'];
                 if (!cat1) return;
                 let cat2 = item.cat3Name?.[currentLang] || item.cat2Name?.[currentLang] || item.cat2Name?.['zh-Hant'] || 'Other';
+                
                 let name = item.name?.[currentLang] || item.name?.['zh-Hant'] || 'Unknown';
-                let brand = item.brand?.[currentLang] || item.brand?.['zh-Hant'] || '';
+                
+                // 🚀 新增：提取英文名與牌子，建立無死角搜索詞庫
+                let enName = item.name?.['en'] || '';
+                
+                let brandObj = item.brand || item.brandName || '';
+                let localBrand = '';
+                let enBrand = '';
+                
+                if (typeof brandObj === 'string') {
+                    localBrand = brandObj;
+                    enBrand = brandObj;
+                } else if (brandObj) {
+                    localBrand = brandObj[currentLang] || brandObj['zh-Hant'] || '';
+                    enBrand = brandObj['en'] || '';
+                }
                 
                 if (!structuredData[cat1]) structuredData[cat1] = {};
                 if (!structuredData[cat1][cat2]) structuredData[cat1][cat2] = {};
-                if (!structuredData[cat1][cat2][name]) structuredData[cat1][cat2][name] = { brand, prices: [] };
+                if (!structuredData[cat1][cat2][name]) {
+                    // 將所有可能的搜尋字眼儲存起來
+                    structuredData[cat1][cat2][name] = { 
+                        brand: localBrand, 
+                        searchKeywords: normalizeStr(`${name} ${enName} ${localBrand} ${enBrand}`),
+                        prices: [] 
+                    };
+                }
                 
                 if (Array.isArray(item.prices)) {
                     item.prices.forEach(p => {
                         let smName = supermarketDict[currentLang][p.supermarketCode] || p.supermarketCode;
                         let promo = "";
                         
-                        // 1. 暴力掃描價錢物件內嘅所有可能欄位
                         const priceKeys = ['promotions', 'promotion', 'offer', 'offers', 'discount', 'discounts', 'promotionDesc', 'promotionName', 'itemOffsetText', 'remarks'];
                         for (let key of priceKeys) {
                             if (p[key]) {
@@ -205,7 +236,6 @@
                             }
                         }
                         
-                        // 2. 如果價錢層冇，掃描貨品根目錄層級嘅陣列
                         if (!promo) {
                             const itemKeys = ['promotions', 'offers', 'discounts'];
                             for (let key of itemKeys) {
@@ -289,15 +319,20 @@
             }, 300);
         }
 
+        // 🚀 終極搜尋：透過 normalizeStr 比對，無視標點與中英限制
         function performScopedSearch(query) {
-            const q = query.toLowerCase();
-            const isShowAll = ['所有', '全部', 'all', 'list'].some(kw => q.includes(kw));
+            const q = normalizeStr(query);
+            const isShowAll = ['所有', '全部', 'all', 'list'].some(kw => q.includes(normalizeStr(kw)));
+            
             let resultsHTML = '';
             Object.keys(structuredData[selectedCat1]).forEach(cat2 => {
                 Object.keys(structuredData[selectedCat1][cat2]).forEach(pName => {
                     const info = structuredData[selectedCat1][cat2][pName];
-                    if (isShowAll || pName.toLowerCase().includes(q) || (info.brand && info.brand.toLowerCase().includes(q)))
+                    
+                    // 只要「名字 + 英文名 + 牌子 + 英文牌子」裡面包含用戶輸入的字，就中！
+                    if (isShowAll || info.searchKeywords.includes(q)) {
                         resultsHTML += generateProductCardHTML(pName, info);
+                    }
                 });
             });
             if (!resultsHTML) addBotMessage(uiText[currentLang].chatNoResult);
@@ -320,7 +355,6 @@
             chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
         }
 
-        // 🏷️ 優惠資訊已完美放置於價錢下一格
         function generateProductCardHTML(pName, info) {
             let valid = info.prices.map(p => parseFloat(p.price)).filter(pr => !isNaN(pr));
             let min = valid.length > 0 ? Math.min(...valid) : null;
@@ -333,7 +367,6 @@
                 else if (p.rawCode === 'AEON') cls = 'bg-purple-50 text-purple-700 border-purple-200';
                 else if (p.rawCode === 'MANNINGS' || p.rawCode === 'Watsons' || p.rawCode === 'LUNGFUNG') cls = 'bg-blue-50 text-blue-700 border-blue-200';
                 
-                // 🏷️ 精緻紅字優惠列 (下一格)
                 const promoRow = p.promo ? `
                     <div class="mt-1.5 pt-1.5 border-t border-red-200/60 flex items-start gap-1">
                         <span class="text-[10px]">🏷️</span>
