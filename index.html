@@ -94,7 +94,7 @@
         let selectedCat1 = null; 
 
         const uiText = {
-            'zh-Hant': { title: "香港生活百貨價格神器", badge: "政府數據連線", subLabel: "今日即時行情", mainCat: "第一步：選擇主分類", sortTip: "常用優先", back: "返回", loading: "同步中...", error: "載入失敗", send: "搜尋", placeholder: "搜尋貨品/牌子...", chatWelcome: "您選擇了", chatAsk: "想搵咩貨品？", chatFound: "神器為您找到：", chatShowAll: "所有貨品清單：", replyGreeting: "你好！我係格價助手 🤖", replyThanks: "唔使客氣！" },
+            'zh-Hant': { title: "香港生活百貨價格神器", badge: "政府數據連線", subLabel: "今日即時行情", mainCat: "第一步：選擇主分類", sortTip: "常用優先", back: "返回", loading: "讀取中...", error: "載入失敗", send: "搜尋", placeholder: "搜尋貨品/牌子...", chatWelcome: "您選擇了", chatAsk: "想搵咩貨品？", chatFound: "神器為您找到：", chatShowAll: "所有貨品清單：", replyGreeting: "你好！我係格價助手 🤖", replyThanks: "唔使客氣！" },
             'zh-Hans': { title: "香港生活百货价格神器", badge: "政府数据连线", subLabel: "今日即时行情", mainCat: "第一步：选择主分类", sortTip: "常用優先", back: "返回", loading: "启动中...", error: "加载失败", send: "搜索", placeholder: "搜索商品/品牌...", chatWelcome: "您选择了", chatAsk: "想找什么商品？", chatFound: "神器为您找到：", chatShowAll: "商品清单：", replyGreeting: "你好！我是比价助手 🤖", replyThanks: "不用客气！" },
             'en': { title: "HK Artifact", badge: "Gov Data Link", subLabel: "Live Daily Prices", mainCat: "Step 1: Select Category", sortTip: "Frequent First", back: "Back", loading: "Loading...", error: "Failed", send: "Search", placeholder: "Type product name...", chatWelcome: "Selected", chatAsk: "What are you looking for?", chatFound: "Found:", chatShowAll: "Full List:", replyGreeting: "Hello! I am your AI 🤖", replyThanks: "You're welcome!" }
         };
@@ -137,21 +137,50 @@
             return String(val);
         }
 
+        // 🧠 修復版：智能語義計算引擎 (優先處理「慳」、「送」、「折」)
         function calculateAvgPrice(promoText, originalPrice) {
             if (!promoText || isNaN(originalPrice)) return null;
             try {
                 let p = promoText.replace(/\s+/g, ''); 
-                let m1 = p.match(/\$([0-9.]+).*?([0-9]+)[件包盒排支罐筒樽]/);
-                if (m1) return parseFloat(m1[1]) / parseInt(m1[2]);
-                let m2 = p.match(/([0-9]+)[件包盒排支罐筒樽].*?\$([0-9.]+)/);
-                if (m2) return parseFloat(m2[2]) / parseInt(m2[1]);
-                let m3 = p.match(/買([0-9]+)[件包盒排支罐筒樽].*?慳.*?\$([0-9.]+)/);
-                if (m3) {
-                    let qty = parseInt(m3[1]); let disc = parseFloat(m3[2]);
+                
+                // 1. 買 X 件慳 $Y (例如：買2件慳$27.00) -> 必須最優先！
+                let mSave = p.match(/([0-9]+)[件包盒排支罐筒樽].*?慳.*?\$?([0-9.]+)/);
+                if (mSave) {
+                    let qty = parseInt(mSave[1]); 
+                    let disc = parseFloat(mSave[2]);
                     if (qty > 0) return ((originalPrice * qty) - disc) / qty;
                 }
-                if (p.includes('半價') || p.includes('半价')) return (originalPrice * 1.5) / 2;
-                if (p.includes('一送一') || p.includes('1送1')) return originalPrice / 2;
+
+                // 2. 第2件半價 / 第二件半價
+                if (p.includes('第2件半價') || p.includes('第二件半價') || p.includes('第2件半价')) {
+                    return (originalPrice * 1.5) / 2;
+                }
+
+                // 3. 買一送一 / 買X送Y
+                if (p.includes('買一送一') || p.includes('買1送1') || p.includes('买一送一')) {
+                    return originalPrice / 2;
+                }
+                let mFree = p.match(/買([0-9]+)送([0-9]+)/);
+                if (mFree) {
+                    let buy = parseInt(mFree[1]);
+                    let free = parseInt(mFree[2]);
+                    return (originalPrice * buy) / (buy + free);
+                }
+
+                // 4. X件Y折 (例如：買2件8折)
+                let mDisc = p.match(/([0-9]+)[件包盒排支罐筒樽].*?([0-9.]+)折/);
+                if (mDisc) {
+                    return originalPrice * (parseFloat(mDisc[2]) / 10);
+                }
+
+                // 5. $X 任揀/買 Y件 (例如：$16任擇2件)
+                let mTotal1 = p.match(/\$([0-9.]+).*?(?:任[揀擇買])?([0-9]+)[件包盒排支罐筒樽]/);
+                if (mTotal1) return parseFloat(mTotal1[1]) / parseInt(mTotal1[2]);
+
+                // 6. X件 $Y (例如：2件$26) -> 必須放最後，否則會誤判「慳」
+                let mTotal2 = p.match(/([0-9]+)[件包盒排支罐筒樽].*?\$([0-9.]+)/);
+                if (mTotal2) return parseFloat(mTotal2[2]) / parseInt(mTotal2[1]);
+
                 return null;
             } catch(e) { return null; }
         }
@@ -214,9 +243,7 @@
                     item.prices.forEach(p => {
                         let smName = supermarketDict[currentLang][p.supermarketCode] || p.supermarketCode;
                         let promo = "";
-                        
-                        // 第一重掃描：價錢物件內部
-                        const promoKeys = ['promotions', 'promotion', 'offer', 'offers', 'discount', 'discounts', 'promotionDesc', 'promotionName', 'itemOffsetText', 'remarks'];
+                        const promoKeys = ['promotions', 'promotion', 'offer', 'promotionDesc', 'promotionName', 'itemOffsetText'];
                         for (let key of promoKeys) {
                             if (p[key]) {
                                 let extracted = extractDeepPromoText(p[key], currentLang);
@@ -224,13 +251,10 @@
                             }
                         }
 
-                        // 💡 關鍵修正：第二重掃描！(剛才唔小心漏咗加番入去)
-                        // 如果價錢層冇優惠，就去 Root 層 (item) 嘅陣列度搵！
                         if (!promo) {
                             const itemKeys = ['promotions', 'offers', 'discounts'];
                             for (let key of itemKeys) {
                                 if (Array.isArray(item[key])) {
-                                    // 靠 supermarketCode 匹配番呢間超市嘅優惠
                                     const smPromo = item[key].find(pr => pr.supermarketCode === p.supermarketCode || pr.code === p.supermarketCode);
                                     if (smPromo) {
                                         let extracted = extractDeepPromoText(smPromo, currentLang);
