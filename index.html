@@ -45,8 +45,7 @@
                 <h2 id="chatTitle" class="font-bold text-slate-800 truncate"></h2>
             </div>
 
-            <div id="chatMessages" class="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4">
-                </div>
+            <div id="chatMessages" class="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4"></div>
 
             <div class="bg-white border-t p-3 flex-none pb-safe">
                 <form id="chatForm" class="flex gap-2" onsubmit="event.preventDefault(); submitChat();">
@@ -71,9 +70,8 @@
         let rawApiData = [];     
         let structuredData = {}; 
         let currentLang = 'zh-Hant';
-        let selectedCat1 = null; // 記錄用戶選擇的大分類
+        let selectedCat1 = null; 
 
-        // 多語言字典 (加入 Chat 專用對話)
         const uiText = {
             'zh-Hant': { 
                 title: "超市價格導航", mainCat: "第一步：選擇主分類", back: "返回分類", loading: "正在讀取超市數據...", error: "數據載入失敗", send: "搜尋", placeholder: "輸入貨品名稱...",
@@ -121,7 +119,6 @@
 
             buildStructuredData();
             
-            // 如果當前在聊天介面，重置回首頁以防語言錯亂
             if (!chatSection.classList.contains('hidden')) {
                 showLevel1();
             } else {
@@ -156,8 +153,6 @@
             });
         }
 
-        // ================= 介面切換邏輯 =================
-
         function renderLevel1() {
             level1Container.innerHTML = '';
             const categoriesL1 = Object.keys(structuredData).sort();
@@ -176,22 +171,18 @@
             selectedCat1 = null;
         }
 
-        // ================= Chat 對話系統 =================
-
         function startChat(cat1) {
             selectedCat1 = cat1;
             level1Section.classList.add('hidden');
             chatSection.classList.remove('hidden');
             
             chatTitle.innerText = cat1;
-            chatMessages.innerHTML = ''; // 清空之前的對話
+            chatMessages.innerHTML = ''; 
             chatInput.value = '';
 
-            // 加入系統歡迎語
             const welcomeText = `${uiText[currentLang].chatWelcome} <strong class="text-blue-600">${cat1}</strong>。<br>${uiText[currentLang].chatAsk}`;
             addBotMessage(welcomeText);
             
-            // 自動 focus 輸入框 (在手機上可能需要用戶手動點擊，但在電腦版很方便)
             setTimeout(() => chatInput.focus(), 100);
         }
 
@@ -199,17 +190,14 @@
             const query = chatInput.value.trim();
             if (!query) return;
 
-            // 1. 顯示用戶發送的訊息
             addUserMessage(query);
             chatInput.value = '';
 
-            // 2. 顯示系統思考中... (增加一點真實感)
             setTimeout(() => {
                 performScopedSearch(query);
             }, 300);
         }
 
-        // 在選定的分類中搜尋
         function performScopedSearch(query) {
             const q = query.toLowerCase();
             let resultsHTML = '';
@@ -235,7 +223,6 @@
             }
         }
 
-        // 產生對話泡泡 (Bot)
         function addBotMessage(text, cardsHTML = null) {
             const wrapper = document.createElement('div');
             wrapper.className = 'flex flex-col items-start w-full';
@@ -249,9 +236,8 @@
                 </div>
             `;
 
-            // 如果有商品搜尋結果，附加在泡泡下方
             if (cardsHTML) {
-                content += `<div class="w-full pl-10 mt-3 space-y-3">${cardsHTML}</div>`;
+                content += `<div class="w-full pl-10 mt-3 space-y-4">${cardsHTML}</div>`;
             }
 
             wrapper.innerHTML = content;
@@ -259,7 +245,6 @@
             scrollToBottom();
         }
 
-        // 產生對話泡泡 (User)
         function addUserMessage(text) {
             const wrapper = document.createElement('div');
             wrapper.className = 'flex flex-col items-end w-full';
@@ -272,29 +257,55 @@
             scrollToBottom();
         }
 
-        // 獨立出商品卡片的 HTML 產生器 (配合 Chat 介面)
+        // ================= UI 升級：卡片與最平價格標示 =================
         function generateProductCardHTML(pName, productInfo) {
-            const priceTags = productInfo.prices.map(p => {
-                let colorClass = 'bg-slate-100 text-slate-700';
-                if (p.rawCode === 'WELLCOME') colorClass = 'bg-red-50 text-red-700 border-red-200';
-                if (p.rawCode === 'PARKNSHOP') colorClass = 'bg-yellow-50 text-yellow-700 border-yellow-200';
-                if (p.rawCode === 'AEON') colorClass = 'bg-purple-50 text-purple-700 border-purple-200';
+            
+            // 1. 找出這個貨品的最低有效價錢
+            let validPrices = productInfo.prices
+                .map(p => parseFloat(p.price))
+                .filter(price => !isNaN(price));
+            
+            // 如果有有效價錢，找出最小值，否則設為 null
+            let minPrice = validPrices.length > 0 ? Math.min(...validPrices) : null;
 
+            // 2. 生成價錢標籤
+            const priceTags = productInfo.prices.map(p => {
                 let parsed = parseFloat(p.price);
+                
+                // 判斷是否為最低價
+                let isLowest = (!isNaN(parsed) && parsed === minPrice && minPrice !== null);
+                
+                // 基礎顏色 (按照超市區分)
+                let colorClass = 'bg-slate-50 text-slate-700 border-slate-200';
+                if (p.rawCode === 'WELLCOME') colorClass = 'bg-red-50 text-red-700 border-red-200';
+                else if (p.rawCode === 'PARKNSHOP') colorClass = 'bg-yellow-50 text-yellow-800 border-yellow-300';
+                else if (p.rawCode === 'AEON') colorClass = 'bg-purple-50 text-purple-700 border-purple-200';
+                else if (p.rawCode === 'MANNINGS' || p.rawCode === 'Watsons') colorClass = 'bg-blue-50 text-blue-700 border-blue-200';
+
                 let priceText = isNaN(parsed) ? p.price : `$${parsed.toFixed(1)}`;
 
-                return `<span class="text-[13px] px-2 py-1 rounded-md border font-medium whitespace-nowrap inline-block ${colorClass}">
-                    ${p.supermarket}: ${priceText}
-                </span>`;
+                // 如果是最平的價錢，加上特殊的 CSS 樣式和 👍 
+                let highlightClass = isLowest 
+                    ? 'ring-2 ring-green-400 font-bold scale-105 shadow-sm transform transition-transform z-10 relative' 
+                    : 'font-medium opacity-80'; // 其他價錢稍微調低透明度，凸顯最低價
+                    
+                let thumbIcon = isLowest 
+                    ? `<span class="ml-1.5 text-base">👍</span>` 
+                    : '';
+
+                return `<div class="flex items-center text-[13px] px-2.5 py-1.5 rounded-lg border whitespace-nowrap ${colorClass} ${highlightClass}">
+                    <span>${p.supermarket}:</span> <span class="ml-1 text-[14px]">${priceText}</span> ${thumbIcon}
+                </div>`;
             }).join('');
 
+            // 3. 回傳重新設計的卡片 HTML
             return `
-                <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200 flex gap-3">
-                    <div class="w-12 h-12 bg-slate-50 rounded-xl flex-shrink-0 flex items-center justify-center text-lg border border-slate-100">🛒</div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex gap-4 relative overflow-hidden">
+                    <div class="w-14 h-14 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl flex-shrink-0 flex items-center justify-center text-2xl border border-slate-100 shadow-inner">🛒</div>
                     <div class="flex-1 min-w-0">
-                        <div class="text-[11px] text-blue-500 font-bold mb-0.5 truncate">${productInfo.brand || '&nbsp;'}</div>
-                        <h3 class="font-bold text-slate-800 text-[14px] leading-tight mb-2">${pName}</h3>
-                        <div class="flex flex-wrap gap-1.5 items-start">
+                        <div class="text-[12px] text-blue-500 font-extrabold mb-1 tracking-wide uppercase truncate">${productInfo.brand || '&nbsp;'}</div>
+                        <h3 class="font-bold text-slate-800 text-[15px] leading-snug mb-3">${pName}</h3>
+                        <div class="flex flex-wrap gap-2.5 items-center">
                             ${priceTags}
                         </div>
                     </div>
@@ -302,7 +313,6 @@
             `;
         }
 
-        // 自動捲動到最底
         function scrollToBottom() {
             setTimeout(() => {
                 chatMessages.scrollTo({
