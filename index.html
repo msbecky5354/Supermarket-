@@ -111,6 +111,7 @@
         let structuredData = {}; 
         let currentLang = 'zh-Hant';
         let selectedCat1 = null; 
+        let currentKeyword = ""; // 🚀 記憶功能：儲存目前的搜尋關鍵字
 
         const catStyles = [
             { keywords: ['奶粉', '嬰兒', 'baby'], icon: '🍼', bg: 'from-pink-100 to-rose-100', text: 'text-rose-900', border: 'border-rose-200' },
@@ -185,9 +186,11 @@
                 setTimeout(() => addBotMessage(uiText[currentLang].replyThanks), 300);
             } else if (action === 'showAll') {
                 addUserMessage(text);
+                currentKeyword = ""; // 🚀 清空記憶
                 setTimeout(() => performScopedSearch('所有'), 300);
             } else if (action === 'filterDiscount') {
                 addUserMessage(text);
+                // 🚀 執行過濾但保留 currentKeyword
                 setTimeout(() => performScopedSearch('__DISCOUNT_ONLY__'), 300);
             }
         }
@@ -207,9 +210,10 @@
                 if (!structuredData[cat1]) structuredData[cat1] = {};
                 if (!structuredData[cat1][cat2]) structuredData[cat1][cat2] = {};
                 if (!structuredData[cat1][cat2][name]) {
+                    // 🚀 將 cat2 名稱加入搜尋字庫，增加「細分」準確度
                     structuredData[cat1][cat2][name] = { 
                         brand: localBrand, 
-                        searchKeywords: normalizeStr(`${name} ${enName} ${localBrand} ${enBrand}`),
+                        searchKeywords: normalizeStr(`${name} ${enName} ${localBrand} ${enBrand} ${cat2}`),
                         prices: [] 
                     };
                 }
@@ -282,7 +286,12 @@
             return { icon: '📦', bg: 'from-slate-100 to-slate-200', text: 'text-slate-800', border: 'border-slate-300' };
         }
 
-        function showLevel1() { chatSection.classList.add('hidden'); level1Section.classList.remove('hidden'); renderLevel1(); }
+        function showLevel1() { 
+            chatSection.classList.add('hidden'); 
+            level1Section.classList.remove('hidden'); 
+            currentKeyword = ""; // 🚀 返回主目錄時清空關鍵字
+            renderLevel1(); 
+        }
 
         function startChat(cat1) {
             selectedCat1 = cat1; chatSection.classList.remove('hidden'); level1Section.classList.add('hidden');
@@ -309,24 +318,26 @@
         }
 
         function performScopedSearch(query) {
-            const q = normalizeStr(query).trim();
             const isDiscountOnly = (query === '__DISCOUNT_ONLY__');
             
-            if (!q && !isDiscountOnly) {
-                addBotMessage(uiText[currentLang].chatNoResult);
-                return;
+            // 🚀 更新關鍵字（如果是㩒「優惠掣」就用返之前個 keyword）
+            if (!isDiscountOnly) {
+                currentKeyword = normalizeStr(query).trim();
             }
 
-            const isAll = ['所有', '全部', 'all', 'list'].some(kw => q.includes(normalizeStr(kw)));
+            const isAll = ['所有', '全部', 'all', 'list'].some(kw => currentKeyword.includes(normalizeStr(kw))) || (!currentKeyword && !isDiscountOnly);
             let html = '';
+            
             Object.keys(structuredData[selectedCat1]).forEach(cat2 => {
                 Object.keys(structuredData[selectedCat1][cat2]).forEach(pName => {
                     const info = structuredData[selectedCat1][cat2][pName];
                     const hasDiscount = info.prices.some(p => p.promoDisplay || p.promoCalc);
                     
-                    if (isDiscountOnly) {
-                        if (hasDiscount) html += generateProductCardHTML(pName, info);
-                    } else if (isAll || info.searchKeywords.includes(q)) {
+                    // 🚀 關鍵過濾邏輯：必須符合 (關鍵字/全部) AND (優惠過濾/不限)
+                    const matchesKeyword = isAll || info.searchKeywords.includes(currentKeyword);
+                    const matchesDiscount = !isDiscountOnly || hasDiscount;
+
+                    if (matchesKeyword && matchesDiscount) {
                         html += generateProductCardHTML(pName, info);
                     }
                 });
@@ -335,9 +346,12 @@
             if (!html) {
                 let noResultMsg = uiText[currentLang].chatNoResult;
                 if (isDiscountOnly) {
-                    if (currentLang === 'zh-Hant') noResultMsg = "呢個分類暫時未有優惠貨品喎！🤷‍♂️";
-                    else if (currentLang === 'zh-Hans') noResultMsg = "该分类下暂时没有优惠商品哦！🤷‍♂️";
-                    else noResultMsg = "No discounted products found in this category! 🤷‍♂️";
+                    const langMsgs = {
+                        'zh-Hant': currentKeyword ? `「${currentKeyword}」暫時未有優惠貨品喎！🤷‍♂️` : "呢個分類暫時未有優惠貨品喎！🤷‍♂️",
+                        'zh-Hans': currentKeyword ? `「${currentKeyword}」暂时没有优惠商品哦！🤷‍♂️` : "该分类下暂时没有优惠商品哦！🤷‍♂️",
+                        'en': currentKeyword ? `No discounts for "${currentKeyword}" found! 🤷‍♂️` : "No discounted products found in this category! 🤷‍♂️"
+                    };
+                    noResultMsg = langMsgs[currentLang];
                 }
                 addBotMessage(noResultMsg);
             }
