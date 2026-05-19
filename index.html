@@ -15,9 +15,7 @@
     <meta name="apple-mobile-web-app-title" content="價格神器">
     
     <script src="lang.js?v=1"></script>
-    <script src="promoEngine.js?v=4"></script>
-    
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="promoEngine.js?v=5"></script> <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .clickable-card:active { transform: scale(0.95); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -303,9 +301,21 @@
             addBotMessage(`${uiText[currentLang].chatWelcome} <strong class="text-blue-600">${style.icon} ${cat1}</strong>。<br>${uiText[currentLang].chatAsk}`);
         }
 
+        // 🚀 新增：隱藏彩蛋，手機專用測試方法
         function submitChat() {
             const q = chatInput.value.trim(); if (!q) return;
             addUserMessage(q); chatInput.value = ''; chatInput.blur();
+            
+            // 🔥 手機測試密碼：只要輸入 "測試異常" 即可觸發 Google Sheet 傳送！
+            if (q === "測試異常") {
+                setTimeout(() => {
+                    // 故意餵一個離譜嘅數落去觸發 Sanity Check (原價 $10, 計出嚟 $255)
+                    calculateAvgPrice("buy 1 get 1 for $500", 10);
+                    addBotMessage("🚨 已啟動隱藏測試程式！<br><br>我啱啱已經嘗試將一筆假資料 (`buy 1 get 1 for $500`) 傳送去你嘅 Google Sheet。<br><br>快啲去睇吓有冇收到新記錄啦！");
+                }, 300);
+                return;
+            }
+
             setTimeout(() => {
                 const talk = checkSmallTalk(q);
                 if (talk) addBotMessage(talk); else performScopedSearch(q);
@@ -396,7 +406,6 @@
                 return `<div class="flex flex-col p-3 rounded-2xl border ${cls} ${isLowestBase ? 'ring-2 ring-green-400 bg-white scale-[1.01] shadow-md z-10' : ''} transition-all"><div class="flex justify-between items-center w-full"><span class="font-black text-[13px] ${textCls} flex items-center gap-1">${p.supermarket}</span><span class="text-[17px] font-black text-slate-800">$${isNaN(parsed) ? p.price : parsed.toFixed(1)}${isLowestBase ? ' 👍' : ''}</span></div>${p.promoDisplay ? `<div class="mt-2 flex flex-wrap sm:flex-nowrap items-center justify-between gap-1 w-full"><span class="text-[11px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-md border border-red-100 break-words w-full sm:w-auto">🏷️ ${p.promoDisplay}</span>${avgLabel}</div>` : ''}</div>`;
             }).join('');
             
-            // 🚀 方案 B：CSS 遮罩美化版
             return `<div class="bg-white p-5 rounded-[2.5rem] shadow-sm border border-slate-200 flex flex-col gap-4 relative overflow-hidden"><div class="flex gap-4 items-start"><div class="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-2xl border border-slate-100 shadow-inner shrink-0">🛒</div><div class="flex-1 min-w-0"><div class="flex justify-between items-start"><div class="text-[11px] text-blue-500 font-black tracking-widest uppercase mb-1">${info.brand || '&nbsp;'}</div>
             
             <button onclick="shareProduct('${pName}', '${info.brand}', '${minBasePrice}')" class="p-0 active:scale-90 transition w-8 h-8 flex items-center justify-center overflow-hidden rounded-full bg-[#3b82f6] shadow-sm border-2 border-white ring-1 ring-blue-100">
