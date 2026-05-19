@@ -143,7 +143,6 @@
             }
         }
 
-        // 🚀 新增：分享功能
         async function shareProduct(name, brand, minPrice) {
             const shareData = {
                 title: '格價神器推介',
@@ -397,8 +396,8 @@
                 return `<div class="flex flex-col p-3 rounded-2xl border ${cls} ${isLowestBase ? 'ring-2 ring-green-400 bg-white scale-[1.01] shadow-md z-10' : ''} transition-all"><div class="flex justify-between items-center w-full"><span class="font-black text-[13px] ${textCls} flex items-center gap-1">${p.supermarket}</span><span class="text-[17px] font-black text-slate-800">$${isNaN(parsed) ? p.price : parsed.toFixed(1)}${isLowestBase ? ' 👍' : ''}</span></div>${p.promoDisplay ? `<div class="mt-2 flex flex-wrap sm:flex-nowrap items-center justify-between gap-1 w-full"><span class="text-[11px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-md border border-red-100 break-words w-full sm:w-auto">🏷️ ${p.promoDisplay}</span>${avgLabel}</div>` : ''}</div>`;
             }).join('');
             
-            // 🚀 重點：加回分享按鈕
-            return `<div class="bg-white p-5 rounded-[2.5rem] shadow-sm border border-slate-200 flex flex-col gap-4 relative overflow-hidden"><div class="flex gap-4 items-start"><div class="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-2xl border border-slate-100 shadow-inner shrink-0">🛒</div><div class="flex-1 min-w-0"><div class="flex justify-between items-start"><div class="text-[11px] text-blue-500 font-black tracking-widest uppercase mb-1">${info.brand || '&nbsp;'}</div><button onclick="shareProduct('${pName}', '${info.brand}', '${minBasePrice}')" class="text-blue-500 p-1 active:scale-90 transition">📤</button></div><h3 class="font-bold text-slate-800 text-[16px] leading-tight">${pName}</h3></div></div><div class="flex flex-col gap-2.5">${priceList}</div></div>`;
+            // 🚀 圖片名稱已修正為 share.JPG
+            return `<div class="bg-white p-5 rounded-[2.5rem] shadow-sm border border-slate-200 flex flex-col gap-4 relative overflow-hidden"><div class="flex gap-4 items-start"><div class="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-2xl border border-slate-100 shadow-inner shrink-0">🛒</div><div class="flex-1 min-w-0"><div class="flex justify-between items-start"><div class="text-[11px] text-blue-500 font-black tracking-widest uppercase mb-1">${info.brand || '&nbsp;'}</div><button onclick="shareProduct('${pName}', '${info.brand}', '${minBasePrice}')" class="p-0.5 active:scale-90 transition w-7 h-7 flex items-center justify-center overflow-hidden"><img src="share.JPG" alt="Share" class="w-full h-full object-contain"></button></div><h3 class="font-bold text-slate-800 text-[16px] leading-tight">${pName}</h3></div></div><div class="flex flex-col gap-2.5">${priceList}</div></div>`;
         }
 
         init();
