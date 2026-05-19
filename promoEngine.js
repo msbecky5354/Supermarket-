@@ -4,28 +4,24 @@
 function logUnknownPromo(promoText, originalPrice, calculatedPrice) {
     const formUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSe7oOQ-7klgKPvjgRof2_Ztae1fBMWuA0_us32ewkK8TbbxbA/formResponse';
     
-    // 1. 建立一個隱藏嘅 iframe，用嚟吸收 Google 提交成功後嘅轉頁畫面，令 App 本身保持原狀
     let iframeName = 'hidden_iframe_' + Math.random().toString(36).substring(7);
     let iframe = document.createElement('iframe');
     iframe.name = iframeName;
     iframe.style.display = 'none';
     document.body.appendChild(iframe);
 
-    // 2. 建立一個虛擬嘅原生 HTML Form
     let form = document.createElement('form');
     form.method = 'POST';
     form.action = formUrl;
-    form.target = iframeName; // 將提交動作射去隱藏嘅 iframe
+    form.target = iframeName; 
     form.style.display = 'none';
 
-    // 3. 套用你提供嘅絕對精準 Entry ID 欄位
     let data = {
         'entry.1839150021': promoText,
         'entry.1121303872': String(originalPrice),
         'entry.1938861444': calculatedPrice !== null ? calculatedPrice.toFixed(2) : 'null'
     };
 
-    // 將資料變成 hidden input 放落 Form 度
     for (let key in data) {
         let input = document.createElement('input');
         input.type = 'hidden';
@@ -34,13 +30,11 @@ function logUnknownPromo(promoText, originalPrice, calculatedPrice) {
         form.appendChild(input);
     }
 
-    // 4. 加落網頁並強制提交 (以 HTML 規格強制發送，完美繞過所有 CORS 阻擋)
     document.body.appendChild(form);
     form.submit();
     
     console.log('✅ 已用原生 Form 絕招強行發送資料至 Google Sheet！');
 
-    // 5. 2 秒後自動清理呢啲隱藏元素
     setTimeout(() => {
         if (document.body.contains(form)) document.body.removeChild(form);
         if (document.body.contains(iframe)) document.body.removeChild(iframe);
@@ -72,7 +66,7 @@ function extractDeepPromoText(val, targetLang) {
     return String(val);
 }
 
-// 🧠 層級優先度計算引擎 (加入防彈與 Google Sheet 收集器)
+// 🧠 層級優先度計算引擎
 function calculateAvgPrice(enPromoText, originalPrice) {
     if (!enPromoText || isNaN(originalPrice)) return null;
     
@@ -137,14 +131,12 @@ function calculateAvgPrice(enPromoText, originalPrice) {
 
         // 🛡️ 終極防線 + Google Sheet 觸發機制
         if (finalPrice !== null) {
-            // 防線：如果優惠價貴過/等於原價，或者平過一折
             if (finalPrice >= originalPrice || finalPrice < (originalPrice * 0.1)) {
                 logUnknownPromo(enPromoText, originalPrice, finalPrice);
                 return null;
             }
             return finalPrice; 
         } else {
-            // 如果所有 Regex 都解唔到 (結果係 null)
             if (enPromoText.trim() !== '') {
                 logUnknownPromo(enPromoText, originalPrice, null);
             }
