@@ -232,26 +232,36 @@
 
                 async function init() {
             try {
+                // 1. 獨立獲取真實更新時間 (完美繞過 GitHub 部署時間)
+                try {
+                    const timeRes = await fetch('/update_log.txt?t=' + new Date().getTime());
+                    if (timeRes.ok) {
+                        const timeText = await timeRes.text();
+                        // 將 txt 內嘅純時間字串轉換為 JavaScript Date 物件
+                        lastUpdatedTime = new Date(timeText.trim()); 
+                    } else {
+                        lastUpdatedTime = null; // 讀唔到就留白
+                    }
+                } catch (timeErr) {
+                    console.log("無法獲取時間記錄檔", timeErr);
+                    lastUpdatedTime = null;
+                }
+
+                // 2. 獲取格價數據
                 let data = null;
-                const localResponse = await fetch('pricewatch.json?t=' + new Date().getTime());
+                const localResponse = await fetch('/pricewatch.json?t=' + new Date().getTime());
                 
                 if (localResponse.ok) {
                     data = await localResponse.json();
-                    const lm = localResponse.headers.get('Last-Modified');
-                    if (lm) {
-                        lastUpdatedTime = new Date(lm);
-                    } else {
-                        // 斬斷假時間：如果讀唔到真實修改時間，就設定為 null
-                        lastUpdatedTime = null; 
-                    }
                 } else {
+                    // 本地搵唔到，自動轉用 Proxy
                     const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent('https://online-price-watch.consumer.org.hk/opw/opendata/pricewatch.json')}`;
                     const res = await fetch(proxyUrl);
                     data = await res.json();
-                    // 經 Proxy 讀取通常讀唔到真實 Header，所以一樣唔好用假時間
-                    lastUpdatedTime = null; 
                 }
                 rawApiData = data;
+                
+                // 3. 觸發 UI 更新
                 changeLanguage('zh-Hant');
             } catch (e) {
                 level1Container.innerHTML = `<p class="text-red-500 text-center col-span-2">${uiText[currentLang].error}</p>`;
