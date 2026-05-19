@@ -230,10 +230,10 @@
             return `${y}-${m}-${d} ${h}:${min}`;
         }
 
-        async function init() {
+                async function init() {
             try {
                 let data = null;
-                const localResponse = await fetch('pricewatch.json?t=' + new Date().getTime());
+                const localResponse = await fetch('/pricewatch.json?t=' + new Date().getTime());
                 
                 if (localResponse.ok) {
                     data = await localResponse.json();
@@ -241,13 +241,15 @@
                     if (lm) {
                         lastUpdatedTime = new Date(lm);
                     } else {
-                        lastUpdatedTime = new Date();
+                        // 斬斷假時間：如果讀唔到真實修改時間，就設定為 null
+                        lastUpdatedTime = null; 
                     }
                 } else {
                     const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent('https://online-price-watch.consumer.org.hk/opw/opendata/pricewatch.json')}`;
                     const res = await fetch(proxyUrl);
                     data = await res.json();
-                    lastUpdatedTime = new Date(); 
+                    // 經 Proxy 讀取通常讀唔到真實 Header，所以一樣唔好用假時間
+                    lastUpdatedTime = null; 
                 }
                 rawApiData = data;
                 changeLanguage('zh-Hant');
