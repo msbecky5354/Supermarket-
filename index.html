@@ -24,7 +24,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="價格神器">
     
-    <script src="lang.js?v=6"></script>
+    <script src="lang.js?v=7"></script>
     <script src="promoEngine.js?v=8"></script>
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -88,15 +88,11 @@
 
             <div class="mt-10 flex-1 flex flex-col justify-end text-center">
                 <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm inline-block mx-auto max-w-sm">
-                    <p class="text-[11px] text-slate-500 leading-relaxed">
-                        本應用程式之貨品價格及優惠數據<br>
-                        取自政府資料一線通 (data.gov.hk) 的<br>
-                        <strong class="text-slate-700">「網上價格一覽通」</strong>資料集。
-                    </p>
+                    <p id="disclaimerGovData" class="text-[11px] text-slate-500 leading-relaxed"></p>
                     <div class="w-12 h-px bg-slate-200 mx-auto my-2"></div>
                     <p class="text-[10px] text-slate-400">
-                        知識產權擁有人：<strong class="text-slate-600">消費者委員會</strong><br>
-                        <span class="opacity-75 block mt-1">免責聲明：系統透過自動化分析優惠資訊，折合價僅供參考。實際售價請以實體超市或官方網店為準。</span>
+                        <span id="disclaimerOwner"></span><br>
+                        <span id="disclaimerNote" class="opacity-75 block mt-1"></span>
                     </p>
                 </div>
 
@@ -165,7 +161,7 @@
         let currentLang = 'zh-Hant';
         let selectedCat1 = null; 
         let currentKeyword = ""; 
-        let lastUpdatedTime = null; // 🚀 儲存檔案最後更新時間
+        let lastUpdatedTime = null; 
 
         const catStyles = [
             { keywords: ['奶粉', '嬰兒', 'baby'], icon: '🍼', bg: 'from-pink-100 to-rose-100', text: 'text-rose-900', border: 'border-rose-200' },
@@ -180,7 +176,6 @@
             { keywords: ['酒', 'wine', 'beer'], icon: '🍷', bg: 'from-fuchsia-100 to-purple-200', text: 'text-purple-900', border: 'border-purple-300' }
         ];
 
-        // 🚀 格式化日期時間 (YYYY-MM-DD HH:MM)
         function formatDateTime(date) {
             const y = date.getFullYear();
             const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -197,18 +192,17 @@
                 
                 if (localResponse.ok) {
                     data = await localResponse.json();
-                    // 🚀 嘗試讀取檔案的 HTTP Last-Modified 標頭
                     const lm = localResponse.headers.get('Last-Modified');
                     if (lm) {
                         lastUpdatedTime = new Date(lm);
                     } else {
-                        lastUpdatedTime = new Date(); // 如果讀唔到，就 fallback 顯示今日
+                        lastUpdatedTime = new Date();
                     }
                 } else {
                     const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent('https://online-price-watch.consumer.org.hk/opw/opendata/pricewatch.json')}`;
                     const res = await fetch(proxyUrl);
                     data = await res.json();
-                    lastUpdatedTime = new Date(); // 用 Proxy 嘅話就當係即日
+                    lastUpdatedTime = new Date(); 
                 }
                 rawApiData = data;
                 changeLanguage('zh-Hant');
@@ -239,7 +233,6 @@
             document.title = uiText[lang].title; 
             document.getElementById('dataSourceBadge').innerText = uiText[lang].badge;
             
-            // 🚀 更新頂部標題：顯示真實最後更新時間
             if (lastUpdatedTime) {
                 document.getElementById('todayStatusLabel').innerText = uiText[lang].lastUpdated + formatDateTime(lastUpdatedTime);
             } else {
@@ -251,6 +244,11 @@
             document.getElementById('backBtnText').innerText = uiText[lang].back;
             document.getElementById('sendBtnText').innerText = uiText[lang].send;
             chatInput.placeholder = uiText[lang].placeholder;
+
+            // 🚀 動態更新官方聲明
+            document.getElementById('disclaimerGovData').innerHTML = uiText[lang].disclaimerGovData;
+            document.getElementById('disclaimerOwner').innerHTML = uiText[lang].disclaimerOwner;
+            document.getElementById('disclaimerNote').innerHTML = uiText[lang].disclaimerNote;
 
             document.getElementById('navAbout').innerText = uiText[lang].footerAbout;
             document.getElementById('navContact').innerText = uiText[lang].footerContact;
@@ -513,6 +511,7 @@
                 return `<div class="flex flex-col p-3 rounded-2xl border ${cls} ${isLowestBase ? 'ring-2 ring-green-400 bg-white scale-[1.01] shadow-md z-10' : ''} transition-all"><div class="flex justify-between items-center w-full"><span class="font-black text-[13px] ${textCls} flex items-center gap-1">${p.supermarket}</span><span class="text-[17px] font-black text-slate-800">$${isNaN(parsed) ? p.price : parsed.toFixed(1)}${isLowestBase ? ' 👍' : ''}</span></div>${p.promoDisplay ? `<div class="mt-2 flex flex-wrap sm:flex-nowrap items-center justify-between gap-1 w-full"><span class="text-[11px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-md border border-red-100 break-words w-full sm:w-auto">🏷️ ${p.promoDisplay}</span>${avgLabel}</div>` : ''}</div>`;
             }).join('');
             
+            // 🚀 純代碼版 (SVG) 分享掣，永久杜絕起格仔問題！
             return `<div class="bg-white p-5 rounded-[2.5rem] shadow-sm border border-slate-200 flex flex-col gap-4 relative overflow-hidden"><div class="flex gap-4 items-start"><div class="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-2xl border border-slate-100 shadow-inner shrink-0">🛒</div><div class="flex-1 min-w-0"><div class="flex justify-between items-start"><div class="text-[11px] text-blue-500 font-black tracking-widest uppercase mb-1">${info.brand || '&nbsp;'}</div>
             
             <button onclick="shareProduct('${pName}', '${info.brand}', '${minBasePrice}')" class="w-8 h-8 flex items-center justify-center rounded-full bg-[#1877F2] hover:bg-blue-600 active:scale-90 transition-all shadow-sm shrink-0">
