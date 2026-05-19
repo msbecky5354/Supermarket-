@@ -2,7 +2,6 @@ name: Auto Update PriceWatch Data
 
 on:
   schedule:
-    # 每日香港時間朝早 06:30 執行 (等於 UTC 時間前一晚 22:30)
     - cron: '30 22 * * *'
   workflow_dispatch: 
 
@@ -16,21 +15,23 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Delete old and download new pricewatch.json
+      - name: Download data and create log
         run: |
-          rm -f pricewatch.json
+          # 1. 強制下載最新 JSON
           curl -s -o pricewatch.json "https://online-price-watch.consumer.org.hk/opw/opendata/pricewatch.json"
+          
+          # 2. 建立一個 log 檔，寫入最新時間 (呢步係逼 Git 必定要有新 Commit 嘅關鍵！)
+          echo "最後自動更新時間：$(date +'%Y-%m-%d %H:%M:%S')" > update_log.txt
 
-      - name: Force Commit and Push
+      - name: Commit and Push
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           
-          git add pricewatch.json
+          # 將 json 同埋 log 檔一齊 add
+          git add pricewatch.json update_log.txt
           
-          # 直接強制 commit。
-          # 加咗 || true 係為咗防止萬一下載失敗導致 git add 冇嘢加而報錯。
-          # --allow-empty 確保就算內容完全一樣，都可以產生一條新紀錄。
-          git commit --allow-empty -m "🤖 Auto-update: 強制重新下載 pricewatch.json [$(date +'%Y-%m-%d %H:%M:%S')]" || true
+          # 因為 update_log.txt 每次內容(時間)都唔同，所以一定會 commit 成功
+          git commit -m "🤖 Auto-update: 獲取最新數據 [$(date +'%Y-%m-%d %H:%M:%S')]" || true
           
           git push
