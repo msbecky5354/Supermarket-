@@ -38,17 +38,25 @@ function calculateAvgPrice(enPromoText, originalPrice) {
         // ==========================================
         // 級別 1：最複雜嘅「買 X 送 Y」及「特定 Y 折扣」
         // ==========================================
-        let mGetFor = p.match(/(?:buy|add).*?([0-9]+).*?get.*?([0-9]+).*?(?:for|at)\s*\$([0-9.]+)/);
+        let mGetFor = p.match(/(?:buy|add).*?\b([0-9]+)\b.*?get.*?\b([0-9]+)\b.*?(?:for|at)\s*\$([0-9.]+)/);
         if (mGetFor) return (originalPrice * getNum(mGetFor[1]) + getNum(mGetFor[3])) / (getNum(mGetFor[1]) + getNum(mGetFor[2]));
 
-        let mGetHalf = p.match(/(?:buy|add).*?([0-9]+).*?get.*?([0-9]+).*?half/);
+        let mGetHalf = p.match(/(?:buy|add).*?\b([0-9]+)\b.*?get.*?\b([0-9]+)\b.*?half/);
         if (mGetHalf) return (originalPrice * getNum(mGetHalf[1]) + (originalPrice * 0.5 * getNum(mGetHalf[2]))) / (getNum(mGetHalf[1]) + getNum(mGetHalf[2]));
 
-        // 🔥 修正版：加入 [^\d]+ 強制分隔數量同折數，防止好似 "15" 咁被硬拆做 "1" 和 "5"
-        let mGetPerc = p.match(/(?:buy|add).*?([0-9]+).*?get.*?([0-9]+)[^\d]+([0-9.]+)%\s*off/);
+        // 嚴格版：必須有空格隔開件數同折數 (例如 "get 1 50% off")，防止誤中 "get 15% off"
+        let mGetPerc = p.match(/(?:buy|add).*?\b([0-9]+)\b.*?get.*?\b([0-9]+)\b\s+([0-9.]+)%\s*off/);
         if (mGetPerc) return (originalPrice * getNum(mGetPerc[1]) + (originalPrice * (1 - getNum(mGetPerc[3])/100) * getNum(mGetPerc[2]))) / (getNum(mGetPerc[1]) + getNum(mGetPerc[2]));
 
-        let mGetFree = p.match(/(?:buy|add).*?([0-9]+).*?(?:get|free).*?([0-9]+)/);
+        // ==========================================
+        // 級別 1.5：專門捕捉 "Buy X to get Y% off" (多件全單折扣)
+        // 完美解決 Wellcome 嘅 "Buy 2 to get 15% off"
+        // ==========================================
+        let mBuyPercOff = p.match(/(?:buy|add).*?\b([0-9]+)\b.*?(?:to\s*)?(?:get|enjoy)\s+([0-9.]+)%\s*off/);
+        if (mBuyPercOff) return originalPrice * (1 - (getNum(mBuyPercOff[2]) / 100));
+
+        // 買 X 送 Y (Free) - 加咗 (?!\s*%) 防止將 "get 15% off" 當成送 15 件
+        let mGetFree = p.match(/(?:buy|add).*?\b([0-9]+)\b.*?(?:get|free).*?\b([0-9]+)\b(?!\s*%)/);
         if (mGetFree) return (originalPrice * getNum(mGetFree[1])) / (getNum(mGetFree[1]) + getNum(mGetFree[2]));
 
         // ==========================================
@@ -65,17 +73,15 @@ function calculateAvgPrice(enPromoText, originalPrice) {
         // ==========================================
         // 級別 3：常規數量計算 (Buy X save Y / X for $Y)
         // ==========================================
-        let mSave = p.match(/(?:buy|add).*?([0-9]+).*?save.*?\$([0-9.]+)/);
+        let mSave = p.match(/(?:buy|add).*?\b([0-9]+)\b.*?save.*?\$([0-9.]+)/);
         if (mSave) return (originalPrice * getNum(mSave[1]) - getNum(mSave[2])) / getNum(mSave[1]);
 
-        // 最基本嘅 X for $Y (確保唔係第二件專屬)
-        let mFor = p.match(/([0-9]+).*?(?:for|at)\s*\$([0-9.]+)/);
+        let mFor = p.match(/\b([0-9]+)\b.*?(?:for|at)\s*\$([0-9.]+)/);
         if (mFor && !is2nd) return getNum(mFor[2]) / getNum(mFor[1]);
 
         // ==========================================
         // 級別 4：全單折扣 (Overall % off / Half price)
         // ==========================================
-        // 依家 "Buy 2 to get 15% off" 會安全跌落嚟呢度，精準計出 15% off 嘅折合單價
         let mPerc = p.match(/([0-9.]+)%\s*off/);
         if (mPerc && !is2nd) return originalPrice * (1 - (getNum(mPerc[1]) / 100));
 
