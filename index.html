@@ -87,7 +87,6 @@
             <div id="chatMessages" class="flex-1 overflow-y-auto no-scrollbar p-4 space-y-5"></div>
             
             <div class="bg-white border-t p-3 pb-[max(16px,env(safe-area-inset-bottom))] flex-none shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20 flex flex-col gap-2">
-                
                 <div id="quickActionChips" class="flex gap-2 overflow-x-auto no-scrollbar max-w-2xl mx-auto w-full px-1"></div>
 
                 <form id="chatForm" class="flex gap-2 max-w-2xl mx-auto w-full" onsubmit="event.preventDefault(); submitChat();">
@@ -155,9 +154,7 @@
             document.getElementById('sendBtnText').innerText = uiText[lang].send;
             chatInput.placeholder = uiText[lang].placeholder;
             
-            // 動態更新並渲染捷徑按鈕
             renderQuickActions();
-            
             buildStructuredData();
             if (!chatSection.classList.contains('hidden')) showLevel1();
             else renderLevel1();
@@ -166,9 +163,10 @@
         function renderQuickActions() {
             const container = document.getElementById('quickActionChips');
             const chips = [
-                { text: uiText[currentLang].quickDiscount || "🏷️ 淨係睇有優惠", action: "filterDiscount" },
-                { text: uiText[currentLang].quickHome || "🏠 返主目錄", action: "goHome" },
-                { text: uiText[currentLang].quickBye || "👋 拜拜", action: "sayBye" }
+                { text: uiText[currentLang].quickAll, action: "showAll" },
+                { text: uiText[currentLang].quickDiscount, action: "filterDiscount" },
+                { text: uiText[currentLang].quickHome, action: "goHome" },
+                { text: uiText[currentLang].quickBye, action: "sayBye" }
             ];
             
             container.innerHTML = chips.map(c => 
@@ -185,6 +183,9 @@
             } else if (action === 'sayBye') {
                 addUserMessage(text);
                 setTimeout(() => addBotMessage(uiText[currentLang].replyThanks), 300);
+            } else if (action === 'showAll') {
+                addUserMessage(text);
+                setTimeout(() => performScopedSearch('所有'), 300);
             } else if (action === 'filterDiscount') {
                 addUserMessage(text);
                 setTimeout(() => performScopedSearch('__DISCOUNT_ONLY__'), 300);
@@ -309,8 +310,6 @@
 
         function performScopedSearch(query) {
             const q = normalizeStr(query).trim();
-            
-            // 處理特殊快捷篩選指令
             const isDiscountOnly = (query === '__DISCOUNT_ONLY__');
             
             if (!q && !isDiscountOnly) {
@@ -323,8 +322,6 @@
             Object.keys(structuredData[selectedCat1]).forEach(cat2 => {
                 Object.keys(structuredData[selectedCat1][cat2]).forEach(pName => {
                     const info = structuredData[selectedCat1][cat2][pName];
-                    
-                    // 偵測貨品是否有任何促銷優惠
                     const hasDiscount = info.prices.some(p => p.promoDisplay || p.promoCalc);
                     
                     if (isDiscountOnly) {
