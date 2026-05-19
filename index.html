@@ -111,7 +111,7 @@
         let structuredData = {}; 
         let currentLang = 'zh-Hant';
         let selectedCat1 = null; 
-        let currentKeyword = ""; // 🚀 記憶功能：儲存目前的搜尋關鍵字
+        let currentKeyword = ""; 
 
         const catStyles = [
             { keywords: ['奶粉', '嬰兒', 'baby'], icon: '🍼', bg: 'from-pink-100 to-rose-100', text: 'text-rose-900', border: 'border-rose-200' },
@@ -143,6 +143,22 @@
             }
         }
 
+        // 🚀 新增：分享功能
+        async function shareProduct(name, brand, minPrice) {
+            const shareData = {
+                title: '格價神器推介',
+                text: `【慳錢情報】${brand} - ${name}，最低價見 $${minPrice}！快啲去格價神器睇吓啦！🛒`,
+                url: window.location.href
+            };
+            try {
+                if (navigator.share) { await navigator.share(shareData); }
+                else {
+                    navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
+                    alert('已複製格價資訊，快啲去貼畀親友啦！');
+                }
+            } catch (err) { console.log('Share error:', err); }
+        }
+
         function changeLanguage(lang) {
             currentLang = lang;
             document.documentElement.lang = lang;
@@ -169,7 +185,6 @@
                 { text: uiText[currentLang].quickHome, action: "goHome" },
                 { text: uiText[currentLang].quickBye, action: "sayBye" }
             ];
-            
             container.innerHTML = chips.map(c => 
                 `<button type="button" onclick="handleQuickAction('${c.action}', '${c.text}')" 
                     class="whitespace-nowrap bg-blue-50 text-blue-700 border border-blue-100 px-3 py-1.5 rounded-full text-[13px] font-bold active:scale-95 transition-transform shadow-sm flex-none">
@@ -179,18 +194,16 @@
         }
 
         function handleQuickAction(action, text) {
-            if (action === 'goHome') {
-                showLevel1();
-            } else if (action === 'sayBye') {
+            if (action === 'goHome') { showLevel1(); }
+            else if (action === 'sayBye') {
                 addUserMessage(text);
                 setTimeout(() => addBotMessage(uiText[currentLang].replyThanks), 300);
             } else if (action === 'showAll') {
                 addUserMessage(text);
-                currentKeyword = ""; // 🚀 清空記憶
+                currentKeyword = "";
                 setTimeout(() => performScopedSearch('所有'), 300);
             } else if (action === 'filterDiscount') {
                 addUserMessage(text);
-                // 🚀 執行過濾但保留 currentKeyword
                 setTimeout(() => performScopedSearch('__DISCOUNT_ONLY__'), 300);
             }
         }
@@ -210,7 +223,6 @@
                 if (!structuredData[cat1]) structuredData[cat1] = {};
                 if (!structuredData[cat1][cat2]) structuredData[cat1][cat2] = {};
                 if (!structuredData[cat1][cat2][name]) {
-                    // 🚀 將 cat2 名稱加入搜尋字庫，增加「細分」準確度
                     structuredData[cat1][cat2][name] = { 
                         brand: localBrand, 
                         searchKeywords: normalizeStr(`${name} ${enName} ${localBrand} ${enBrand} ${cat2}`),
@@ -223,9 +235,7 @@
                         let smName = supermarketDict[currentLang][p.supermarketCode] || p.supermarketCode;
                         let promoDisplay = "";
                         let promoCalcEn = ""; 
-                        
                         const promoKeys = ['promotions', 'promotion', 'offer', 'promotionDesc', 'promotionName', 'itemOffsetText'];
-                        
                         for (let key of promoKeys) {
                             if (p[key]) {
                                 let extractedDisplay = extractDeepPromoText(p[key], currentLang);
@@ -236,7 +246,6 @@
                                 }
                             }
                         }
-
                         if (!promoDisplay) {
                             const itemKeys = ['promotions', 'offers', 'discounts'];
                             for (let key of itemKeys) {
@@ -253,7 +262,6 @@
                                 }
                             }
                         }
-
                         structuredData[cat1][cat2][name].prices.push({ 
                             rawCode: p.supermarketCode, 
                             supermarket: smName, 
@@ -286,12 +294,7 @@
             return { icon: '📦', bg: 'from-slate-100 to-slate-200', text: 'text-slate-800', border: 'border-slate-300' };
         }
 
-        function showLevel1() { 
-            chatSection.classList.add('hidden'); 
-            level1Section.classList.remove('hidden'); 
-            currentKeyword = ""; // 🚀 返回主目錄時清空關鍵字
-            renderLevel1(); 
-        }
+        function showLevel1() { chatSection.classList.add('hidden'); level1Section.classList.remove('hidden'); currentKeyword = ""; renderLevel1(); }
 
         function startChat(cat1) {
             selectedCat1 = cat1; chatSection.classList.remove('hidden'); level1Section.classList.add('hidden');
@@ -319,30 +322,18 @@
 
         function performScopedSearch(query) {
             const isDiscountOnly = (query === '__DISCOUNT_ONLY__');
-            
-            // 🚀 更新關鍵字（如果是㩒「優惠掣」就用返之前個 keyword）
-            if (!isDiscountOnly) {
-                currentKeyword = normalizeStr(query).trim();
-            }
-
+            if (!isDiscountOnly) { currentKeyword = normalizeStr(query).trim(); }
             const isAll = ['所有', '全部', 'all', 'list'].some(kw => currentKeyword.includes(normalizeStr(kw))) || (!currentKeyword && !isDiscountOnly);
             let html = '';
-            
             Object.keys(structuredData[selectedCat1]).forEach(cat2 => {
                 Object.keys(structuredData[selectedCat1][cat2]).forEach(pName => {
                     const info = structuredData[selectedCat1][cat2][pName];
                     const hasDiscount = info.prices.some(p => p.promoDisplay || p.promoCalc);
-                    
-                    // 🚀 關鍵過濾邏輯：必須符合 (關鍵字/全部) AND (優惠過濾/不限)
                     const matchesKeyword = isAll || info.searchKeywords.includes(currentKeyword);
                     const matchesDiscount = !isDiscountOnly || hasDiscount;
-
-                    if (matchesKeyword && matchesDiscount) {
-                        html += generateProductCardHTML(pName, info);
-                    }
+                    if (matchesKeyword && matchesDiscount) { html += generateProductCardHTML(pName, info); }
                 });
             });
-            
             if (!html) {
                 let noResultMsg = uiText[currentLang].chatNoResult;
                 if (isDiscountOnly) {
@@ -383,50 +374,31 @@
                     validPrices.push((avg && avg > 0 && avg < parsed) ? avg : parsed);
                 }
             });
-            
             let minBasePrice = Math.min(...info.prices.map(p => parseFloat(p.price)).filter(pr => !isNaN(pr)));
             let minEffectivePrice = validPrices.length > 0 ? Math.min(...validPrices) : null;
-            
             let allSameBasePrice = info.prices.filter(p=>!isNaN(parseFloat(p.price))).every(v => parseFloat(v.price) === minBasePrice);
             let allSameEffectivePrice = validPrices.length > 1 && validPrices.every(v => Math.abs(v - validPrices[0]) < 0.01);
 
             const priceList = info.prices.map(p => {
                 let parsed = parseFloat(p.price);
                 let isLowestBase = (!isNaN(parsed) && parsed === minBasePrice && info.prices.length > 1 && !allSameBasePrice);
-                
-                let cls = 'border-slate-100 bg-slate-50/50';
-                let textCls = 'text-slate-600';
+                let cls = 'border-slate-100 bg-slate-50/50'; let textCls = 'text-slate-600';
                 if (p.rawCode === 'WELLCOME') { cls = 'border-red-100 bg-red-50/30'; textCls = 'text-red-700'; }
                 else if (p.rawCode === 'PARKNSHOP') { cls = 'border-yellow-200 bg-yellow-50/30'; textCls = 'text-yellow-800'; }
                 else if (p.rawCode === 'AEON') { cls = 'border-purple-100 bg-purple-50/30'; textCls = 'text-purple-700'; }
                 else if (['MANNINGS','Watsons','LUNGFUNG'].includes(p.rawCode)) { cls = 'border-blue-100 bg-blue-50/30'; textCls = 'text-blue-700'; }
-                
                 let avg = calculateAvgPrice(p.promoCalc, parsed);
-                let avgText = currentLang === 'en' ? 'Avg' : '折合';
-                let eaText = currentLang === 'en' ? 'ea' : '件';
                 let avgLabel = '';
-
                 if (avg && avg > 0 && avg < parsed) {
                     let isAbsoluteLowest = (minEffectivePrice !== null && Math.abs(avg - minEffectivePrice) < 0.01 && validPrices.length > 1 && !allSameEffectivePrice);
                     let starHtml = isAbsoluteLowest ? `<span class="star-blink ml-1 text-[13px]">⭐</span>` : '';
-                    avgLabel = `<span class="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-black shadow-sm ml-1 shrink-0 whitespace-nowrap flex items-center">💰 ${avgText} $${avg.toFixed(1)}/${eaText}${starHtml}</span>`;
+                    avgLabel = `<span class="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-black shadow-sm ml-1 shrink-0 whitespace-nowrap flex items-center">💰 ${(currentLang === 'en' ? 'Avg' : '折合')} $${avg.toFixed(1)}/${(currentLang === 'en' ? 'ea' : '件')}${starHtml}</span>`;
                 }
-
-                return `
-                <div class="flex flex-col p-3 rounded-2xl border ${cls} ${isLowestBase ? 'ring-2 ring-green-400 bg-white scale-[1.01] shadow-md z-10' : ''} transition-all">
-                    <div class="flex justify-between items-center w-full">
-                        <span class="font-black text-[13px] ${textCls} flex items-center gap-1">${p.supermarket}</span>
-                        <span class="text-[17px] font-black text-slate-800">$${isNaN(parsed) ? p.price : parsed.toFixed(1)}${isLowestBase ? ' <span class="text-lg">👍</span>' : ''}</span>
-                    </div>
-                    ${p.promoDisplay ? `
-                    <div class="mt-2 flex flex-wrap sm:flex-nowrap items-center justify-between gap-1 w-full">
-                        <span class="text-[11px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-md border border-red-100 break-words w-full sm:w-auto">🏷️ ${p.promoDisplay}</span>
-                        ${avgLabel}
-                    </div>` : ''}
-                </div>`;
+                return `<div class="flex flex-col p-3 rounded-2xl border ${cls} ${isLowestBase ? 'ring-2 ring-green-400 bg-white scale-[1.01] shadow-md z-10' : ''} transition-all"><div class="flex justify-between items-center w-full"><span class="font-black text-[13px] ${textCls} flex items-center gap-1">${p.supermarket}</span><span class="text-[17px] font-black text-slate-800">$${isNaN(parsed) ? p.price : parsed.toFixed(1)}${isLowestBase ? ' 👍' : ''}</span></div>${p.promoDisplay ? `<div class="mt-2 flex flex-wrap sm:flex-nowrap items-center justify-between gap-1 w-full"><span class="text-[11px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-md border border-red-100 break-words w-full sm:w-auto">🏷️ ${p.promoDisplay}</span>${avgLabel}</div>` : ''}</div>`;
             }).join('');
             
-            return `<div class="bg-white p-5 rounded-[2.5rem] shadow-sm border border-slate-200 flex flex-col gap-4 relative overflow-hidden"><div class="flex gap-4 items-start"><div class="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-2xl border border-slate-100 shadow-inner shrink-0">🛒</div><div class="flex-1 min-w-0"><div class="text-[11px] text-blue-500 font-black tracking-widest uppercase mb-1">${info.brand || '&nbsp;'}</div><h3 class="font-bold text-slate-800 text-[16px] leading-tight">${pName}</h3></div></div><div class="flex flex-col gap-2.5">${priceList}</div></div>`;
+            // 🚀 重點：加回分享按鈕
+            return `<div class="bg-white p-5 rounded-[2.5rem] shadow-sm border border-slate-200 flex flex-col gap-4 relative overflow-hidden"><div class="flex gap-4 items-start"><div class="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-2xl border border-slate-100 shadow-inner shrink-0">🛒</div><div class="flex-1 min-w-0"><div class="flex justify-between items-start"><div class="text-[11px] text-blue-500 font-black tracking-widest uppercase mb-1">${info.brand || '&nbsp;'}</div><button onclick="shareProduct('${pName}', '${info.brand}', '${minBasePrice}')" class="text-blue-500 p-1 active:scale-90 transition">📤</button></div><h3 class="font-bold text-slate-800 text-[16px] leading-tight">${pName}</h3></div></div><div class="flex flex-col gap-2.5">${priceList}</div></div>`;
         }
 
         init();
