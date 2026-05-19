@@ -8,14 +8,24 @@
     <meta http-equiv="Expires" content="0">
     <title>香港生活百貨價格神器 | HK Essentials Price Artifact</title>
     
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
+    </script>
+
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+
     <link rel="icon" type="image/png" href="price.PNG">
     <link rel="apple-touch-icon" href="price.PNG">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="價格神器">
     
-    <script src="lang.js?v=3"></script>
-    <script src="promoEngine.js?v=7"></script>
+    <script src="lang.js?v=4"></script>
+    <script src="promoEngine.js?v=8"></script>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -66,13 +76,29 @@
     </header>
 
     <main class="flex-1 overflow-hidden w-full max-w-2xl mx-auto relative flex flex-col">
-        <section id="level1Section" class="absolute inset-0 overflow-y-auto no-scrollbar p-5 pb-24 bg-slate-50/50">
-            <div class="flex justify-between items-center mb-5">
+        <section id="level1Section" class="absolute inset-0 overflow-y-auto no-scrollbar p-5 pb-24 bg-slate-50/50 flex flex-col">
+            <div class="flex justify-between items-center mb-5 flex-none">
                 <h2 id="mainCatLabel" class="text-sm font-bold text-slate-500 uppercase tracking-wider">第一步：選擇主分類</h2>
                 <span id="sortTip" class="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full font-bold">常用優先</span>
             </div>
-            <div id="level1Container" class="grid grid-cols-2 gap-4">
+            
+            <div id="level1Container" class="grid grid-cols-2 gap-4 flex-none">
                 <div id="loadingText" class="text-center p-4 text-slate-400 text-sm col-span-2">正在同步最新行情...</div>
+            </div>
+
+            <div class="mt-8 mb-4 flex-1 flex flex-col justify-end text-center">
+                <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm inline-block mx-auto max-w-sm">
+                    <p class="text-[11px] text-slate-500 leading-relaxed">
+                        本應用程式之貨品價格及優惠數據<br>
+                        取自政府資料一線通 (data.gov.hk) 的<br>
+                        <strong class="text-slate-700">「網上價格一覽通」</strong>資料集。
+                    </p>
+                    <div class="w-12 h-px bg-slate-200 mx-auto my-2"></div>
+                    <p class="text-[10px] text-slate-400">
+                        知識產權擁有人：<strong class="text-slate-600">消費者委員會</strong><br>
+                        <span class="opacity-75 block mt-1">免責聲明：系統透過自動化分析優惠資訊，折合價僅供參考。實際售價與庫存請以實體超市或官方網店為準。</span>
+                    </p>
+                </div>
             </div>
         </section>
 
@@ -196,7 +222,6 @@
             if (action === 'goHome') { showLevel1(); }
             else if (action === 'sayBye') {
                 addUserMessage(text);
-                // 更新為對應的拜拜回覆
                 setTimeout(() => addBotMessage(uiText[currentLang].replyBye), 300);
             } else if (action === 'showAll') {
                 addUserMessage(text);
@@ -308,7 +333,6 @@
             const q = chatInput.value.trim(); if (!q) return;
             addUserMessage(q); chatInput.value = ''; chatInput.blur();
             
-            // 🔥 手機專用測試彩蛋
             if (q === "測試異常") {
                 setTimeout(() => {
                     calculateAvgPrice("buy 1 get 1 for $500", 10);
@@ -323,16 +347,13 @@
             }, 300);
         }
 
-        // 🧠 升級版 AI 閒聊腦袋
         function checkSmallTalk(q) {
             const low = q.toLowerCase();
-            
             if (['你好', 'hi', 'hello', '早晨', '嗨'].some(kw => low.includes(kw))) return uiText[currentLang].replyGreeting;
             if (['多謝', 'thank', '謝謝', '唔該', 'thx'].some(kw => low.includes(kw))) return uiText[currentLang].replyThanks;
             if (['拜拜', 'bye', '再見', '走先', 'goodbye', 'cya'].some(kw => low.includes(kw))) return uiText[currentLang].replyBye;
             if (['叻', 'smart', '好用', '棒', 'good', '厲害'].some(kw => low.includes(kw))) return uiText[currentLang].replyPraise;
             if (['笑話', 'joke', '好悶', '講笑', '無聊'].some(kw => low.includes(kw))) return uiText[currentLang].replyJoke;
-
             return null; 
         }
 
@@ -368,7 +389,7 @@
         function addBotMessage(text, cardsHTML = null) {
             const wrapper = document.createElement('div');
             wrapper.className = 'flex flex-col items-start w-full';
-            wrapper.innerHTML = `<div class="flex items-end gap-2 max-w-[90%]"><div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-lg shadow-sm border border-blue-200">🤖</div><div class="bg-white border border-slate-200 text-slate-800 px-4 py-3 rounded-2xl rounded-bl-sm shadow-sm text-[15px]">${text}</div></div>${cardsHTML ? `<div class="w-full mt-4 space-y-5">${cardsHTML}</div>` : ''}`;
+            wrapper.innerHTML = `<div class="flex items-end gap-2 max-w-[90%]"><div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-lg shadow-sm border border-blue-200 shrink-0">🤖</div><div class="bg-white border border-slate-200 text-slate-800 px-4 py-3 rounded-2xl rounded-bl-sm shadow-sm text-[15px]">${text}</div></div>${cardsHTML ? `<div class="w-full mt-4 space-y-5">${cardsHTML}</div>` : ''}`;
             chatMessages.appendChild(wrapper);
             chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
         }
@@ -413,10 +434,11 @@
                 return `<div class="flex flex-col p-3 rounded-2xl border ${cls} ${isLowestBase ? 'ring-2 ring-green-400 bg-white scale-[1.01] shadow-md z-10' : ''} transition-all"><div class="flex justify-between items-center w-full"><span class="font-black text-[13px] ${textCls} flex items-center gap-1">${p.supermarket}</span><span class="text-[17px] font-black text-slate-800">$${isNaN(parsed) ? p.price : parsed.toFixed(1)}${isLowestBase ? ' 👍' : ''}</span></div>${p.promoDisplay ? `<div class="mt-2 flex flex-wrap sm:flex-nowrap items-center justify-between gap-1 w-full"><span class="text-[11px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-md border border-red-100 break-words w-full sm:w-auto">🏷️ ${p.promoDisplay}</span>${avgLabel}</div>` : ''}</div>`;
             }).join('');
             
+            // 🚀 原生 SVG 分享圖示，永久解決格仔圖問題！
             return `<div class="bg-white p-5 rounded-[2.5rem] shadow-sm border border-slate-200 flex flex-col gap-4 relative overflow-hidden"><div class="flex gap-4 items-start"><div class="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-2xl border border-slate-100 shadow-inner shrink-0">🛒</div><div class="flex-1 min-w-0"><div class="flex justify-between items-start"><div class="text-[11px] text-blue-500 font-black tracking-widest uppercase mb-1">${info.brand || '&nbsp;'}</div>
             
-            <button onclick="shareProduct('${pName}', '${info.brand}', '${minBasePrice}')" class="p-0 active:scale-90 transition w-8 h-8 flex items-center justify-center overflow-hidden rounded-full bg-[#3b82f6] shadow-sm border-2 border-white ring-1 ring-blue-100">
-                <img src="share.JPG" alt="Share" class="w-[145%] h-[145%] object-cover transform translate-y-[-1px]">
+            <button onclick="shareProduct('${pName}', '${info.brand}', '${minBasePrice}')" class="w-8 h-8 flex items-center justify-center rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 active:scale-90 transition-all border border-blue-200 shadow-sm shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
             </button>
 
             </div><h3 class="font-bold text-slate-800 text-[16px] leading-tight">${pName}</h3></div></div><div class="flex flex-col gap-2.5">${priceList}</div></div>`;
