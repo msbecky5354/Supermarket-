@@ -271,7 +271,14 @@
         }
 
         function performScopedSearch(query) {
-            const q = normalizeStr(query);
+            const q = normalizeStr(query).trim();
+            
+            // 🔥 新增：防止輸入空字串或被完全過濾的字元導致顯示所有商品
+            if (!q) {
+                addBotMessage(uiText[currentLang].chatNoResult);
+                return;
+            }
+
             const isAll = ['所有', '全部', 'all', 'list'].some(kw => q.includes(normalizeStr(kw)));
             let html = '';
             Object.keys(structuredData[selectedCat1]).forEach(cat2 => {
