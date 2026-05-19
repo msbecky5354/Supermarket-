@@ -2,39 +2,42 @@ name: Auto Update PriceWatch Data
 
 on:
   schedule:
-    # Runs at 00:00 UTC every day (which is 8:00 AM Hong Kong Time)
-    - cron: '0 0 * * *'
+    # 每日香港時間朝早 06:30 執行 (等於 UTC 時間前一晚 22:30)
+    - cron: '30 22 * * *'
   workflow_dispatch: 
-    # This allows you to manually run the action from the GitHub UI
 
 jobs:
   update-data:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Crucial: Allows the bot to push commits to your repo
+      contents: write 
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download latest pricewatch.json
+      - name: Delete old and download new pricewatch.json
         run: |
+          # 1. 先強制刪除舊嘅 json 檔 (如果存在嘅話)
+          rm -f pricewatch.json
+          echo "已清理舊檔案。"
+          
+          # 2. 下載全新嘅資料
           curl -s -o pricewatch.json "https://online-price-watch.consumer.org.hk/opw/opendata/pricewatch.json"
+          echo "最新 pricewatch.json 下載完成！"
 
       - name: Check for changes and commit
         run: |
-          # Set up the git bot user
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           
-          # Add the downloaded file
           git add pricewatch.json
           
-          # Check if there are actual changes before committing
+          # 檢查內容同上次 commit 比較有冇真正嘅改變
           if git diff --staged --quiet; then
-            echo "No changes in pricewatch.json today."
+            echo "今日消委會嘅資料冇變，唔需要更新。"
           else
-            git commit -m "🤖 Auto-update pricewatch.json with latest data"
+            git commit -m "🤖 Auto-update: 強制更新最新 pricewatch.json"
             git push
-            echo "Successfully updated pricewatch.json!"
+            echo "成功將最新資料推送到 GitHub！"
           fi
