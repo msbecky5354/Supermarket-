@@ -74,6 +74,17 @@
         <option value="en">English</option>
     </select>
     
+            // 根據目前語言，打開對應嘅手冊
+        function openManual() {
+            if (currentLang === 'zh-Hans') {
+                window.location.href = 'manual_cn.html';
+            } else if (currentLang === 'en') {
+                window.location.href = 'manual_en.html';
+            } else {
+                window.location.href = 'manual_tw.html'; // 預設繁體
+            }
+        }
+    
   
     
         <button onclick="window.location.href='manual.html'" class="w-7 h-7 flex items-center justify-center rounded-full bg-amber-50 text-amber-600 border border-amber-100 active:scale-90 transition shadow-sm text-[13px]" title="用戶手冊 / User Manual">
