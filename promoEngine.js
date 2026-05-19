@@ -1,30 +1,50 @@
-// promoEngine.js - 100% 純英文 (Safari/iOS 防彈兼容版 + Google Sheet 收集器 終極修正版)
+// promoEngine.js - 100% 純英文 (Safari/iOS 突破攔截版 + Google Sheet 收集器)
 
-// 📡 未知優惠收集器 (Google Sheets 絕對準確版)
+// 📡 未知優惠收集器 (隱藏原生 HTML Form 絕招 - 100% 突破 iOS 限制)
 function logUnknownPromo(promoText, originalPrice, calculatedPrice) {
-    // 已經完美套用你提供嘅精準 Link，並自動將 viewform 改為 formResponse
     const formUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSe7oOQ-7klgKPvjgRof2_Ztae1fBMWuA0_us32ewkK8TbbxbA/formResponse';
     
-    const formData = new URLSearchParams();
-    
-    // 100% 準確嘅 Entry ID
-    formData.append('entry.1839150021', promoText); 
-    formData.append('entry.1121303872', originalPrice); 
-    formData.append('entry.1938861444', calculatedPrice !== null ? calculatedPrice.toFixed(2) : 'null'); 
+    // 1. 建立一個隱藏嘅 iframe，用嚟吸收 Google 提交成功後嘅轉頁畫面，令 App 本身保持原狀
+    let iframeName = 'hidden_iframe_' + Math.random().toString(36).substring(7);
+    let iframe = document.createElement('iframe');
+    iframe.name = iframeName;
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
 
-    // 發送去 Google 表單 (no-cors 防止跨域阻擋)
-    fetch(formUrl, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: formData.toString()
-    }).then(() => {
-        console.log('✅ 異常優惠已成功傳送至 Google Sheet!');
-    }).catch(e => {
-        console.log('❌ 記錄發送失敗', e);
-    });
+    // 2. 建立一個虛擬嘅原生 HTML Form
+    let form = document.createElement('form');
+    form.method = 'POST';
+    form.action = formUrl;
+    form.target = iframeName; // 將提交動作射去隱藏嘅 iframe
+    form.style.display = 'none';
+
+    // 3. 套用你提供嘅絕對精準 Entry ID 欄位
+    let data = {
+        'entry.1839150021': promoText,
+        'entry.1121303872': String(originalPrice),
+        'entry.1938861444': calculatedPrice !== null ? calculatedPrice.toFixed(2) : 'null'
+    };
+
+    // 將資料變成 hidden input 放落 Form 度
+    for (let key in data) {
+        let input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = key;
+        input.value = data[key];
+        form.appendChild(input);
+    }
+
+    // 4. 加落網頁並強制提交 (以 HTML 規格強制發送，完美繞過所有 CORS 阻擋)
+    document.body.appendChild(form);
+    form.submit();
+    
+    console.log('✅ 已用原生 Form 絕招強行發送資料至 Google Sheet！');
+
+    // 5. 2 秒後自動清理呢啲隱藏元素
+    setTimeout(() => {
+        if (document.body.contains(form)) document.body.removeChild(form);
+        if (document.body.contains(iframe)) document.body.removeChild(iframe);
+    }, 2000);
 }
 
 // 💡 搜尋強化：移除非字母、數字及中文字元
