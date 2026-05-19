@@ -1,29 +1,29 @@
-// promoEngine.js - 100% 純英文 (Safari/iOS 防彈兼容版 + Google Sheet 收集器)
+// promoEngine.js - 100% 純英文 (Safari/iOS 防彈兼容版 + Google Sheet 收集器 終極修正版)
 
-// 📡 未知優惠收集器 (Google Sheets 版)
+// 📡 未知優惠收集器 (Google Sheets 絕對準確版)
 function logUnknownPromo(promoText, originalPrice, calculatedPrice) {
-    // 已經幫你換好咗專屬嘅 Form ID，並改為 /formResponse
-    const formUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSe7oOQ-7kIgKPvjgRof2_Ztae1fBMWuA0_us32ewkK8TbbxbA/formResponse';
+    // 已經完美套用你提供嘅精準 Link，並自動將 viewform 改為 formResponse
+    const formUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSe7oOQ-7klgKPvjgRof2_Ztae1fBMWuA0_us32ewkK8TbbxbA/formResponse';
     
     const formData = new URLSearchParams();
     
-    // 已經幫你入好晒你截圖入面嘅 entry ID
-    formData.append('entry.1839150021', promoText); // 第一題：優惠語句 (A)
-    formData.append('entry.1121303872', originalPrice); // 第二題：原價 (B)
-    formData.append('entry.1938861444', calculatedPrice !== null ? calculatedPrice.toFixed(2) : 'null'); // 第三題：計算結果 (C)
+    // 100% 準確嘅 Entry ID
+    formData.append('entry.1839150021', promoText); 
+    formData.append('entry.1121303872', originalPrice); 
+    formData.append('entry.1938861444', calculatedPrice !== null ? calculatedPrice.toFixed(2) : 'null'); 
 
-    // 發送去 Google 表單 (必須用 no-cors 模式，防止跨域阻擋)
+    // 發送去 Google 表單 (no-cors 防止跨域阻擋)
     fetch(formUrl, {
         method: 'POST',
         mode: 'no-cors',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
         },
-        body: formData
+        body: formData.toString()
     }).then(() => {
-        console.log('✅ 異常優惠已成功記錄到 Google Sheet!');
+        console.log('✅ 異常優惠已成功傳送至 Google Sheet!');
     }).catch(e => {
-        console.log('❌ 記錄發送失敗，略過。', e);
+        console.log('❌ 記錄發送失敗', e);
     });
 }
 
