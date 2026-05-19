@@ -233,7 +233,7 @@
                 async function init() {
             try {
                 let data = null;
-                const localResponse = await fetch('/pricewatch.json?t=' + new Date().getTime());
+                const localResponse = await fetch('pricewatch.json?t=' + new Date().getTime());
                 
                 if (localResponse.ok) {
                     data = await localResponse.json();
