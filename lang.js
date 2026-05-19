@@ -1,4 +1,4 @@
-// lang.js - 神器多語言及 AI 對答詞庫 (人性化升級版)
+// lang.js - 神器多語言及 AI 對答詞庫
 
 const uiText = {
     'zh-Hant': { 
@@ -20,7 +20,7 @@ const uiText = {
         chatShowAll: "呢個分類嘅全部貨品清單：", 
         chatNoResult: "哎呀，搵唔到相關貨品添！🤔 不如試吓縮短關鍵字，或者用其他字眼再搵過？",
         
-        // 💬 AI 閒聊對答 (人性化核心)
+        // 💬 AI 閒聊對答
         replyGreeting: "你好呀！我係你嘅專屬格價助手 🤖，今日想買啲咩？", 
         replyThanks: "唔使客氣！幫你慳到錢我都好開心！🛒✨",
         replyBye: "拜拜！有買貴冇買錯，下次去超市掃貨前記得再搵我格價呀！👋",
@@ -30,7 +30,25 @@ const uiText = {
         quickAll: "📦 睇晒全部",
         quickDiscount: "🏷️ 淨係睇有優惠",
         quickHome: "🏠 返主目錄",
-        quickBye: "👋 拜拜"
+        quickBye: "👋 拜拜",
+
+        // 📜 底部選單及彈窗內容
+        footerAbout: "關於我們",
+        footerContact: "聯絡我們",
+        footerPrivacy: "隱私權政策",
+        footerTerms: "服務條款",
+        
+        aboutTitle: "關於 價格神器",
+        aboutContent: "「香港生活百貨價格神器」旨在為香港市民提供一個便捷的價格比較平台。<br><br>大家從此無需再下載及篩選繁複的政府 Excel 數據表，只需透過這個內置 AI 搜尋引擎的應用程式，即可輕鬆格價、秒速找出全港超市的最抵優惠與最低價格！",
+        
+        contactTitle: "聯絡我們",
+        contactContent: "如有任何查詢或合作建議，歡迎聯絡我們。<br><br>（聯絡資料即將更新，敬請期待！）",
+        
+        privacyTitle: "隱私權政策",
+        privacyContent: "我們重視您的隱私。本應用程式不會收集您的任何個人敏感資料或瀏覽紀錄。",
+        
+        termsTitle: "服務條款",
+        termsContent: "本應用程式之價格數據僅供參考，實際售價與庫存請以各大超級市場或官方網店為準。"
     },
     
     'zh-Hans': { 
@@ -60,11 +78,25 @@ const uiText = {
         quickAll: "📦 查看全部",
         quickDiscount: "🏷️ 只看有优惠",
         quickHome: "🏠 回主目录",
-        quickBye: "👋 拜拜"
+        quickBye: "👋 拜拜",
+
+        footerAbout: "关于我们",
+        footerContact: "联络我们",
+        footerPrivacy: "隐私权政策",
+        footerTerms: "服务条款",
+        
+        aboutTitle: "关于 价格神器",
+        aboutContent: "「香港生活百货价格神器」旨在为香港市民提供一个便捷的价格比较平台。<br><br>大家从此无需再下载及筛选繁复的政府 Excel 数据表，只需透过这个内置 AI 搜索引擎的应用程序，即可轻松比价、秒速找出全港超市的最划算优惠与最低价格！",
+        contactTitle: "联络我们",
+        contactContent: "如有任何查询或合作建议，欢迎联络我们。<br><br>（联络资料即将更新，敬请期待！）",
+        privacyTitle: "隐私权政策",
+        privacyContent: "我们重视您的隐私。本应用程序不会收集您的任何个人敏感资料或浏览纪录。",
+        termsTitle: "服务条款",
+        termsContent: "本应用程序之价格数据仅供参考，实际售价与库存请以各大超级市场或官方网店为准。"
     },
     
     'en': { 
-        title: "Price Navigator", 
+        title: "HK Smart Price Tracker", 
         badge: "HK Open Data", 
         subLabel: "Live Daily Prices", 
         mainCat: "Step 1: Select Category", 
@@ -90,7 +122,21 @@ const uiText = {
         quickAll: "📦 Show All",
         quickDiscount: "🏷️ Discounted Only",
         quickHome: "🏠 Main Menu",
-        quickBye: "👋 Goodbye"
+        quickBye: "👋 Goodbye",
+
+        footerAbout: "About Us",
+        footerContact: "Contact Us",
+        footerPrivacy: "Privacy Policy",
+        footerTerms: "Terms of Service",
+        
+        aboutTitle: "About HK Smart Price Tracker",
+        aboutContent: "HK Smart Price Tracker aims to provide a convenient price comparison platform for Hong Kong citizens.<br><br>Say goodbye to downloading and filtering complex government Excel sheets! With our AI-powered search app, you can effortlessly compare prices and find the best discounts across supermarkets in seconds.",
+        contactTitle: "Contact Us",
+        contactContent: "For inquiries or collaborations, please feel free to reach out.<br><br>(Contact info coming soon!)",
+        privacyTitle: "Privacy Policy",
+        privacyContent: "We value your privacy. This application does not collect any sensitive personal data or browsing history.",
+        termsTitle: "Terms of Service",
+        termsContent: "Prices shown are for reference only. Please refer to physical supermarkets or official online stores for actual pricing and stock availability."
     }
 };
 
