@@ -1,4 +1,4 @@
-// lang.js - 神器多語言及 AI 對答詞庫 (功能昇華版)
+// lang.js - 神器多語言及 AI 對答詞庫 (全面配對修正版)
 
 const uiText = {
     'zh-Hant': { 
@@ -13,6 +13,7 @@ const uiText = {
         send: "搵嘢", 
         placeholder: "輸入貨品、牌子或者關鍵字...", 
         
+        // 💬 廣東話口語化 AI 對答
         chatWelcome: "收到！你揀咗", 
         chatAsk: "想搵邊款貨品或者牌子呢？", 
         chatFound: "為你搜羅到以下最抵結果：", 
@@ -40,6 +41,7 @@ const uiText = {
         send: "搜索", 
         placeholder: "输入商品、品牌或关键词...", 
         
+        // 💬 自然流暢的簡體中文對答
         chatWelcome: "收到！您选择了", 
         chatAsk: "请问想找什么商品或品牌呢？", 
         chatFound: "为您搜索到以下比价结果：", 
@@ -66,6 +68,7 @@ const uiText = {
         send: "Search", 
         placeholder: "Type product, brand or keywords...", 
         
+        // 💬 Professional & Friendly English
         chatWelcome: "Got it! You've selected", 
         chatAsk: "What product or brand are you looking for?", 
         chatFound: "Here are the best prices we found for you:", 
@@ -83,6 +86,6 @@ const uiText = {
 
 const supermarketDict = {
     'zh-Hant': { 'WELLCOME': '惠康', 'PARKNSHOP': '百佳', 'JASONS': 'Jasons', 'MARKETPLACE': 'Market Place', 'AEON': 'AEON', 'Watsons': '屈臣氏', 'MANNINGS': '萬寧', 'USELECT': 'U購', 'LUNGFUNG': '龍豐' },
-    'zh-Hans': { 'WELLCOME': '惠康', 'PARKNSHOP': '百佳', 'JASONS': 'Jasons', 'MARKETPLACE': 'Market Place', 'AEON': 'AEON', 'Watsons': '屈臣氏', 'MANNINGS': '万宁', 'USELECT': 'U购', 'LUNGFUNG': '龙丰' },
+    'zh-Hans': { 'WELLCOME': '惠康', 'PARKNSHOP': '百佳', 'JASONS': 'Jasons', 'MARKETPLACE': 'Market Place', 'AEON': 'AEON', 'Watsons': 'Watsons', 'MANNINGS': '万宁', 'USELECT': 'U购', 'LUNGFUNG': '龙丰' },
     'en': { 'WELLCOME': 'Wellcome', 'PARKNSHOP': 'PARKnSHOP', 'JASONS': 'Jasons', 'MARKETPLACE': 'Market Place', 'AEON': 'AEON', 'Watsons': 'Watsons', 'MANNINGS': 'Mannings', 'USELECT': 'U-Select', 'LUNGFUNG': 'Lung Fung' }
 };
