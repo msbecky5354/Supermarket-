@@ -4,7 +4,8 @@ const uiText = {
     'zh-Hant': { 
         title: "香港生活百貨價格神器", 
         badge: "政府數據連線", 
-        subLabel: "今日即時行情", 
+        subLabel: "正在讀取更新時間...", 
+        lastUpdated: "更新於: ",
         mainCat: "第一步：揀個主分類先", 
         sortTip: "常用優先", 
         back: "返回", 
@@ -13,14 +14,12 @@ const uiText = {
         send: "搵嘢", 
         placeholder: "輸入貨品、牌子或者關鍵字...", 
         
-        // 💬 AI 搜尋對答
         chatWelcome: "收到！你揀咗", 
         chatAsk: "想搵邊款貨品或者牌子呢？", 
         chatFound: "為你搜羅到以下最抵結果：", 
         chatShowAll: "呢個分類嘅全部貨品清單：", 
         chatNoResult: "哎呀，搵唔到相關貨品添！🤔 不如試吓縮短關鍵字，或者用其他字眼再搵過？",
         
-        // 💬 AI 閒聊對答
         replyGreeting: "你好呀！我係你嘅專屬格價助手 🤖，今日想買啲咩？", 
         replyThanks: "唔使客氣！幫你慳到錢我都好開心！🛒✨",
         replyBye: "拜拜！有買貴冇買錯，下次去超市掃貨前記得再搵我格價呀！👋",
@@ -32,7 +31,6 @@ const uiText = {
         quickHome: "🏠 返主目錄",
         quickBye: "👋 拜拜",
 
-        // 📜 底部選單及彈窗內容
         footerAbout: "關於我們",
         footerContact: "聯絡我們",
         footerPrivacy: "隱私權政策",
@@ -40,21 +38,21 @@ const uiText = {
         
         aboutTitle: "關於 價格神器",
         aboutContent: "「香港生活百貨價格神器」旨在為香港市民提供一個便捷的價格比較平台。<br><br>大家從此無需再下載及篩選繁複的政府 Excel 數據表，只需透過這個內置 AI 搜尋引擎的應用程式，即可輕鬆格價、秒速找出全港超市的最抵優惠與最低價格！",
-        
         contactTitle: "聯絡我們",
         contactContent: "如有任何查詢或合作建議，歡迎聯絡我們。<br><br>（聯絡資料即將更新，敬請期待！）",
-        
         privacyTitle: "隱私權政策",
         privacyContent: "我們重視您的隱私。本應用程式不會收集您的任何個人敏感資料或瀏覽紀錄。",
         
+        // 🚀 修正：移除「庫存」字眼
         termsTitle: "服務條款",
-        termsContent: "本應用程式之價格數據僅供參考，實際售價與庫存請以各大超級市場或官方網店為準。"
+        termsContent: "本應用程式之價格及優惠數據僅供參考，實際售價請以各大超級市場或官方網店為準。"
     },
     
     'zh-Hans': { 
         title: "香港生活百货价格神器", 
         badge: "政府数据连线", 
-        subLabel: "今日即时行情", 
+        subLabel: "正在读取更新时间...", 
+        lastUpdated: "更新于: ",
         mainCat: "第一步：请选择主分类", 
         sortTip: "常用優先", 
         back: "返回", 
@@ -91,14 +89,17 @@ const uiText = {
         contactContent: "如有任何查询或合作建议，欢迎联络我们。<br><br>（联络资料即将更新，敬请期待！）",
         privacyTitle: "隐私权政策",
         privacyContent: "我们重视您的隐私。本应用程序不会收集您的任何个人敏感资料或浏览纪录。",
+        
+        // 🚀 修正：移除「库库存」字眼
         termsTitle: "服务条款",
-        termsContent: "本应用程序之价格数据仅供参考，实际售价与库存请以各大超级市场或官方网店为准。"
+        termsContent: "本应用程序之价格及优惠数据仅供参考，实际售价请以各大超级市场或官方网店为准。"
     },
     
     'en': { 
         title: "HK Smart Price Tracker", 
         badge: "HK Open Data", 
-        subLabel: "Live Daily Prices", 
+        subLabel: "Fetching update time...", 
+        lastUpdated: "Updated: ",
         mainCat: "Step 1: Select Category", 
         sortTip: "Frequent First", 
         back: "Back", 
@@ -135,8 +136,10 @@ const uiText = {
         contactContent: "For inquiries or collaborations, please feel free to reach out.<br><br>(Contact info coming soon!)",
         privacyTitle: "Privacy Policy",
         privacyContent: "We value your privacy. This application does not collect any sensitive personal data or browsing history.",
+        
+        // 🚀 修正：移除「庫存 (stock)」字眼
         termsTitle: "Terms of Service",
-        termsContent: "Prices shown are for reference only. Please refer to physical supermarkets or official online stores for actual pricing and stock availability."
+        termsContent: "Prices and promotional data are for reference only. Please refer to physical supermarkets or official online stores for actual pricing."
     }
 };
 
