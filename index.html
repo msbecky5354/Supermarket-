@@ -77,17 +77,17 @@
 
     <main class="flex-1 overflow-hidden w-full max-w-2xl mx-auto relative flex flex-col">
         <section id="level1Section" class="absolute inset-0 overflow-y-auto no-scrollbar p-5 pb-24 bg-slate-50/50 flex flex-col">
-            <div class="flex justify-between items-center mb-5 flex-none">
+            <div class="flex justify-between items-center mb-4 flex-none">
                 <h2 id="mainCatLabel" class="text-sm font-bold text-slate-500 uppercase tracking-wider">第一步：選擇主分類</h2>
                 <span id="sortTip" class="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full font-bold">常用優先</span>
             </div>
             
-            <div id="level1Container" class="grid grid-cols-2 gap-4 flex-none">
+            <div id="level1Container" class="grid grid-cols-2 gap-3 flex-none max-w-sm mx-auto w-full">
                 <div id="loadingText" class="text-center p-4 text-slate-400 text-sm col-span-2">正在同步最新行情...</div>
             </div>
 
-            <div class="mt-10 flex-1 flex flex-col justify-end text-center">
-                <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm inline-block mx-auto max-w-sm">
+            <div class="mt-8 flex-1 flex flex-col justify-end text-center">
+                <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm inline-block mx-auto max-w-sm w-full">
                     <p id="disclaimerGovData" class="text-[11px] text-slate-500 leading-relaxed"></p>
                     <div class="w-12 h-px bg-slate-200 mx-auto my-2"></div>
                     <p class="text-[10px] text-slate-400">
@@ -245,7 +245,6 @@
             document.getElementById('sendBtnText').innerText = uiText[lang].send;
             chatInput.placeholder = uiText[lang].placeholder;
 
-            // 🚀 動態更新官方聲明
             document.getElementById('disclaimerGovData').innerHTML = uiText[lang].disclaimerGovData;
             document.getElementById('disclaimerOwner').innerHTML = uiText[lang].disclaimerOwner;
             document.getElementById('disclaimerNote').innerHTML = uiText[lang].disclaimerNote;
@@ -376,6 +375,7 @@
             });
         }
 
+        // 🚀 核心更新：打造「一眼望晒」極致微縮排版
         function renderLevel1() {
             level1Container.innerHTML = '';
             const history = JSON.parse(localStorage.getItem('cat_usage_history') || '{}');
@@ -383,8 +383,13 @@
             sorted.forEach(cat1 => {
                 const style = getCatStyle(cat1);
                 const card = document.createElement('div');
-                card.className = `clickable-card bg-gradient-to-br ${style.bg} p-3 rounded-[2rem] shadow-sm border ${style.border} cursor-pointer transition-all flex flex-col items-center justify-center text-center aspect-square overflow-hidden relative`;
-                card.innerHTML = `<div class="text-4xl mb-2">${style.icon}</div><span class="font-bold ${style.text} text-[13px] leading-snug line-clamp-2 px-1">${cat1}</span>`;
+                
+                // 取消 aspect-square，改為固定高度 h-[90px]，縮小 padding
+                card.className = `clickable-card bg-gradient-to-br ${style.bg} px-2 py-3 rounded-2xl shadow-sm border ${style.border} cursor-pointer transition-all flex flex-col items-center justify-center text-center h-[90px] overflow-hidden relative`;
+                
+                // 縮小 icon (text-[28px]) 同 文字行距，令長文字都唔會出界
+                card.innerHTML = `<div class="text-[28px] mb-1 leading-none transform group-active:scale-95 transition-transform">${style.icon}</div><span class="font-bold ${style.text} text-[12px] leading-tight line-clamp-2 px-1 w-full">${cat1}</span>`;
+                
                 card.onclick = () => { history[cat1] = (history[cat1]||0)+1; localStorage.setItem('cat_usage_history', JSON.stringify(history)); startChat(cat1); };
                 level1Container.appendChild(card);
             });
@@ -511,7 +516,6 @@
                 return `<div class="flex flex-col p-3 rounded-2xl border ${cls} ${isLowestBase ? 'ring-2 ring-green-400 bg-white scale-[1.01] shadow-md z-10' : ''} transition-all"><div class="flex justify-between items-center w-full"><span class="font-black text-[13px] ${textCls} flex items-center gap-1">${p.supermarket}</span><span class="text-[17px] font-black text-slate-800">$${isNaN(parsed) ? p.price : parsed.toFixed(1)}${isLowestBase ? ' 👍' : ''}</span></div>${p.promoDisplay ? `<div class="mt-2 flex flex-wrap sm:flex-nowrap items-center justify-between gap-1 w-full"><span class="text-[11px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-md border border-red-100 break-words w-full sm:w-auto">🏷️ ${p.promoDisplay}</span>${avgLabel}</div>` : ''}</div>`;
             }).join('');
             
-            // 🚀 純代碼版 (SVG) 分享掣，永久杜絕起格仔問題！
             return `<div class="bg-white p-5 rounded-[2.5rem] shadow-sm border border-slate-200 flex flex-col gap-4 relative overflow-hidden"><div class="flex gap-4 items-start"><div class="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-2xl border border-slate-100 shadow-inner shrink-0">🛒</div><div class="flex-1 min-w-0"><div class="flex justify-between items-start"><div class="text-[11px] text-blue-500 font-black tracking-widest uppercase mb-1">${info.brand || '&nbsp;'}</div>
             
             <button onclick="shareProduct('${pName}', '${info.brand}', '${minBasePrice}')" class="w-8 h-8 flex items-center justify-center rounded-full bg-[#1877F2] hover:bg-blue-600 active:scale-90 transition-all shadow-sm shrink-0">
