@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>香港生活百貨價格神器 | HK Essentials Price Artifact</title>
+    <title>香港生活百貨價格神器 | HK Smart Price Tracker</title>
     
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
     <script>
@@ -24,7 +24,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="價格神器">
     
-    <script src="lang.js?v=4"></script>
+    <script src="lang.js?v=5"></script>
     <script src="promoEngine.js?v=8"></script>
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -86,7 +86,7 @@
                 <div id="loadingText" class="text-center p-4 text-slate-400 text-sm col-span-2">正在同步最新行情...</div>
             </div>
 
-            <div class="mt-8 mb-4 flex-1 flex flex-col justify-end text-center">
+            <div class="mt-10 flex-1 flex flex-col justify-end text-center">
                 <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm inline-block mx-auto max-w-sm">
                     <p class="text-[11px] text-slate-500 leading-relaxed">
                         本應用程式之貨品價格及優惠數據<br>
@@ -98,6 +98,16 @@
                         知識產權擁有人：<strong class="text-slate-600">消費者委員會</strong><br>
                         <span class="opacity-75 block mt-1">免責聲明：系統透過自動化分析優惠資訊，折合價僅供參考。實際售價與庫存請以實體超市或官方網店為準。</span>
                     </p>
+                </div>
+
+                <div class="mt-6 mb-2 flex justify-center items-center gap-3 text-[13px] text-blue-600 font-medium pb-4">
+                    <button onclick="openModal('aboutTitle', 'aboutContent')" id="navAbout" class="hover:underline active:opacity-70 transition">關於我們</button>
+                    <span class="text-slate-300">|</span>
+                    <button onclick="openModal('contactTitle', 'contactContent')" id="navContact" class="hover:underline active:opacity-70 transition">聯絡我們</button>
+                    <span class="text-slate-300">|</span>
+                    <button onclick="openModal('privacyTitle', 'privacyContent')" id="navPrivacy" class="hover:underline active:opacity-70 transition">隱私權政策</button>
+                    <span class="text-slate-300">|</span>
+                    <button onclick="openModal('termsTitle', 'termsContent')" id="navTerms" class="hover:underline active:opacity-70 transition">服務條款</button>
                 </div>
             </div>
         </section>
@@ -125,6 +135,21 @@
         </section>
     </main>
 
+    <div id="infoModal" class="fixed inset-0 bg-slate-900/40 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-3xl shadow-xl w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-300" id="modalBox">
+            <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 id="modalTitle" class="text-[17px] font-black text-slate-800">標題</h3>
+                <button onclick="closeModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-200 text-slate-500 active:scale-90 transition">✕</button>
+            </div>
+            <div class="p-6">
+                <p id="modalContent" class="text-[14px] text-slate-600 leading-relaxed"></p>
+            </div>
+            <div class="px-6 pb-6 pt-2">
+                <button onclick="closeModal()" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-sm active:scale-95 transition">關閉</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const level1Section = document.getElementById('level1Section');
         const chatSection = document.getElementById('chatSection');
@@ -132,6 +157,8 @@
         const chatMessages = document.getElementById('chatMessages');
         const chatInput = document.getElementById('chatInput');
         const chatTitle = document.getElementById('chatTitle');
+        const infoModal = document.getElementById('infoModal');
+        const modalBox = document.getElementById('modalBox');
 
         let rawApiData = [];     
         let structuredData = {}; 
@@ -188,6 +215,7 @@
             currentLang = lang;
             document.documentElement.lang = lang;
             document.getElementById('appTitle').innerText = uiText[lang].title;
+            document.title = uiText[lang].title; // 更新瀏覽器標題
             document.getElementById('dataSourceBadge').innerText = uiText[lang].badge;
             document.getElementById('todayStatusLabel').innerText = uiText[lang].subLabel;
             document.getElementById('mainCatLabel').innerText = uiText[lang].mainCat;
@@ -195,11 +223,37 @@
             document.getElementById('backBtnText').innerText = uiText[lang].back;
             document.getElementById('sendBtnText').innerText = uiText[lang].send;
             chatInput.placeholder = uiText[lang].placeholder;
+
+            // 更新底部連結文字
+            document.getElementById('navAbout').innerText = uiText[lang].footerAbout;
+            document.getElementById('navContact').innerText = uiText[lang].footerContact;
+            document.getElementById('navPrivacy').innerText = uiText[lang].footerPrivacy;
+            document.getElementById('navTerms').innerText = uiText[lang].footerTerms;
             
             renderQuickActions();
             buildStructuredData();
             if (!chatSection.classList.contains('hidden')) showLevel1();
             else renderLevel1();
+        }
+
+        // 🟢 打開彈出視窗
+        function openModal(titleKey, contentKey) {
+            document.getElementById('modalTitle').innerText = uiText[currentLang][titleKey];
+            document.getElementById('modalContent').innerHTML = uiText[currentLang][contentKey];
+            infoModal.classList.remove('hidden');
+            setTimeout(() => {
+                infoModal.classList.remove('opacity-0');
+                modalBox.classList.remove('scale-95');
+                modalBox.classList.add('scale-100');
+            }, 10);
+        }
+
+        // 🔴 關閉彈出視窗
+        function closeModal() {
+            infoModal.classList.add('opacity-0');
+            modalBox.classList.remove('scale-100');
+            modalBox.classList.add('scale-95');
+            setTimeout(() => { infoModal.classList.add('hidden'); }, 300);
         }
 
         function renderQuickActions() {
@@ -434,11 +488,17 @@
                 return `<div class="flex flex-col p-3 rounded-2xl border ${cls} ${isLowestBase ? 'ring-2 ring-green-400 bg-white scale-[1.01] shadow-md z-10' : ''} transition-all"><div class="flex justify-between items-center w-full"><span class="font-black text-[13px] ${textCls} flex items-center gap-1">${p.supermarket}</span><span class="text-[17px] font-black text-slate-800">$${isNaN(parsed) ? p.price : parsed.toFixed(1)}${isLowestBase ? ' 👍' : ''}</span></div>${p.promoDisplay ? `<div class="mt-2 flex flex-wrap sm:flex-nowrap items-center justify-between gap-1 w-full"><span class="text-[11px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-md border border-red-100 break-words w-full sm:w-auto">🏷️ ${p.promoDisplay}</span>${avgLabel}</div>` : ''}</div>`;
             }).join('');
             
-            // 🚀 原生 SVG 分享圖示，永久解決格仔圖問題！
+            // 🚀 純代碼版 (SVG) 分享掣，永久杜絕起格仔問題！
             return `<div class="bg-white p-5 rounded-[2.5rem] shadow-sm border border-slate-200 flex flex-col gap-4 relative overflow-hidden"><div class="flex gap-4 items-start"><div class="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-2xl border border-slate-100 shadow-inner shrink-0">🛒</div><div class="flex-1 min-w-0"><div class="flex justify-between items-start"><div class="text-[11px] text-blue-500 font-black tracking-widest uppercase mb-1">${info.brand || '&nbsp;'}</div>
             
-            <button onclick="shareProduct('${pName}', '${info.brand}', '${minBasePrice}')" class="w-8 h-8 flex items-center justify-center rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 active:scale-90 transition-all border border-blue-200 shadow-sm shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+            <button onclick="shareProduct('${pName}', '${info.brand}', '${minBasePrice}')" class="w-8 h-8 flex items-center justify-center rounded-full bg-[#1877F2] hover:bg-blue-600 active:scale-90 transition-all shadow-sm shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="18" cy="5" r="3"></circle>
+                    <circle cx="6" cy="12" r="3"></circle>
+                    <circle cx="18" cy="19" r="3"></circle>
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                </svg>
             </button>
 
             </div><h3 class="font-bold text-slate-800 text-[16px] leading-tight">${pName}</h3></div></div><div class="flex flex-col gap-2.5">${priceList}</div></div>`;
