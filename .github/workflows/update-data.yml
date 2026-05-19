@@ -15,22 +15,31 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download data and create log
+      # 第一步：獨立執行刪除舊檔案
+      - name: 步驟 1 - 刪除舊檔案 (Delete)
         run: |
-          # 1. 強制下載最新 JSON
-          curl -s -o pricewatch.json "https://online-price-watch.consumer.org.hk/opw/opendata/pricewatch.json"
-          
-          # 2. 建立一個 log 檔，並強制轉換成香港時區
-          echo "最後自動更新時間：$(TZ='Asia/Hong_Kong' date +'%Y-%m-%d %H:%M:%S')" > update_log.txt
+          rm -f pricewatch.json
+          echo "✅ 舊檔案已經徹底刪除！"
 
-      - name: Commit and Push
+      # 如果你真係好想佢中間停一停，可以加個 sleep 10 強制等 10 秒
+      - name: 中間休息 10 秒 (可選)
+        run: sleep 10
+
+      # 第二步：獨立執行下載新檔案
+      - name: 步驟 2 - 下載新檔案 (Download & Create)
+        run: |
+          curl -s -o pricewatch.json "https://online-price-watch.consumer.org.hk/opw/opendata/pricewatch.json"
+          echo "最後自動更新時間：$(TZ='Asia/Hong_Kong' date +'%Y-%m-%d %H:%M:%S')" > update_log.txt
+          echo "✅ 新檔案及 Log 已經建立！"
+
+      # 第三步：推送到 GitHub
+      - name: 步驟 3 - Commit and Push
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           
           git add pricewatch.json update_log.txt
           
-          # Commit message 都一併轉做香港時間
           git commit -m "🤖 Auto-update: 獲取最新數據 [$(TZ='Asia/Hong_Kong' date +'%Y-%m-%d %H:%M:%S')]" || true
           
           git push
