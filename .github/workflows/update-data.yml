@@ -41,8 +41,8 @@ jobs:
           # Download new JSON
           curl -s -o pricewatch.json "https://online-price-watch.consumer.org.hk/opw/opendata/pricewatch.json"
           
-          # Update log file (Forces a new commit)
-          echo "最後自動更新時間：$(TZ='Asia/Hong_Kong' date +'%Y-%m-%d %H:%M:%S')" > update_log.txt
+                    # Update log file (Forces a new commit)
+          echo "$(TZ='Asia/Hong_Kong' date +'%Y-%m-%dT%H:%M:%S+08:00')" > update_log.txt
           
           # Add and commit the new files
           git add pricewatch.json update_log.txt
