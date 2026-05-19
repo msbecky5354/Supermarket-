@@ -328,6 +328,20 @@
             if (!chatSection.classList.contains('hidden')) showLevel1();
             else renderLevel1();
         }
+        
+        
+      // 根據目前語言，打開對應嘅手冊
+        function openManual() {
+            if (currentLang === 'zh-Hans') {
+                window.location.href = 'manual_cn.html';
+            } else if (currentLang === 'en') {
+                window.location.href = 'manual_en.html';
+            } else {
+                window.location.href = 'manual_tw.html'; // 預設繁體
+            }
+        }
+
+
 
         // --- 彈出視窗功能 ---
         function openModal(titleKey, contentKey) {
