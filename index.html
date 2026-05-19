@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
@@ -36,6 +35,12 @@
             50% { opacity: 0.5; transform: scale(1.3) rotate(15deg); filter: drop-shadow(0 0 8px #eab308); }
         }
         .star-blink { animation: star-blink 1.5s infinite ease-in-out; display: inline-block; }
+
+        /* 預設問題按鈕樣式 */
+        .chat-suggestions { display: flex; gap: 8px; padding: 10px 15px; overflow-x: auto; background-color: #f9f9f9; border-top: 1px solid #eee; scrollbar-width: none; }
+        .chat-suggestions::-webkit-scrollbar { display: none; }
+        .suggestion-chip { white-space: nowrap; padding: 6px 12px; background-color: #ffffff; border: 1px solid #d1d5db; border-radius: 16px; font-size: 13px; color: #374151; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .suggestion-chip:hover, .suggestion-chip:active { background-color: #eff6ff; border-color: #3b82f6; color: #1d4ed8; }
     </style>
 </head>
 <body class="bg-slate-50 h-[100dvh] flex flex-col font-sans text-slate-900 overflow-hidden w-full text-[15px]">
@@ -84,7 +89,14 @@
                 </button>
                 <h2 id="chatTitle" class="font-bold text-slate-800 truncate text-[15px] flex items-center"></h2>
             </div>
+            
             <div id="chatMessages" class="flex-1 overflow-y-auto no-scrollbar p-4 space-y-5"></div>
+            
+            <div class="chat-suggestions flex-none z-20" id="chatSuggestions">
+                <button class="suggestion-chip" data-action="filter-offers" id="btnFilterOffers">🏷️ 特價貨品</button>
+                <button class="suggestion-chip" data-action="clear" id="btnClearFilters">🔄 顯示全部</button>
+            </div>
+
             <div class="bg-white border-t p-3 pb-[max(16px,env(safe-area-inset-bottom))] flex-none shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
                 <form id="chatForm" class="flex gap-2 max-w-2xl mx-auto" onsubmit="event.preventDefault(); submitChat();">
                     <input type="text" id="chatInput" class="flex-1 px-4 py-3.5 bg-slate-100 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-[15px]" autocomplete="off">
@@ -150,6 +162,10 @@
             document.getElementById('backBtnText').innerText = uiText[lang].back;
             document.getElementById('sendBtnText').innerText = uiText[lang].send;
             chatInput.placeholder = uiText[lang].placeholder;
+            
+            if(document.getElementById('btnFilterOffers')) document.getElementById('btnFilterOffers').innerText = uiText[lang].btnOffers;
+            if(document.getElementById('btnClearFilters')) document.getElementById('btnClearFilters').innerText = uiText[lang].btnClear;
+            
             buildStructuredData();
             if (!chatSection.classList.contains('hidden')) showLevel1();
             else renderLevel1();
@@ -274,7 +290,6 @@
         function performScopedSearch(query) {
             const q = normalizeStr(query).trim();
             
-            // 🔥 新增：防止輸入空字串或被完全過濾的字元導致顯示所有商品
             if (!q) {
                 addBotMessage(uiText[currentLang].chatNoResult);
                 return;
@@ -362,6 +377,37 @@
             
             return `<div class="bg-white p-5 rounded-[2.5rem] shadow-sm border border-slate-200 flex flex-col gap-4 relative overflow-hidden"><div class="flex gap-4 items-start"><div class="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-2xl border border-slate-100 shadow-inner shrink-0">🛒</div><div class="flex-1 min-w-0"><div class="text-[11px] text-blue-500 font-black tracking-widest uppercase mb-1">${info.brand || '&nbsp;'}</div><h3 class="font-bold text-slate-800 text-[16px] leading-tight">${pName}</h3></div></div><div class="flex flex-col gap-2.5">${priceList}</div></div>`;
         }
+
+        function performOfferSearch() {
+            let html = '';
+            Object.keys(structuredData[selectedCat1]).forEach(cat2 => {
+                Object.keys(structuredData[selectedCat1][cat2]).forEach(pName => {
+                    const info = structuredData[selectedCat1][cat2][pName];
+                    let hasPromo = false;
+                    info.prices.forEach(p => {
+                        let parsed = parseFloat(p.price);
+                        let avg = calculateAvgPrice(p.promoCalc, parsed);
+                        if (p.promoDisplay || (avg && avg > 0 && avg < parsed)) hasPromo = true;
+                    });
+                    if (hasPromo) html += generateProductCardHTML(pName, info);
+                });
+            });
+
+            if (!html) addBotMessage(uiText[currentLang].chatNoResult);
+            else addBotMessage(uiText[currentLang].msgOffers, html);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const chips = document.querySelectorAll('.suggestion-chip');
+            chips.forEach(chip => {
+                chip.addEventListener('click', function() {
+                    const action = this.getAttribute('data-action');
+                    addUserMessage(this.innerText);
+                    if (action === 'filter-offers') setTimeout(() => performOfferSearch(), 300);
+                    else if (action === 'clear') setTimeout(() => performScopedSearch('所有'), 300);
+                });
+            });
+        });
 
         init();
     </script>
