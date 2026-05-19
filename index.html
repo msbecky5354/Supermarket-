@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
@@ -84,11 +83,16 @@
                 </button>
                 <h2 id="chatTitle" class="font-bold text-slate-800 truncate text-[15px] flex items-center"></h2>
             </div>
+            
             <div id="chatMessages" class="flex-1 overflow-y-auto no-scrollbar p-4 space-y-5"></div>
-            <div class="bg-white border-t p-3 pb-[max(16px,env(safe-area-inset-bottom))] flex-none shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
-                <form id="chatForm" class="flex gap-2 max-w-2xl mx-auto" onsubmit="event.preventDefault(); submitChat();">
+            
+            <div class="bg-white border-t p-3 pb-[max(16px,env(safe-area-inset-bottom))] flex-none shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20 flex flex-col gap-2">
+                
+                <div id="quickActionChips" class="flex gap-2 overflow-x-auto no-scrollbar max-w-2xl mx-auto w-full px-1"></div>
+
+                <form id="chatForm" class="flex gap-2 max-w-2xl mx-auto w-full" onsubmit="event.preventDefault(); submitChat();">
                     <input type="text" id="chatInput" class="flex-1 px-4 py-3.5 bg-slate-100 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-[15px]" autocomplete="off">
-                    <button type="submit" class="bg-blue-600 text-white px-5 rounded-2xl font-bold shadow-sm active:scale-95 transition flex items-center justify-center">
+                    <button type="submit" class="bg-blue-600 text-white px-5 rounded-2xl font-bold shadow-sm active:scale-95 transition flex items-center justify-center shrink-0">
                         <span id="sendBtnText">搜尋</span>
                     </button>
                 </form>
@@ -150,9 +154,41 @@
             document.getElementById('backBtnText').innerText = uiText[lang].back;
             document.getElementById('sendBtnText').innerText = uiText[lang].send;
             chatInput.placeholder = uiText[lang].placeholder;
+            
+            // 動態更新並渲染捷徑按鈕
+            renderQuickActions();
+            
             buildStructuredData();
             if (!chatSection.classList.contains('hidden')) showLevel1();
             else renderLevel1();
+        }
+
+        function renderQuickActions() {
+            const container = document.getElementById('quickActionChips');
+            const chips = [
+                { text: uiText[currentLang].quickDiscount || "🏷️ 淨係睇有優惠", action: "filterDiscount" },
+                { text: uiText[currentLang].quickHome || "🏠 返主目錄", action: "goHome" },
+                { text: uiText[currentLang].quickBye || "👋 拜拜", action: "sayBye" }
+            ];
+            
+            container.innerHTML = chips.map(c => 
+                `<button type="button" onclick="handleQuickAction('${c.action}', '${c.text}')" 
+                    class="whitespace-nowrap bg-blue-50 text-blue-700 border border-blue-100 px-3 py-1.5 rounded-full text-[13px] font-bold active:scale-95 transition-transform shadow-sm flex-none">
+                    ${c.text}
+                </button>`
+            ).join('');
+        }
+
+        function handleQuickAction(action, text) {
+            if (action === 'goHome') {
+                showLevel1();
+            } else if (action === 'sayBye') {
+                addUserMessage(text);
+                setTimeout(() => addBotMessage(uiText[currentLang].replyThanks), 300);
+            } else if (action === 'filterDiscount') {
+                addUserMessage(text);
+                setTimeout(() => performScopedSearch('__DISCOUNT_ONLY__'), 300);
+            }
         }
 
         function buildStructuredData() {
@@ -274,8 +310,10 @@
         function performScopedSearch(query) {
             const q = normalizeStr(query).trim();
             
-            // 🔥 新增：防止輸入空字串或被完全過濾的字元導致顯示所有商品
-            if (!q) {
+            // 處理特殊快捷篩選指令
+            const isDiscountOnly = (query === '__DISCOUNT_ONLY__');
+            
+            if (!q && !isDiscountOnly) {
                 addBotMessage(uiText[currentLang].chatNoResult);
                 return;
             }
@@ -285,10 +323,27 @@
             Object.keys(structuredData[selectedCat1]).forEach(cat2 => {
                 Object.keys(structuredData[selectedCat1][cat2]).forEach(pName => {
                     const info = structuredData[selectedCat1][cat2][pName];
-                    if (isAll || info.searchKeywords.includes(q)) html += generateProductCardHTML(pName, info);
+                    
+                    // 偵測貨品是否有任何促銷優惠
+                    const hasDiscount = info.prices.some(p => p.promoDisplay || p.promoCalc);
+                    
+                    if (isDiscountOnly) {
+                        if (hasDiscount) html += generateProductCardHTML(pName, info);
+                    } else if (isAll || info.searchKeywords.includes(q)) {
+                        html += generateProductCardHTML(pName, info);
+                    }
                 });
             });
-            if (!html) addBotMessage(uiText[currentLang].chatNoResult);
+            
+            if (!html) {
+                let noResultMsg = uiText[currentLang].chatNoResult;
+                if (isDiscountOnly) {
+                    if (currentLang === 'zh-Hant') noResultMsg = "呢個分類暫時未有優惠貨品喎！🤷‍♂️";
+                    else if (currentLang === 'zh-Hans') noResultMsg = "该分类下暂时没有优惠商品哦！🤷‍♂️";
+                    else noResultMsg = "No discounted products found in this category! 🤷‍♂️";
+                }
+                addBotMessage(noResultMsg);
+            }
             else addBotMessage(isAll ? uiText[currentLang].chatShowAll : uiText[currentLang].chatFound, html);
         }
 
