@@ -18,26 +18,19 @@ jobs:
 
       - name: Delete old and download new pricewatch.json
         run: |
-          # 1. 先強制刪除舊嘅 json 檔 (如果存在嘅話)
           rm -f pricewatch.json
-          echo "已清理舊檔案。"
-          
-          # 2. 下載全新嘅資料
           curl -s -o pricewatch.json "https://online-price-watch.consumer.org.hk/opw/opendata/pricewatch.json"
-          echo "最新 pricewatch.json 下載完成！"
 
-      - name: Check for changes and commit
+      - name: Force Commit and Push
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           
           git add pricewatch.json
           
-          # 檢查內容同上次 commit 比較有冇真正嘅改變
-          if git diff --staged --quiet; then
-            echo "今日消委會嘅資料冇變，唔需要更新。"
-          else
-            git commit -m "🤖 Auto-update: 強制更新最新 pricewatch.json"
-            git push
-            echo "成功將最新資料推送到 GitHub！"
-          fi
+          # 直接強制 commit。
+          # 加咗 || true 係為咗防止萬一下載失敗導致 git add 冇嘢加而報錯。
+          # --allow-empty 確保就算內容完全一樣，都可以產生一條新紀錄。
+          git commit --allow-empty -m "🤖 Auto-update: 強制重新下載 pricewatch.json [$(date +'%Y-%m-%d %H:%M:%S')]" || true
+          
+          git push
