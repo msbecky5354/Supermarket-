@@ -42,11 +42,11 @@ function calculateAvgPrice(enPromoText, originalPrice) {
         if (mGetFor) return (originalPrice * getNum(mGetFor[1]) + getNum(mGetFor[3])) / (getNum(mGetFor[1]) + getNum(mGetFor[2]));
 
         let mGetHalf = p.match(/(?:buy|add).*?([0-9]+).*?get.*?([0-9]+).*?half/);
-        if (mGetHalf) return (originalPrice * getNum(mGetHalf[1]) + (originalPrice * 0.5 * getNum(mGetHalf[2]))) / (getNum(mGetHalf[1]) + getNum(mGetHalf[2]));
-
-        // 🔥 修正版：加入 [^\d]+ 強制分隔數量同折數，防止好似 "15" 咁被硬拆做 "1" 和 "5"
-        let mGetPerc = p.match(/(?:buy|add).*?([0-9]+).*?get.*?([0-9]+)[^\d]+([0-9.]+)%\s*off/);
+        if (mGetHalf) return (originalPrice * getNum(mGetHalf[1]) + (originalPrice * 0.5 * getNum(mGetHalf[2]))) / (getNum(mGetHalf[1]) + getNum(mGetHalf[     
+        // 🔥 終極防彈版：加入 \b (邊界) 確保每次都捉到完整數字，絕對唔會將 15 拆做 1 同 5
+        let mGetPerc = p.match(/(?:buy|add).*?\b([0-9]+)\b.*?get.*?\b([0-9]+)\b.*?\b([0-9.]+)%\s*off/);
         if (mGetPerc) return (originalPrice * getNum(mGetPerc[1]) + (originalPrice * (1 - getNum(mGetPerc[3])/100) * getNum(mGetPerc[2]))) / (getNum(mGetPerc[1]) + getNum(mGetPerc[2]));
+
 
         let mGetFree = p.match(/(?:buy|add).*?([0-9]+).*?(?:get|free).*?([0-9]+)/);
         if (mGetFree) return (originalPrice * getNum(mGetFree[1])) / (getNum(mGetFree[1]) + getNum(mGetFree[2]));
