@@ -20,18 +20,17 @@ jobs:
           # 1. 強制下載最新 JSON
           curl -s -o pricewatch.json "https://online-price-watch.consumer.org.hk/opw/opendata/pricewatch.json"
           
-          # 2. 建立一個 log 檔，寫入最新時間 (呢步係逼 Git 必定要有新 Commit 嘅關鍵！)
-          echo "最後自動更新時間：$(date +'%Y-%m-%d %H:%M:%S')" > update_log.txt
+          # 2. 建立一個 log 檔，並強制轉換成香港時區
+          echo "最後自動更新時間：$(TZ='Asia/Hong_Kong' date +'%Y-%m-%d %H:%M:%S')" > update_log.txt
 
       - name: Commit and Push
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           
-          # 將 json 同埋 log 檔一齊 add
           git add pricewatch.json update_log.txt
           
-          # 因為 update_log.txt 每次內容(時間)都唔同，所以一定會 commit 成功
-          git commit -m "🤖 Auto-update: 獲取最新數據 [$(date +'%Y-%m-%d %H:%M:%S')]" || true
+          # Commit message 都一併轉做香港時間
+          git commit -m "🤖 Auto-update: 獲取最新數據 [$(TZ='Asia/Hong_Kong' date +'%Y-%m-%d %H:%M:%S')]" || true
           
           git push
