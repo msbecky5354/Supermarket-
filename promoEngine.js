@@ -93,3 +93,4 @@ function calculateAvgPrice(enPromoText, originalPrice) {
         return null; 
     }
 }
+
