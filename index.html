@@ -669,16 +669,7 @@
             document.getElementById('disclaimerModal').classList.remove('hidden');
         }
 
-        // 原本嘅啟動 App 指令
-        init();
-          // 🔑 呢個係打開 Modal 嘅功能 (放喺 init 之前)
-        function openDisclaimerModal() {
-            document.getElementById('disclaimerBody').innerHTML = uiText[currentLang].disclaimerText;
-            document.getElementById('modalCloseBtn').innerText = uiText[currentLang].modalBtn;
-            document.getElementById('disclaimerModal').classList.remove('hidden');
-        }
-
-        // 原本嘅啟動 App 指令
+        
         init();
     </script>
 
