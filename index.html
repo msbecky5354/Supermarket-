@@ -60,7 +60,7 @@
     <h1 id="appTitle" class="text-base md:text-lg bg-gradient-to-r from-indigo-600 to-blue-700 bg-clip-text text-transparent font-black tracking-wide">香港生活百貨價格神器</h1>
 </div>
                 <div class="flex items-center gap-1.5 mt-0.5 pl-7">
-                    <span id="dataSourceBadge" class="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200/60 shadow-sm tracking-wider uppercase">
+                  <span id="dataSourceBadge" class="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200/60 shadow-sm tracking-wider uppercase whitespace-nowrap">
                         政府數據連線
                     </span>
                     <span id="todayStatusLabel" class="text-[10px] text-slate-400 font-medium tracking-wide">載入中...</span>
@@ -447,8 +447,7 @@
             }
         }
 
-    
-               function buildStructuredData() {
+        function buildStructuredData() {
             structuredData = {};
             rawApiData.forEach(item => {
                 let cat1 = item.cat1Name?.[currentLang] || item.cat1Name?.['zh-Hant'];
@@ -472,23 +471,47 @@
                 
                 if (Array.isArray(item.prices)) {
                     item.prices.forEach(p => {
-                        let smName = (typeof supermarketDict !== 'undefined' && supermarketDict[currentLang] && supermarketDict[currentLang][p.supermarketCode]) 
-                            || p.supermarketName?.[currentLang] 
-                            || p.supermarketName?.['zh-Hant'] 
-                            || p.supermarketCode;
-
+                        let smName = supermarketDict[currentLang][p.supermarketCode] || p.supermarketCode;
+                        let promoDisplay = "";
+                        let promoCalcEn = ""; 
+                        const promoKeys = ['promotions', 'promotion', 'offer', 'promotionDesc', 'promotionName', 'itemOffsetText'];
+                        for (let key of promoKeys) {
+                            if (p[key]) {
+                                let extractedDisplay = extractDeepPromoText(p[key], currentLang);
+                                if (extractedDisplay && extractedDisplay !== "[object Object]") { 
+                                    promoDisplay = extractedDisplay; 
+                                    promoCalcEn = extractDeepPromoText(p[key], 'en');
+                                    break; 
+                                }
+                            }
+                        }
+                        if (!promoDisplay) {
+                            const itemKeys = ['promotions', 'offers', 'discounts'];
+                            for (let key of itemKeys) {
+                                if (Array.isArray(item[key])) {
+                                    const smPromo = item[key].find(pr => pr.supermarketCode === p.supermarketCode || pr.code === p.supermarketCode);
+                                    if (smPromo) {
+                                        let extractedDisplay = extractDeepPromoText(smPromo, currentLang);
+                                        if (extractedDisplay && extractedDisplay !== "[object Object]") {
+                                            promoDisplay = extractedDisplay;
+                                            promoCalcEn = extractDeepPromoText(smPromo, 'en');
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
                         structuredData[cat1][cat2][name].prices.push({ 
                             rawCode: p.supermarketCode, 
                             supermarket: smName, 
-                            price: p.price ?? '--'
+                            price: p.price ?? '--', 
+                            promoDisplay: promoDisplay,
+                            promoCalc: promoCalcEn 
                         });
                     });
                 }
             });
         }
-            
-        
-                
 
         function renderLevel1() {
             level1Container.innerHTML = '';
@@ -524,12 +547,12 @@
             const q = chatInput.value.trim(); if (!q) return;
             addUserMessage(q); chatInput.value = ''; chatInput.blur();
             
-            //if (q === "測試異常") {
-                //setTimeout(() => {
-                    //calculateAvgPrice("buy 1 get 1 for $500", 10);
-                    //addBotMessage("🚨 已啟動隱藏測試程式！<br><br>我啱啱已經利用原生 Form 提交必殺技，將一筆資料傳送去你嘅 Google Sheet。<br><br>快啲去睇吓有冇收到新記錄啦！");
-                //}, 300);
-                //return;
+            if (q === "測試異常") {
+                setTimeout(() => {
+                    calculateAvgPrice("buy 1 get 1 for $500", 10);
+                    addBotMessage("🚨 已啟動隱藏測試程式！<br><br>我啱啱已經利用原生 Form 提交必殺技，將一筆資料傳送去你嘅 Google Sheet。<br><br>快啲去睇吓有冇收到新記錄啦！");
+                }, 300);
+                return;
             }
 
             setTimeout(() => {
