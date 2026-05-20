@@ -172,7 +172,7 @@ const uiText = {
         copiedToast: "✅ Link copied to clipboard!",
         shareMessage: "Check out the HK Smart Price Tracker! Compare supermarket prices instantly and save money! 🛒\n"
     }
-    ｝；
+}；
     
     
 const supermarketDict = {
