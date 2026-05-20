@@ -447,7 +447,8 @@
             }
         }
 
-                function buildStructuredData() {
+    
+       function buildStructuredData() {
             structuredData = {};
             const unknownSupermarkets = new Set(); // 🚀 新增：用嚟裝未翻譯嘅超市代碼
 
@@ -523,20 +524,7 @@
                 }
             });
             
-        // 🚀 靜靜雞情報網：當發現有漏網之魚，自動向後台回報！
-                        // 🚀 靜靜雞情報網 (安全版)：呼叫自家 Vercel API
-            if (unknownSupermarkets.size > 0) {
-                const missingCodes = Array.from(unknownSupermarkets).join(', ');
-                
-                // 淨係傳個「代碼名」去後台，完全唔暴露任何 Telegram 密碼
-                fetch('/api/alert', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ codes: missingCodes })
-                }).catch(e => { 
-                    console.log("情報發送失敗", e); 
-                });
-            }
+        
                 
 
         function renderLevel1() {
