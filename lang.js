@@ -176,7 +176,7 @@ const uiText = {
             
 }; 
 
-const supermarketDict = {
+
     
 const supermarketDict = {
     'zh-Hant': { 
