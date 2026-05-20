@@ -531,33 +531,97 @@
                 }
             });
 
-            // 🚀 3. 發送情報 (安全呼叫後台)
-                        // 🚀 3. 發送情報 (手機大聲公 Debug 版)
+                    function buildStructuredData() {
+            structuredData = {};
+            const unknownSupermarkets = new Set(); 
+
+            rawApiData.forEach(item => {
+                let cat1 = item.cat1Name?.[currentLang] || item.cat1Name?.['zh-Hant'];
+                if (!cat1) return;
+                let cat2 = item.cat3Name?.[currentLang] || item.cat2Name?.[currentLang] || 'Other';
+                let name = item.name?.[currentLang] || item.name?.['zh-Hant'] || 'Unknown';
+                let enName = item.name?.['en'] || '';
+                let brandObj = item.brand || item.brandName || '';
+                let localBrand = (typeof brandObj === 'object') ? (brandObj[currentLang] || brandObj['zh-Hant'] || '') : brandObj;
+                let enBrand = (typeof brandObj === 'object') ? (brandObj['en'] || '') : brandObj;
+
+                if (!structuredData[cat1]) structuredData[cat1] = {};
+                if (!structuredData[cat1][cat2]) structuredData[cat1][cat2] = {};
+                if (!structuredData[cat1][cat2][name]) {
+                    structuredData[cat1][cat2][name] = { 
+                        brand: localBrand, 
+                        searchKeywords: normalizeStr(`${name} ${enName} ${localBrand} ${enBrand} ${cat2}`),
+                        prices: [] 
+                    };
+                }
+                
+                if (Array.isArray(item.prices)) {
+                    item.prices.forEach(p => {
+                        let smName = p.supermarketCode; 
+                        
+                        if (typeof supermarketDict !== 'undefined' && supermarketDict[currentLang] && supermarketDict[currentLang][p.supermarketCode]) {
+                            smName = supermarketDict[currentLang][p.supermarketCode]; 
+                        } else if (p.supermarketName && p.supermarketName[currentLang]) {
+                            smName = p.supermarketName[currentLang]; 
+                        } else if (p.supermarketName && p.supermarketName['zh-Hant']) {
+                            smName = p.supermarketName['zh-Hant'];
+                        } else {
+                            // 發現孤兒！
+                            unknownSupermarkets.add(p.supermarketCode);
+                            smName = p.supermarketCode.charAt(0).toUpperCase() + p.supermarketCode.slice(1).toLowerCase();
+                        }
+
+                        let promoDisplay = "";
+                        let promoCalcEn = ""; 
+                        const promoKeys = ['promotions', 'promotion', 'offer', 'promotionDesc', 'promotionName', 'itemOffsetText'];
+                        for (let key of promoKeys) {
+                            if (p[key]) {
+                                let extractedDisplay = extractDeepPromoText(p[key], currentLang);
+                                if (extractedDisplay && extractedDisplay !== "[object Object]") { 
+                                    promoDisplay = extractedDisplay; 
+                                    promoCalcEn = extractDeepPromoText(p[key], 'en');
+                                    break; 
+                                }
+                            }
+                        }
+                        if (!promoDisplay) {
+                            const itemKeys = ['promotions', 'offers', 'discounts'];
+                            for (let key of itemKeys) {
+                                if (Array.isArray(item[key])) {
+                                    const smPromo = item[key].find(pr => pr.supermarketCode === p.supermarketCode || pr.code === p.supermarketCode);
+                                    if (smPromo) {
+                                        let extractedDisplay = extractDeepPromoText(smPromo, currentLang);
+                                        if (extractedDisplay && extractedDisplay !== "[object Object]") {
+                                            promoDisplay = extractedDisplay;
+                                            promoCalcEn = extractDeepPromoText(smPromo, 'en');
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        structuredData[cat1][cat2][name].prices.push({ 
+                            rawCode: p.supermarketCode, 
+                            supermarket: smName, 
+                            price: p.price ?? '--', 
+                            promoDisplay: promoDisplay,
+                            promoCalc: promoCalcEn 
+                        });
+                    });
+                }
+            });
+
+            // 🚀 3. 發送情報 (安全靜音版 - 完全唔阻畫面)
             if (unknownSupermarkets.size > 0) {
                 const missingCodes = Array.from(unknownSupermarkets).join(', ');
-                
-                // 第一下彈出：證明前端真係捉到
-                alert("🚨 準備發送情報，代碼：" + missingCodes);
-
                 fetch('/api/alert', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ codes: missingCodes })
-                })
-                .then(async res => {
-                    if (!res.ok) {
-                        const err = await res.text();
-                        // 第二下彈出 (失敗)：話你知 Vercel 發生咩事
-                        alert("❌ 後台回報失敗！\n狀態碼: " + res.status + "\n原因: " + err);
-                    } else {
-                        // 第二下彈出 (成功)：如果見到呢個但 TG 冇響，100% 係 Token/ID 錯！
-                        alert("✅ 成功過咗 Vercel 關卡！\n如果 Telegram 仲係冇響，請檢查 TG_BOT_TOKEN 同 TG_CHAT_ID 係咪填錯！");
-                    }
-                })
-                .catch(e => { 
-                    alert("💥 完全連唔到後台！\nError: " + e.message); 
-                });
+                }).catch(e => { console.log("情報網靜默失敗", e) });
             }
+        }
 
         function renderLevel1() {
             level1Container.innerHTML = '';
