@@ -532,15 +532,32 @@
             });
 
             // 🚀 3. 發送情報 (安全呼叫後台)
+                        // 🚀 3. 發送情報 (手機大聲公 Debug 版)
             if (unknownSupermarkets.size > 0) {
                 const missingCodes = Array.from(unknownSupermarkets).join(', ');
+                
+                // 第一下彈出：證明前端真係捉到
+                alert("🚨 準備發送情報，代碼：" + missingCodes);
+
                 fetch('/api/alert', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ codes: missingCodes })
-                }).catch(e => { /* 靜靜雞出錯，唔影響用家 */ });
+                })
+                .then(async res => {
+                    if (!res.ok) {
+                        const err = await res.text();
+                        // 第二下彈出 (失敗)：話你知 Vercel 發生咩事
+                        alert("❌ 後台回報失敗！\n狀態碼: " + res.status + "\n原因: " + err);
+                    } else {
+                        // 第二下彈出 (成功)：如果見到呢個但 TG 冇響，100% 係 Token/ID 錯！
+                        alert("✅ 成功過咗 Vercel 關卡！\n如果 Telegram 仲係冇響，請檢查 TG_BOT_TOKEN 同 TG_CHAT_ID 係咪填錯！");
+                    }
+                })
+                .catch(e => { 
+                    alert("💥 完全連唔到後台！\nError: " + e.message); 
+                });
             }
-        }
 
         function renderLevel1() {
             level1Container.innerHTML = '';
