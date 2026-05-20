@@ -1,4 +1,4 @@
-// lang.js - 神器多語言及 AI 對答詞庫
+// lang.js - 神器多語言及 AI 對答詞庫/
 
 const uiText = {
     'zh-Hant': { 
