@@ -184,8 +184,7 @@ const supermarketDict = {
         'Watsons': '屈臣氏', 
         'MANNINGS': '萬寧', 
         'USELECT': 'U購', 
-        'LUNGFUNG': '龍豐' 
-        
+        'LUNGFUNG': '龍豐'    
        //'1DCHFOOD': '大昌食品' 
     },
     'zh-Hans': { 
