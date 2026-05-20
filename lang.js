@@ -132,7 +132,7 @@ const uiText = {
     },
     
     'en': { 
-        title: "HK Smart Price Tracker🔎", 
+        title: "HK Smart Price🔎", 
         badge: "HK Open Data", 
         subLabel: "Fetching update time...", 
         lastUpdated: "Updated: ",
@@ -176,8 +176,8 @@ const uiText = {
         footerPrivacy: "Privacy Policy",
         footerTerms: "Terms of Service",
         
-        aboutTitle: "About HK Smart Price Tracker🔎",
-        aboutContent: "HK Smart Price Tracker🔎 aims to provide a convenient price comparison platform for Hong Kong citizens.<br><br>Say goodbye to downloading and filtering complex government Excel sheets! With our AI-powered search app, you can effortlessly compare prices and find the best discounts across supermarkets in seconds.",
+        aboutTitle: "About HK Smart Price🔎",
+        aboutContent: "HK Smart Price🔎 aims to provide a convenient price comparison platform for Hong Kong citizens.<br><br>Say goodbye to downloading and filtering complex government Excel sheets! With our AI-powered search app, you can effortlessly compare prices and find the best discounts across supermarkets in seconds.",
         contactTitle: "Contact Us",
         contactContent: "For inquiries or collaborations, please feel free to reach out.<br><br>(Contact info coming soon!)",
         privacyTitle: "Privacy Policy",
