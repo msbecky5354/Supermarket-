@@ -197,7 +197,7 @@ const supermarketDict = {
         'MANNINGS': '万宁', 
         'USELECT': 'U购', 
         'LUNGFUNG': '龙丰',
-        'DCHFOOD': '大昌食品' 
+        '1DCHFOOD': '大昌食品' 
     },
     'en': { 
         'WELLCOME': 'Wellcome', 
