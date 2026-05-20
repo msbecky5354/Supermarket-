@@ -209,6 +209,6 @@ const supermarketDict = {
         'MANNINGS': 'Mannings', 
         'USELECT': 'U-Select', 
         'LUNGFUNG': 'Lung Fung',
-        'DCHFOOD': 'DCH Food' 
+        '1DCHFOOD': 'DCH Food' 
     }
 };
