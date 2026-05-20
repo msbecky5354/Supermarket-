@@ -178,7 +178,7 @@ const uiText = {
 
 
     
-const supermarketDict = {
+c，onst supermarketDict = {
     'zh-Hant': { 
         'WELLCOME': '惠康', 
         'PARKNSHOP': '百佳', 
