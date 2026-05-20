@@ -185,7 +185,7 @@ const supermarketDict = {
         'MANNINGS': '萬寧', 
         'USELECT': 'U購', 
         'LUNGFUNG': '龍豐',
-        '1DCHFOOD': '大昌食品' 
+        'DCHFOOD': '大昌食品' 
     },
     'zh-Hans': { 
         'WELLCOME': '惠康', 
@@ -209,6 +209,6 @@ const supermarketDict = {
         'MANNINGS': 'Mannings', 
         'USELECT': 'U-Select', 
         'LUNGFUNG': 'Lung Fung',
-        '1DCHFOOD': 'DCH Food' 
+        'DCHFOOD': 'DCH Food' 
     }
 };
