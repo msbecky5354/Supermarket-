@@ -172,10 +172,41 @@ const uiText = {
         copiedToast: "✅ Link copied to clipboard!",
         shareMessage: "Check out the HK Smart Price Tracker! Compare supermarket prices instantly and save money! 🛒\n"
     }
-};
-
 const supermarketDict = {
-    'zh-Hant': { 'WELLCOME': '惠康', 'PARKNSHOP': '百佳', 'JASONS': 'Jasons', 'MARKETPLACE': 'Market Place', 'AEON': 'AEON', 'Watsons': '屈臣氏', 'MANNINGS': '萬寧', 'USELECT': 'U購', 'LUNGFUNG': '龍豐' },
-    'zh-Hans': { 'WELLCOME': '惠康', 'PARKNSHOP': '百佳', 'JASONS': 'Jasons', 'MARKETPLACE': 'Market Place', 'AEON': 'AEON', 'Watsons': 'Watsons', 'MANNINGS': '万宁', 'USELECT': 'U购', 'LUNGFUNG': '龙丰' },
-    'en': { 'WELLCOME': 'Wellcome', 'PARKNSHOP': 'PARKnSHOP', 'JASONS': 'Jasons', 'MARKETPLACE': 'Market Place', 'AEON': 'AEON', 'Watsons': 'Watsons', 'MANNINGS': 'Mannings', 'USELECT': 'U-Select', 'LUNGFUNG': 'Lung Fung' }
+    'zh-Hant': { 
+        'WELLCOME': '惠康', 
+        'PARKNSHOP': '百佳', 
+        'JASONS': 'Jasons', 
+        'MARKETPLACE': 'Market Place', 
+        'AEON': 'AEON', 
+        'Watsons': '屈臣氏', 
+        'MANNINGS': '萬寧', 
+        'USELECT': 'U購', 
+        'LUNGFUNG': '龍豐',
+        'DCHFOOD': '大昌食品' 
+    },
+    'zh-Hans': { 
+        'WELLCOME': '惠康', 
+        'PARKNSHOP': '百佳', 
+        'JASONS': 'Jasons', 
+        'MARKETPLACE': 'Market Place', 
+        'AEON': 'AEON', 
+        'Watsons': 'Watsons', 
+        'MANNINGS': '万宁', 
+        'USELECT': 'U购', 
+        'LUNGFUNG': '龙丰',
+        'DCHFOOD': '大昌食品' 
+    },
+    'en': { 
+        'WELLCOME': 'Wellcome', 
+        'PARKNSHOP': 'PARKnSHOP', 
+        'JASONS': 'Jasons', 
+        'MARKETPLACE': 'Market Place', 
+        'AEON': 'AEON', 
+        'Watsons': 'Watsons', 
+        'MANNINGS': 'Mannings', 
+        'USELECT': 'U-Select', 
+        'LUNGFUNG': 'Lung Fung',
+        'DCHFOOD': 'DCH Food' 
+    }
 };
