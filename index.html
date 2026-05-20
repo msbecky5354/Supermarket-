@@ -671,6 +671,15 @@
 
         // 原本嘅啟動 App 指令
         init();
+          // 🔑 呢個係打開 Modal 嘅功能 (放喺 init 之前)
+        function openDisclaimerModal() {
+            document.getElementById('disclaimerBody').innerHTML = uiText[currentLang].disclaimerText;
+            document.getElementById('modalCloseBtn').innerText = uiText[currentLang].modalBtn;
+            document.getElementById('disclaimerModal').classList.remove('hidden');
+        }
+
+        // 原本嘅啟動 App 指令
+        init();
     </script>
 
     <div id="disclaimerModal" class="hidden fixed inset-0 bg-slate-900/40 z-[100] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
@@ -686,13 +695,5 @@
         </div>
     </div>
 
-</body>
-</html>
-          
-            
-         
-    
-    
-    
 </body>
 </html>
