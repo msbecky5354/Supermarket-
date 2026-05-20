@@ -215,4 +215,4 @@ const supermarketDict = {
         'LUNGFUNG': 'Lung Fung',
         'DCHFOOD': 'DCH Food' 
     }
-    };
+    
