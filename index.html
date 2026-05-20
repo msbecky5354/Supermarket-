@@ -659,17 +659,14 @@
             </div>`;
         }
 
-        init();
-    </script>
-    
-               // 🔑 呢個係打開 Modal 嘅功能 (放喺 init 之前)
+                // 🔑 呢個係打開 Modal 嘅功能 (放喺 init 之前)
         function openDisclaimerModal() {
             document.getElementById('disclaimerBody').innerHTML = uiText[currentLang].disclaimerText;
             document.getElementById('modalCloseBtn').innerText = uiText[currentLang].modalBtn;
             document.getElementById('disclaimerModal').classList.remove('hidden');
         }
-
         
+        // 啟動 App
         init();
     </script>
 
