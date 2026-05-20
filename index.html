@@ -652,5 +652,26 @@
 
         init();
     </script>
+    
+        <div id="disclaimerModal" class="hidden fixed inset-0 bg-slate-900/40 z-[100] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl flex flex-col max-h-[80vh]">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-[18px] font-black text-slate-800 flex items-center gap-2">🛡️ 免責聲明及服務條款</h2>
+            </div>
+            
+            <div class="overflow-y-auto text-[13px] text-slate-600 space-y-4 pr-1 mb-2">
+                <p><strong>1. 資料來源：</strong><br>本網站（「慳真D」）之價格數據均經自動擷取自消委會「網上價格一覽通」。所有商標及版權均歸原機構及相關商戶所有。</p>
+                <p><strong>2. 「現況」提供：</strong><br>所有資訊僅以「現況」提供，純作參考。我們強烈建議用戶在作出購買決定前，自行核實定價。</p>
+                <p><strong>3. 責任限制：</strong><br>實際售價以實體超市或官方網店之最終標價為準。對於因價格差異或資料延遲引致之任何損失，本網站及開發者概不負責。</p>
+            </div>
+
+            <button onclick="document.getElementById('disclaimerModal').classList.add('hidden')" class="mt-4 w-full bg-slate-800 text-white font-bold py-3.5 rounded-2xl active:scale-95 transition-transform text-[15px]">
+                明白晒，繼續慳錢！
+            </button>
+        </div>
+    </div>
+    
+    
+    
 </body>
 </html>
