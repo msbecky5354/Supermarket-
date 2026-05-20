@@ -523,32 +523,21 @@
                 }
             });
             
-                        // 🚀 靜靜雞情報網：當發現有漏網之魚，自動向後台回報！
+        // 🚀 靜靜雞情報網：當發現有漏網之魚，自動向後台回報！
+                        // 🚀 靜靜雞情報網 (安全版)：呼叫自家 Vercel API
             if (unknownSupermarkets.size > 0) {
                 const missingCodes = Array.from(unknownSupermarkets).join(', ');
                 
-                // 方案 A：靜靜雞寫入你嘅 Google Analytics 事件 (完全隱形，免加任何 API)
-                if (typeof gtag === 'function') {
-                    gtag('event', 'missing_supermarket', {
-                        'event_category': 'System Alert',
-                        'event_label': missingCodes
-                    });
-                }
-
-                // 方案 B：靜靜雞射去你嘅 Webhook 或 Google Form (即時通知)
-                // (你可以將下面條 URL 換成你接收通知嘅 Webhook，例如 n8n、Make 或者 Google Script)
-                /* fetch('https://你的_WEBHOOK_網址', {
+                // 淨係傳個「代碼名」去後台，完全唔暴露任何 Telegram 密碼
+                fetch('/api/alert', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        alert: '🚨 價格神器發現未翻譯超市！', 
-                        codes: missingCodes,
-                        time: new Date().toISOString()
-                    })
-                }).catch(e => {}); // catch 住個 error，就算射失都唔會影響用家畫面
-                */
+                    body: JSON.stringify({ codes: missingCodes })
+                }).catch(e => { 
+                    console.log("情報發送失敗", e); 
+                });
             }
-        }
+                
 
         function renderLevel1() {
             level1Container.innerHTML = '';
