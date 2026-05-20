@@ -447,8 +447,10 @@
             }
         }
 
-        function buildStructuredData() {
+                function buildStructuredData() {
             structuredData = {};
+            const unknownSupermarkets = new Set(); // 🚀 新增：用嚟裝未翻譯嘅超市代碼
+
             rawApiData.forEach(item => {
                 let cat1 = item.cat1Name?.[currentLang] || item.cat1Name?.['zh-Hant'];
                 if (!cat1) return;
@@ -471,7 +473,16 @@
                 
                 if (Array.isArray(item.prices)) {
                     item.prices.forEach(p => {
-                        let smName = supermarketDict[currentLang][p.supermarketCode] || p.supermarketCode;
+                        // 🚀 智能商戶名稱獲取機制 + 舉報孤兒代碼
+                        let smName = (typeof supermarketDict !== 'undefined' && supermarketDict[currentLang] && supermarketDict[currentLang][p.supermarketCode]) 
+                            || p.supermarketName?.[currentLang] 
+                            || p.supermarketName?.['zh-Hant'];
+                        
+                        if (!smName) {
+                            unknownSupermarkets.add(p.supermarketCode); // 加落通緝名單
+                            smName = p.supermarketCode.charAt(0).toUpperCase() + p.supermarketCode.slice(1).toLowerCase(); // 首字母大階頂住先
+                        }
+
                         let promoDisplay = "";
                         let promoCalcEn = ""; 
                         const promoKeys = ['promotions', 'promotion', 'offer', 'promotionDesc', 'promotionName', 'itemOffsetText'];
@@ -511,6 +522,11 @@
                     });
                 }
             });
+            
+            // 🚀 喺 Console 印出需要翻譯嘅新超市名單
+            if (unknownSupermarkets.size > 0) {
+                console.warn("🚨 留意！發現未有翻譯嘅新商戶代碼（請考慮加入 lang.js 嘅 supermarketDict）：", Array.from(unknownSupermarkets));
+            }
         }
 
         function renderLevel1() {
