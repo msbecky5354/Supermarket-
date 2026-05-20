@@ -447,8 +447,10 @@
             }
         }
 
-        function buildStructuredData() {
+               function buildStructuredData() {
             structuredData = {};
+            const unknownSupermarkets = new Set(); // 🚀 1. 準備通緝名單
+
             rawApiData.forEach(item => {
                 let cat1 = item.cat1Name?.[currentLang] || item.cat1Name?.['zh-Hant'];
                 if (!cat1) return;
@@ -471,7 +473,23 @@
                 
                 if (Array.isArray(item.prices)) {
                     item.prices.forEach(p => {
-                        let smName = supermarketDict[currentLang][p.supermarketCode] || p.supermarketCode;
+                        // 🚀 2. 獲取商戶名稱 & 捉拿漏網之魚
+                        let smName = p.supermarketCode; // 預設用 Code 墊底
+                        
+                        if (typeof supermarketDict !== 'undefined' && supermarketDict[currentLang] && supermarketDict[currentLang][p.supermarketCode]) {
+                            smName = supermarketDict[currentLang][p.supermarketCode]; // 優先用自訂字典
+                        } else if (p.supermarketName && p.supermarketName[currentLang]) {
+                            smName = p.supermarketName[currentLang]; // 其次用政府 API
+                        } else if (p.supermarketName && p.supermarketName['zh-Hant']) {
+                            smName = p.supermarketName['zh-Hant'];
+                        } else {
+                            // 發現孤兒！加入通緝名單
+                            unknownSupermarkets.add(p.supermarketCode);
+                            // 將全大階 Code 轉靚仔頂檔 (例如 DCHFOOD -> Dchfood)
+                            smName = p.supermarketCode.charAt(0).toUpperCase() + p.supermarketCode.slice(1).toLowerCase();
+                        }
+
+                        // 處理優惠 (保持原狀)
                         let promoDisplay = "";
                         let promoCalcEn = ""; 
                         const promoKeys = ['promotions', 'promotion', 'offer', 'promotionDesc', 'promotionName', 'itemOffsetText'];
@@ -501,6 +519,7 @@
                                 }
                             }
                         }
+                        
                         structuredData[cat1][cat2][name].prices.push({ 
                             rawCode: p.supermarketCode, 
                             supermarket: smName, 
@@ -511,6 +530,16 @@
                     });
                 }
             });
+
+            // 🚀 3. 發送情報 (安全呼叫後台)
+            if (unknownSupermarkets.size > 0) {
+                const missingCodes = Array.from(unknownSupermarkets).join(', ');
+                fetch('/api/alert', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ codes: missingCodes })
+                }).catch(e => { /* 靜靜雞出錯，唔影響用家 */ });
+            }
         }
 
         function renderLevel1() {
