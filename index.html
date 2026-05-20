@@ -662,7 +662,32 @@
         init();
     </script>
     
-       
+               // 🔑 呢個係打開 Modal 嘅功能 (放喺 init 之前)
+        function openDisclaimerModal() {
+            document.getElementById('disclaimerBody').innerHTML = uiText[currentLang].disclaimerText;
+            document.getElementById('modalCloseBtn').innerText = uiText[currentLang].modalBtn;
+            document.getElementById('disclaimerModal').classList.remove('hidden');
+        }
+
+        // 原本嘅啟動 App 指令
+        init();
+    </script>
+
+    <div id="disclaimerModal" class="hidden fixed inset-0 bg-slate-900/40 z-[100] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl flex flex-col max-h-[80vh]">
+            <div class="flex items-center gap-2 mb-4">
+                <span class="text-[20px]">🛡️</span>
+                <h2 id="modalTitle" class="text-[17px] font-black text-slate-800">免責聲明及服務條款</h2>
+            </div>
+            
+            <div id="disclaimerBody" class="overflow-y-auto text-[13px] text-slate-600 space-y-4 pr-1 mb-2 leading-relaxed"></div>
+
+            <button onclick="document.getElementById('disclaimerModal').classList.add('hidden')" id="modalCloseBtn" class="mt-4 w-full bg-blue-600 text-white font-bold py-3.5 rounded-2xl active:scale-95 transition-transform text-[15px] shadow-md shadow-blue-100"></button>
+        </div>
+    </div>
+
+</body>
+</html>
           
             
          
