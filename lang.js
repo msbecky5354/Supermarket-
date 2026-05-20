@@ -174,11 +174,11 @@ const uiText = {
     }
     
             
-}; 
+};
 
 
     
-c，onst supermarketDict = {
+const supermarketDict = {
     'zh-Hant': { 
         'WELLCOME': '惠康', 
         'PARKNSHOP': '百佳', 
