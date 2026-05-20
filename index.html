@@ -448,10 +448,8 @@
         }
 
     
-       function buildStructuredData() {
+               function buildStructuredData() {
             structuredData = {};
-            const unknownSupermarkets = new Set(); // 🚀 新增：用嚟裝未翻譯嘅超市代碼
-
             rawApiData.forEach(item => {
                 let cat1 = item.cat1Name?.[currentLang] || item.cat1Name?.['zh-Hant'];
                 if (!cat1) return;
@@ -474,55 +472,20 @@
                 
                 if (Array.isArray(item.prices)) {
                     item.prices.forEach(p => {
-                        // 🚀 智能商戶名稱獲取機制 + 舉報孤兒代碼
                         let smName = (typeof supermarketDict !== 'undefined' && supermarketDict[currentLang] && supermarketDict[currentLang][p.supermarketCode]) 
                             || p.supermarketName?.[currentLang] 
-                            || p.supermarketName?.['zh-Hant'];
-                        
-                        if (!smName) {
-                            unknownSupermarkets.add(p.supermarketCode); // 加落通緝名單
-                            smName = p.supermarketCode.charAt(0).toUpperCase() + p.supermarketCode.slice(1).toLowerCase(); // 首字母大階頂住先
-                        }
+                            || p.supermarketName?.['zh-Hant'] 
+                            || p.supermarketCode;
 
-                        let promoDisplay = "";
-                        let promoCalcEn = ""; 
-                        const promoKeys = ['promotions', 'promotion', 'offer', 'promotionDesc', 'promotionName', 'itemOffsetText'];
-                        for (let key of promoKeys) {
-                            if (p[key]) {
-                                let extractedDisplay = extractDeepPromoText(p[key], currentLang);
-                                if (extractedDisplay && extractedDisplay !== "[object Object]") { 
-                                    promoDisplay = extractedDisplay; 
-                                    promoCalcEn = extractDeepPromoText(p[key], 'en');
-                                    break; 
-                                }
-                            }
-                        }
-                        if (!promoDisplay) {
-                            const itemKeys = ['promotions', 'offers', 'discounts'];
-                            for (let key of itemKeys) {
-                                if (Array.isArray(item[key])) {
-                                    const smPromo = item[key].find(pr => pr.supermarketCode === p.supermarketCode || pr.code === p.supermarketCode);
-                                    if (smPromo) {
-                                        let extractedDisplay = extractDeepPromoText(smPromo, currentLang);
-                                        if (extractedDisplay && extractedDisplay !== "[object Object]") {
-                                            promoDisplay = extractedDisplay;
-                                            promoCalcEn = extractDeepPromoText(smPromo, 'en');
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                        }
                         structuredData[cat1][cat2][name].prices.push({ 
                             rawCode: p.supermarketCode, 
                             supermarket: smName, 
-                            price: p.price ?? '--', 
-                            promoDisplay: promoDisplay,
-                            promoCalc: promoCalcEn 
+                            price: p.price ?? '--'
                         });
                     });
                 }
             });
+        }
             
         
                 
