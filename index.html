@@ -96,10 +96,26 @@
                 <div id="loadingText" class="text-center p-4 text-slate-400 text-sm col-span-2">正在同步最新行情...</div>
             </div>
 
-         
+            <div class="mt-8 flex-1 flex flex-col justify-end text-center">
+                <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm inline-block mx-auto max-w-sm w-full">
+                    <p id="disclaimerGovData" class="text-[11px] text-slate-500 leading-relaxed"></p>
+                    <div class="w-12 h-px bg-slate-200 mx-auto my-2"></div>
+                    <p class="text-[10px] text-slate-400">
+                        <span id="disclaimerOwner"></span><br>
+                        <span id="disclaimerNote" class="opacity-75 block mt-1"></span>
+                    </p>
+                </div>
 
-             
-            
+                <div class="mt-6 mb-2 flex justify-center items-center gap-3 text-[13px] text-blue-600 font-medium pb-4">
+                    <button onclick="openModal('aboutTitle', 'aboutContent')" id="navAbout" class="hover:underline active:opacity-70 transition">關於我們</button>
+                    <span class="text-slate-300">|</span>
+                    <button onclick="openModal('contactTitle', 'contactContent')" id="navContact" class="hover:underline active:opacity-70 transition">聯絡我們</button>
+                    <span class="text-slate-300">|</span>
+                    <button onclick="openModal('privacyTitle', 'privacyContent')" id="navPrivacy" class="hover:underline active:opacity-70 transition">隱私權政策</button>
+                    <span class="text-slate-300">|</span>
+                    <button onclick="openModal('termsTitle', 'termsContent')" id="navTerms" class="hover:underline active:opacity-70 transition">服務條款</button>
+                </div>
+            </div>
         </section>
 
         <section id="chatSection" class="hidden absolute inset-0 flex flex-col bg-slate-50 z-20">
