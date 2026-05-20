@@ -181,11 +181,12 @@ const supermarketDict = {
         'JASONS': 'Jasons', 
         'MARKETPLACE': 'Market Place', 
         'AEON': 'AEON', 
-        'Watsons': '屈臣氏', 
+        'WATSONS': '屈臣氏', 
         'MANNINGS': '萬寧', 
         'USELECT': 'U購', 
         'LUNGFUNG': '龍豐',
-        'DCHFOOD': '大昌食品' 
+        'DCHFOOD': '大昌食品',
+        'SASA': '莎莎'
     },
     'zh-Hans': { 
         'WELLCOME': '惠康', 
@@ -193,11 +194,12 @@ const supermarketDict = {
         'JASONS': 'Jasons', 
         'MARKETPLACE': 'Market Place', 
         'AEON': 'AEON', 
-        'Watsons': 'Watsons', 
+        'WATSONS': '屈臣氏', 
         'MANNINGS': '万宁', 
         'USELECT': 'U购', 
         'LUNGFUNG': '龙丰',
-        'DCHFOOD': '大昌食品' 
+        'DCHFOOD': '大昌食品',
+        'SASA': '莎莎'
     },
     'en': { 
         'WELLCOME': 'Wellcome', 
@@ -205,10 +207,11 @@ const supermarketDict = {
         'JASONS': 'Jasons', 
         'MARKETPLACE': 'Market Place', 
         'AEON': 'AEON', 
-        'Watsons': 'Watsons', 
+        'WATSONS': 'Watsons', 
         'MANNINGS': 'Mannings', 
         'USELECT': 'U-Select', 
         'LUNGFUNG': 'Lung Fung',
-        'DCHFOOD': 'DCH Food' 
+        'DCHFOOD': 'DCH Food',
+        'SASA': 'Sasa'
     }
 };
