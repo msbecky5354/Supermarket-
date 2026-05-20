@@ -100,10 +100,11 @@
 
         
                 
-                    <div class="text-center pb-24 pt-8"> <button onclick="openDisclaimerModal()" class="text-[11px] text-slate-400 hover:text-slate-600 underline decoration-slate-200 transition">
+                      <div class="text-center pb-24 pt-8"> 
+        <button id="miniFooterLinks" onclick="openDisclaimerModal()" class="text-[11px] text-slate-400 hover:text-slate-600 underline decoration-slate-200 transition">
             關於我們、條款及免責聲明
         </button>
-        <div class="text-[10px] text-slate-300 mt-1.5 tracking-wide">© 2026 慳真D</div>
+        <div id="miniFooterCopy" class="text-[10px] text-slate-300 mt-1.5 tracking-wide">© 2026 慳真D</div>
     </div>
                     <div id="disclaimerModal" class="hidden fixed inset-0 bg-slate-900/40 z-[100] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
         <div class="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl flex flex-col max-h-[80vh]">
@@ -315,6 +316,13 @@
             //document.getElementById('navContact').innerText = uiText[lang].footerContact;
             //document.getElementById('navPrivacy').innerText = uiText[lang].footerPrivacy;
             //document.getElementById('navTerms').innerText = uiText[lang].footerTerms;
+            
+             // 🔄 確保極簡 Footer 都會跟住轉語言
+            if(document.getElementById('miniFooterLinks')) {
+                document.getElementById('miniFooterLinks').innerText = uiText[lang].miniFooterLinks;
+                document.getElementById('miniFooterCopy').innerText = uiText[lang].miniFooterCopy;
+            }
+            
             
             // 🚀 更新分享 App 彈窗文字
             document.getElementById('shareAppTitle').innerText = uiText[lang].shareAppTitle;
