@@ -568,17 +568,9 @@
             addBotMessage(`${uiText[currentLang].chatWelcome} <strong class="text-blue-600">${style.icon} ${cat1}</strong>。<br>${uiText[currentLang].chatAsk}`);
         }
 
-        function submitChat() {
+                function submitChat() {
             const q = chatInput.value.trim(); if (!q) return;
             addUserMessage(q); chatInput.value = ''; chatInput.blur();
-            
-            if (q === "測試異常") {
-                setTimeout(() => {
-                    calculateAvgPrice("buy 1 get 1 for $500", 10);
-                    addBotMessage("🚨 已啟動隱藏測試程式！<br><br>我啱啱已經利用原生 Form 提交必殺技，將一筆資料傳送去你嘅 Google Sheet。<br><br>快啲去睇吓有冇收到新記錄啦！");
-                }, 300);
-                return;
-            }
 
             setTimeout(() => {
                 const talk = checkSmallTalk(q);
