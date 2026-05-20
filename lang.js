@@ -2,7 +2,7 @@
 
 const uiText = {
     'zh-Hant': { 
-        title: "香港生活百貨價格神器", 
+        title: "慳真D", 
         badge: "政府數據連線", 
         subLabel: "正在讀取更新時間...", 
         lastUpdated: "更新於: ",
@@ -40,8 +40,8 @@ const uiText = {
         footerPrivacy: "隱私權政策",
         footerTerms: "服務條款",
         
-        aboutTitle: "關於 價格神器",
-        aboutContent: "「香港生活百貨價格神器」旨在為香港市民提供一個便捷的價格比較平台。<br><br>大家從此無需再下載及篩選繁複的政府 Excel 數據表，只需透過這個內置 AI 搜尋引擎的應用程式，即可輕鬆格價、秒速找出全港超市的最抵優惠與最低價格！",
+        aboutTitle: "關於 慳真D",
+        aboutContent: "「慳真D」旨在為香港市民提供一個便捷的價格比較平台。<br><br>大家從此無需再下載及篩選繁複的政府 Excel 數據表，只需透過這個內置 AI 搜尋引擎的應用程式，即可輕鬆格價、秒速找出全港超市的最抵優惠與最低價格！",
         contactTitle: "聯絡我們",
         contactContent: "如有任何查詢或合作建議，歡迎聯絡我們。<br><br>（聯絡資料即將更新，敬請期待！）",
         privacyTitle: "隱私權政策",
@@ -50,17 +50,17 @@ const uiText = {
         termsContent: "本應用程式之價格及優惠數據均直接取自香港政府「資料一線通」(data.gov.hk) 之官方數據集。系統折合價為程式自動運算之結果，所有資訊均以政府每日發佈之最新數據為準。",
 
         // 🚀 新增：分享 App 彈窗文字
-        shareAppTitle: "推薦「價格神器」畀朋友！",
+        shareAppTitle: "推薦「慳真D」畀朋友！",
         shareAppDesc: "掃描下方 QR Code，或者複製連結分享畀親友，一齊慳到盡！",
         shareBtnCopy: "複製連結",
         shareBtnWhatsApp: "WhatsApp 分享",
         shareBtnMore: "更多選項",
         copiedToast: "✅ 連結已複製！",
-        shareMessage: "推薦你用「香港生活百貨價格神器」！秒速格價，幫你慳到盡！🛒\n"
+        shareMessage: "推薦你用「慳真D」！秒速格價，幫你慳到盡！🛒\n"
     },
     
     'zh-Hans': { 
-        title: "香港生活百货价格神器", 
+        title: "慳真D", 
         badge: "政府数据连线", 
         subLabel: "正在读取更新时间...", 
         lastUpdated: "更新于: ",
@@ -98,8 +98,8 @@ const uiText = {
         footerPrivacy: "隐私权政策",
         footerTerms: "服务条款",
         
-        aboutTitle: "关于 价格神器",
-        aboutContent: "「香港生活百货价格神器」旨在为香港市民提供一个便捷的价格比较平台。<br><br>大家从此无需再下载及筛选繁复的政府 Excel 数据表，只需透过这个内置 AI 搜索引擎的应用程序，即可轻松比价、秒速找出全港超市的最划算优惠与最低价格！",
+        aboutTitle: "关于 慳真D",
+        aboutContent: "「慳真D」旨在为香港市民提供一个便捷的价格比较平台。<br><br>大家从此无需再下载及筛选繁复的政府 Excel 数据表，只需透过这个内置 AI 搜索引擎的应用程序，即可轻松比价、秒速找出全港超市的最划算优惠与最低价格！",
         contactTitle: "联络我们",
         contactContent: "如有任何查询或合作建议，欢迎联络我们。<br><br>（联络资料即将更新，敬请期待！）",
         privacyTitle: "隐私权政策",
@@ -107,13 +107,13 @@ const uiText = {
         termsTitle: "服务条款",
         termsContent: "本应用程序之价格及优惠数据均直接取自香港政府「资料一线通」(data.gov.hk) 之官方数据集。系统折合价为程序自动运算之结果，所有信息均以政府每日发布之最新数据为准。",
 
-        shareAppTitle: "推荐「价格神器」给朋友！",
+        shareAppTitle: "推荐「慳真D」给朋友！",
         shareAppDesc: "扫描下方 QR Code，或复制链接分享给亲友，一起省钱！",
         shareBtnCopy: "复制链接",
         shareBtnWhatsApp: "WhatsApp 分享",
         shareBtnMore: "更多选项",
         copiedToast: "✅ 链接已复制！",
-        shareMessage: "推荐您使用「香港生活百货价格神器」！秒速比价，帮您省到家！🛒\n"
+        shareMessage: "推荐您使用「慳真D」！秒速比价，帮您省到家！🛒\n"
     },
     
     'en': { 
