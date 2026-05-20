@@ -146,7 +146,7 @@ const uiText = {
         quickHome: "🏠 Main Menu",
         quickBye: "👋 Goodbye",
 
-        disclaimerGovData: "Price and promotional data in this app are sourced from the<br><strong class='text-slate-700'>'Online Price Watch'</strong> dataset<br>on Data.gov.hk.",
+        disclaimerGovData: "Price and promotional data in this app are sourced from the<br><strong class='text-slate-700'>「Online Price Watch」</strong> dataset<br>on Data.gov.hk.",
         disclaimerOwner: "Intellectual Property Owner: <strong class='text-slate-600'>Consumer Council</strong>",
         disclaimerNote: "Disclaimer: Calculated prices are automatically generated. All information is based on the latest government data.",
 
