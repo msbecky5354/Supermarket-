@@ -173,6 +173,8 @@ const uiText = {
         shareMessage: "Check out the HK Smart Price Tracker! Compare supermarket prices instantly and save money! 🛒\n"
     }
     ｝；
+    
+    
 const supermarketDict = {
     'zh-Hant': { 
         'WELLCOME': '惠康', 
@@ -210,5 +212,4 @@ const supermarketDict = {
         'LUNGFUNG': 'Lung Fung',
         'DCHFOOD': 'DCH Food' 
     }
-    ｝
     };
