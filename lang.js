@@ -184,8 +184,8 @@ const supermarketDict = {
         'Watsons': '屈臣氏', 
         'MANNINGS': '萬寧', 
         'USELECT': 'U購', 
-        'LUNGFUNG': '龍豐'    
-       //'1DCHFOOD': '大昌食品' 
+        'LUNGFUNG': '龍豐',
+        'DCHFOOD': '大昌食品' 
     },
     'zh-Hans': { 
         'WELLCOME': '惠康', 
@@ -196,8 +196,8 @@ const supermarketDict = {
         'Watsons': 'Watsons', 
         'MANNINGS': '万宁', 
         'USELECT': 'U购', 
-        'LUNGFUNG': '龙丰'
-       // '1DCHFOOD': '大昌食品' 
+        'LUNGFUNG': '龙丰',
+        'DCHFOOD': '大昌食品' 
     },
     'en': { 
         'WELLCOME': 'Wellcome', 
@@ -208,7 +208,7 @@ const supermarketDict = {
         'Watsons': 'Watsons', 
         'MANNINGS': 'Mannings', 
         'USELECT': 'U-Select', 
-        'LUNGFUNG': 'Lung Fung'
-        //1DCHFOOD': 'DCH Food' 
+        'LUNGFUNG': 'Lung Fung',
+        'DCHFOOD': 'DCH Food' 
     }
 };
