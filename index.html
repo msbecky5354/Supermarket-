@@ -416,14 +416,22 @@
         }
         // ------------------------------
 
-        function renderQuickActions() {
+                function renderQuickActions() {
             const container = document.getElementById('quickActionChips');
+            
+            // 💡 新增：處理「超大差價」按鈕嘅多語言文字
+            let bigGapText = '🔥 超大差價';
+            if (currentLang === 'zh-Hans') bigGapText = '🔥 超大差价';
+            if (currentLang === 'en') bigGapText = '🔥 Big Gap';
+
             const chips = [
                 { text: uiText[currentLang].quickAll, action: "showAll" },
                 { text: uiText[currentLang].quickDiscount, action: "filterDiscount" },
+                { text: bigGapText, action: "filterBigGap" }, // 💡 新增：超大差價按鈕
                 { text: uiText[currentLang].quickHome, action: "goHome" },
                 { text: uiText[currentLang].quickBye, action: "sayBye" }
             ];
+            
             container.innerHTML = chips.map(c => 
                 `<button type="button" onclick="handleQuickAction('${c.action}', '${c.text}')" 
                     class="whitespace-nowrap bg-blue-50 text-blue-700 border border-blue-100 px-3 py-1.5 rounded-full text-[13px] font-bold active:scale-95 transition-transform shadow-sm flex-none">
@@ -444,10 +452,11 @@
             } else if (action === 'filterDiscount') {
                 addUserMessage(text);
                 setTimeout(() => performScopedSearch('__DISCOUNT_ONLY__'), 300);
+            } else if (action === 'filterBigGap') { // 💡 新增：處理超大差價搜尋指令
+                addUserMessage(text);
+                setTimeout(() => performScopedSearch('__BIG_GAP_ONLY__'), 300);
             }
         }
-
-    
                function buildStructuredData() {
             structuredData = {};
             rawApiData.forEach(item => {
@@ -548,20 +557,34 @@
             return null; 
         }
 
-        function performScopedSearch(query) {
+                function performScopedSearch(query) {
             const isDiscountOnly = (query === '__DISCOUNT_ONLY__');
-            if (!isDiscountOnly) { currentKeyword = normalizeStr(query).trim(); }
-            const isAll = ['所有', '全部', 'all', 'list'].some(kw => currentKeyword.includes(normalizeStr(kw))) || (!currentKeyword && !isDiscountOnly);
+            const isBigGapOnly = (query === '__BIG_GAP_ONLY__'); // 💡 新增：判斷是否為「超大差價」搜尋
+
+            // 💡 如果唔係特殊指令，先至將 query 當做一般 keyword
+            if (!isDiscountOnly && !isBigGapOnly) { currentKeyword = normalizeStr(query).trim(); }
+            
+            const isAll = ['所有', '全部', 'all', 'list'].some(kw => currentKeyword.includes(normalizeStr(kw))) || (!currentKeyword && !isDiscountOnly && !isBigGapOnly);
+            
             let html = '';
             Object.keys(structuredData[selectedCat1]).forEach(cat2 => {
                 Object.keys(structuredData[selectedCat1][cat2]).forEach(pName => {
                     const info = structuredData[selectedCat1][cat2][pName];
                     const hasDiscount = info.prices.some(p => p.promoDisplay || p.promoCalc);
+                    
+                    // 💡 新增：檢查產品是否有大差價 (如果唔係大差價模式，預設當佢 pass)
+                    const hasBigGap = isBigGapOnly ? checkPriceGap(info).isBigGap : true;
+
                     const matchesKeyword = isAll || info.searchKeywords.includes(currentKeyword);
                     const matchesDiscount = !isDiscountOnly || hasDiscount;
-                    if (matchesKeyword && matchesDiscount) { html += generateProductCardHTML(pName, info); }
+                    
+                    // 💡 新增：三個條件都符合先會畫張卡片出嚟
+                    if (matchesKeyword && matchesDiscount && hasBigGap) { 
+                        html += generateProductCardHTML(pName, info); 
+                    }
                 });
             });
+
             if (!html) {
                 let noResultMsg = uiText[currentLang].chatNoResult;
                 if (isDiscountOnly) {
@@ -571,10 +594,20 @@
                         'en': currentKeyword ? `No discounts for "${currentKeyword}" found! 🤷‍♂️` : "No discounted products found in this category! 🤷‍♂️"
                     };
                     noResultMsg = langMsgs[currentLang];
+                } else if (isBigGapOnly) {
+                    // 💡 新增：搵唔到大差價貨品時嘅回覆，支援多語言
+                    const langMsgs = {
+                        'zh-Hant': currentKeyword ? `「${currentKeyword}」暫時未有相差超過 10% 嘅貨品喎！🤷‍♂️` : "呢個分類暫時未有相差超過 10% 嘅貨品喎！🤷‍♂️",
+                        'zh-Hans': currentKeyword ? `「${currentKeyword}」暂时没有相差超过 10% 的商品哦！🤷‍♂️` : "该分类下暂时没有相差超过 10% 的商品哦！🤷‍♂️",
+                        'en': currentKeyword ? `No products with >10% price gap found for "${currentKeyword}"! 🤷‍♂️` : "No products with >10% price gap found in this category! 🤷‍♂️"
+                    };
+                    noResultMsg = langMsgs[currentLang];
                 }
                 addBotMessage(noResultMsg);
             }
-            else addBotMessage(isAll ? uiText[currentLang].chatShowAll : uiText[currentLang].chatFound, html);
+            else {
+                addBotMessage(isAll ? uiText[currentLang].chatShowAll : uiText[currentLang].chatFound, html);
+            }
         }
 
         function addBotMessage(text, cardsHTML = null) {
