@@ -9,7 +9,7 @@ function checkSmallTalk(q, exactOnly = false) {
         { words: ['你好', 'hi', 'hello', 'hey', '早晨', '嗨', '您好', '喂', '哈囉', '午安'], reply: uiText[currentLang].replyGreeting },
         { words: ['多謝', 'thank', '謝謝', '唔該', 'thx', '感', '谢谢','good night','晚安'], reply: uiText[currentLang].replyThanks },
         { words: ['拜拜', '88', 'bye', '再見', '走先', 'goodbye', 'cya', '掰','走先'], reply: uiText[currentLang].replyBye },
-        { words: ['天氣', 'weather', '落雨', '好熱', '凍', '打風','紅雨','黑雨','黃雨','行雷','打雷'], reply: uiText[currentLang].replySmallTalkExtra },
+        { words: ['天氣', 'weather', '落雨', '好熱', '凍', '打風','紅雨','黑雨','黃雨','行雷','打雷','AI'], reply: uiText[currentLang].replySmallTalkExtra },
         { words: ['叻', 'smart', '好用', '棒', 'good', '厲害', '犀利'], reply: uiText[currentLang].replyPraise },
         { words: ['笑話', 'joke', '好悶', '講笑', '無聊', '冇聊','有冇搞錯'], reply: uiText[currentLang].replyJoke },
         { words: ['幾歲','幾多歲','做緊咩', '食飯', '識幾多', '得閒', '有空'], reply: uiText[currentLang].replySmallTalkExtra },
