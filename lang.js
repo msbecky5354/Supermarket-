@@ -2,7 +2,7 @@
 
 const uiText = {
     'zh-Hant': { 
-        title: "慳真D🔎", 
+        title: "慳真D", 
         badge: "政府數據連線", 
         subLabel: "正在讀取更新時間...", 
         lastUpdated: "更新於: ",
@@ -68,7 +68,7 @@ const uiText = {
     },
     
     'zh-Hans': { 
-        title: "慳真D🔎", 
+        title: "慳真D", 
         badge: "政府数据连线", 
         subLabel: "正在读取更新时间...", 
         lastUpdated: "更新于: ",
@@ -132,7 +132,7 @@ const uiText = {
     },
     
     'en': { 
-        title: "HK Smart Price🔎", 
+        title: "HK Smart Price", 
         badge: "HK Open Data", 
         subLabel: "Fetching update time...", 
         lastUpdated: "Updated: ",
