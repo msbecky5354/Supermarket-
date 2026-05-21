@@ -68,7 +68,7 @@ const uiText = {
     },
     
     'zh-Hans': { 
-        title: "慳真D", 
+        title: "悭真D", 
         badge: "政府数据连线", 
         subLabel: "正在读取更新时间...", 
         lastUpdated: "更新于: ",
