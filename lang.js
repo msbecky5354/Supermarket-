@@ -26,6 +26,7 @@ const uiText = {
         replyPraise: "多謝讚賞！😎 我會繼續努力𥄫實各大超市嘅最新靚價！",
         replyJoke: "點解去超市買嘢要帶計數機？...因為要計住啲神仙（仙=cents）！😆 好啦，爛Gag講完，有咩想搵？",
         replySmallTalkExtra: "我係專注幫大家慳錢嘅格價助手！🛒 雖然我唔太識睇天氣或者傾偈，但我搵特價貨絕對係一流㗎！",
+        replyOmg: "OMG！😱 係咪見到啲超抵特價嚇親呀？定係買得太多攞唔走？🛒💨",
         
         quickAll: "📦 睇晒全部",
         quickDiscount: "🏷️ 淨係睇有優惠",
@@ -90,7 +91,8 @@ const uiText = {
         replyPraise: "谢谢夸奖！😎 我会继续努力帮您盯紧最新的价格！",
         replyJoke: "去超市买东西最怕什么？最怕排错结账队伍！😆 好了，言归正传，想找点什么？",
         replySmallTalkExtra: "我是专注帮大家省钱的比价助手！🛒 虽然我不太懂看天气或者聊天，但我找特价商品绝对是一流的哦！",
-
+        replyOmg: "OMG！😱 是不是看到超低特价吓到了？还是买得太多拿不走？🛒💨",
+        
         quickAll: "📦 查看全部",
         quickDiscount: "🏷️ 只看有优惠",
         quickHome: "🏠 回主目录",
@@ -153,7 +155,8 @@ const uiText = {
         replyPraise: "Thanks for the compliment! 😎 I'll keep tracking the best deals for you.",
         replyJoke: "Why did the tomato blush? Because it saw the salad dressing! 🍅😆 Alright, back to business, what are we looking for?",
         replySmallTalkExtra: "I'm a price comparison assistant! 🛒 While I can't check the weather or chat about everything, I'm super fast at finding supermarket deals!",
-
+        replyOmg: "OMG! 😱 Are you shocked by a super cheap deal? Or did you buy too much to carry? 🛒💨",
+        
         quickAll: "📦 Show All",
         quickDiscount: "🏷️ Discounted Only",
         quickHome: "🏠 Main Menu",
