@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
@@ -19,6 +21,7 @@
 
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8256903623772163" crossorigin="anonymous"></script>
  
+    <!-- PWA 與 Icon 設定 -->
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="logo.JPG">
     <link rel="apple-touch-icon" href="logo.JPG">
@@ -103,6 +106,10 @@
                 <div id="loadingText" class="text-center p-4 text-slate-400 text-sm col-span-2">正在同步最新行情...</div>
             </div>
 
+           
+
+        
+                
                       <div class="text-center pb-24 pt-8"> 
         <button id="miniFooterLinks" onclick="openDisclaimerModal()" class="text-[11px] text-slate-400 hover:text-slate-600 underline decoration-slate-200 transition">
             關於我們、條款及免責聲明
@@ -225,6 +232,7 @@
         const infoModal = document.getElementById('infoModal');
         const modalBox = document.getElementById('modalBox');
         
+        // 分享相關 Elements
         const shareAppModal = document.getElementById('shareAppModal');
         const shareAppBox = document.getElementById('shareAppBox');
         const qrCodeImg = document.getElementById('qrCodeImg');
@@ -236,10 +244,6 @@
         let selectedCat1 = null; 
         let currentKeyword = ""; 
         let lastUpdatedTime = null; 
-
-        // 全域鎖定過濾狀態
-        if (typeof isBigGapMode === 'undefined') { window.isBigGapMode = false; }
-        if (typeof isDiscountMode === 'undefined') { window.isDiscountMode = false; }
 
         const catStyles = [
             { keywords: ['奶粉', '嬰兒', 'baby'], icon: '🍼', bg: 'from-pink-100 to-rose-100', text: 'text-rose-900', border: 'border-rose-200' },
@@ -263,33 +267,38 @@
             return `${y}-${m}-${d} ${h}:${min}`;
         }
 
-        async function init() {
+                async function init() {
             try {
+                // 1. 獨立獲取真實更新時間 (完美繞過 GitHub 部署時間)
                 try {
                     const timeRes = await fetch('/update_log.txt?t=' + new Date().getTime());
                     if (timeRes.ok) {
                         const timeText = await timeRes.text();
+                        // 將 txt 內嘅純時間字串轉換為 JavaScript Date 物件
                         lastUpdatedTime = new Date(timeText.trim()); 
                     } else {
-                        lastUpdatedTime = null;
+                        lastUpdatedTime = null; // 讀唔到就留白
                     }
                 } catch (timeErr) {
                     console.log("無法獲取時間記錄檔", timeErr);
                     lastUpdatedTime = null;
                 }
 
+                // 2. 獲取格價數據
                 let data = null;
                 const localResponse = await fetch('/pricewatch.json?t=' + new Date().getTime());
                 
                 if (localResponse.ok) {
                     data = await localResponse.json();
                 } else {
+                    // 本地搵唔到，自動轉用 Proxy
                     const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent('https://online-price-watch.consumer.org.hk/opw/opendata/pricewatch.json')}`;
                     const res = await fetch(proxyUrl);
                     data = await res.json();
                 }
                 rawApiData = data;
                 
+                // 3. 觸發 UI 更新
                 changeLanguage('zh-Hant');
             } catch (e) {
                 level1Container.innerHTML = `<p class="text-red-500 text-center col-span-2">${uiText[currentLang].error}</p>`;
@@ -329,13 +338,24 @@
             document.getElementById('backBtnText').innerText = uiText[lang].back;
             document.getElementById('sendBtnText').innerText = uiText[lang].send;
             chatInput.placeholder = uiText[lang].placeholder;
+
+            //document.getElementById('disclaimerGovData').innerHTML = uiText[lang].disclaimerGovData;
+            //document.getElementById('disclaimerOwner').innerHTML = uiText[lang].disclaimerOwner;
+            //document.getElementById('disclaimerNote').innerHTML = uiText[lang].disclaimerNote;
+
+            //document.getElementById('navAbout').innerText = uiText[lang].footerAbout;
+            //document.getElementById('navContact').innerText = uiText[lang].footerContact;
+            //document.getElementById('navPrivacy').innerText = uiText[lang].footerPrivacy;
+            //document.getElementById('navTerms').innerText = uiText[lang].footerTerms;
             
-            // 💡 修正：增加防 undefined 保護機制，確保如果 lang.js 冇設定，就出 Default 字眼
+             // 🔄 確保極簡 Footer 都會跟住轉語言
             if(document.getElementById('miniFooterLinks')) {
-                document.getElementById('miniFooterLinks').innerText = (uiText[lang] && uiText[lang].miniFooterLinks) ? uiText[lang].miniFooterLinks : '關於我們、條款及免責聲明';
-                document.getElementById('miniFooterCopy').innerText = (uiText[lang] && uiText[lang].miniFooterCopy) ? uiText[lang].miniFooterCopy : '© 2026 慳真D';
+                document.getElementById('miniFooterLinks').innerText = uiText[lang].miniFooterLinks;
+                document.getElementById('miniFooterCopy').innerText = uiText[lang].miniFooterCopy;
             }
             
+            
+            // 🚀 更新分享 App 彈窗文字
             document.getElementById('shareAppTitle').innerText = uiText[lang].shareAppTitle;
             document.getElementById('shareAppDesc').innerText = uiText[lang].shareAppDesc;
             document.getElementById('shareBtnCopy').innerText = uiText[lang].shareBtnCopy;
@@ -349,16 +369,21 @@
             else renderLevel1();
         }
         
+        
+      // 根據目前語言，打開對應嘅手冊
         function openManual() {
             if (currentLang === 'zh-Hans') {
                 window.location.href = 'manual_cn.html';
             } else if (currentLang === 'en') {
                 window.location.href = 'manual_en.html';
             } else {
-                window.location.href = 'manual_tw.html';
+                window.location.href = 'manual_tw.html'; // 預設繁體
             }
         }
 
+
+
+        // --- 彈出視窗功能 ---
         function openModal(titleKey, contentKey) {
             document.getElementById('modalTitle').innerText = uiText[currentLang][titleKey];
             document.getElementById('modalContent').innerHTML = uiText[currentLang][contentKey];
@@ -377,7 +402,9 @@
             setTimeout(() => { infoModal.classList.add('hidden'); }, 300);
         }
 
+        // --- 🚀 新增：分享 App 功能 ---
         function openShareAppModal() {
+            // 動態生成當前網址嘅 QR Code (透過可靠嘅 API)
             const currentUrl = window.location.origin + window.location.pathname;
             qrCodeImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(currentUrl)}&margin=10`;
             
@@ -424,22 +451,18 @@
                     url: currentUrl
                 }).catch(console.error);
             } else {
-                copyAppUrl();
+                copyAppUrl(); // 如果唔支援原生 Share，就自動 Copy Link
             }
         }
+        // ------------------------------
 
         function renderQuickActions() {
             const container = document.getElementById('quickActionChips');
-            let bigGapText = '🔥 超大差價';
-            if (currentLang === 'zh-Hans') bigGapText = '🔥 超大差价';
-            if (currentLang === 'en') bigGapText = '🔥 Big Gap';
-
             const chips = [
                 { text: uiText[currentLang].quickAll, action: "showAll" },
                 { text: uiText[currentLang].quickDiscount, action: "filterDiscount" },
-                { text: bigGapText, action: "filterBigGap" }, 
-                { text: uiText[currentLang].quickHome, action: "goHome" }
-                // 💡 移除拜拜掣，保持介面實用
+                { text: uiText[currentLang].quickHome, action: "goHome" },
+                { text: uiText[currentLang].quickBye, action: "sayBye" }
             ];
             container.innerHTML = chips.map(c => 
                 `<button type="button" onclick="handleQuickAction('${c.action}', '${c.text}')" 
@@ -449,141 +472,139 @@
             ).join('');
         }
 
-        // 點擊底部按鈕發送指令，產生對話氣泡
         function handleQuickAction(action, text) {
-            if (action === 'goHome') { showLevel1(); return; }
-
-            addUserMessage(text); // 把按鈕文字畫在畫面上，維持對話流
-
-            setTimeout(() => {
-                if (action === 'showAll') {
-                    isBigGapMode = false;
-                    isDiscountMode = false;
-                    currentKeyword = ""; 
-                    performScopedSearch('所有');
-                } else if (action === 'filterDiscount') {
-                    isDiscountMode = true; 
-                    isBigGapMode = false;
-                    performScopedSearch('__DISCOUNT_ONLY__');
-                } else if (action === 'filterBigGap') {
-                    isBigGapMode = true; 
-                    isDiscountMode = false;
-                    performScopedSearch('__BIG_GAP_ONLY__');
-                }
-            }, 300);
-        }
-
-        function buildStructuredData() {
-            structuredData = {};
-            const unknownSupermarkets = new Set(); 
-
-            rawApiData.forEach(item => {
-                let cat1 = item.cat1Name?.[currentLang] || item.cat1Name?.['zh-Hant'];
-                if (!cat1) return;
-                
-                let cat2 = item.cat3Name?.[currentLang] || item.cat2Name?.[currentLang] || 'Other';
-                
-                let name = item.name?.[currentLang] || item.name?.['zh-Hant'] || 'Unknown';
-                let brandObj = item.brand || item.brandName || '';
-                let localBrand = (typeof brandObj === 'object') ? (brandObj[currentLang] || brandObj['zh-Hant'] || '') : brandObj;
-
-                let allNames = Object.values(item.name || {}).join(' '); 
-                let allBrands = (typeof brandObj === 'object') ? Object.values(brandObj).join(' ') : brandObj;
-                let allCat2 = Object.values(item.cat2Name || {}).join(' ') + ' ' + Object.values(item.cat3Name || {}).join(' ');
-
-                if (!structuredData[cat1]) structuredData[cat1] = {};
-                if (!structuredData[cat1][cat2]) structuredData[cat1][cat2] = {};
-                if (!structuredData[cat1][cat2][name]) {
-                    structuredData[cat1][cat2][name] = { 
-                        brand: localBrand, 
-                        searchKeywords: normalizeStr(`${allNames} ${allBrands} ${allCat2} ${cat1}`),
-                        prices: [] 
-                    };
-                }
-                
-                if (Array.isArray(item.prices)) {
-                    item.prices.forEach(p => {
-                        let smName = p.supermarketCode; 
-                        let codeUpper = (p.supermarketCode || '').toUpperCase();
-                        
-                        let smAllLangs = [codeUpper];
-                        if (typeof supermarketDict !== 'undefined') {
-                            ['zh-Hant', 'zh-Hans', 'en'].forEach(lang => {
-                                if (supermarketDict[lang] && supermarketDict[lang][codeUpper]) {
-                                    smAllLangs.push(supermarketDict[lang][codeUpper]);
-                                }
-                            });
-                        } else if (p.supermarketName) {
-                            smAllLangs.push(...Object.values(p.supermarketName));
-                        }
-                        
-                        let smKeywords = normalizeStr(smAllLangs.join(' '));
-                        if (!structuredData[cat1][cat2][name].searchKeywords.includes(smKeywords)) {
-                            structuredData[cat1][cat2][name].searchKeywords += ' ' + smKeywords;
-                        }
-
-                        if (typeof supermarketDict !== 'undefined' && supermarketDict[currentLang] && supermarketDict[currentLang][p.supermarketCode]) {
-                            smName = supermarketDict[currentLang][p.supermarketCode]; 
-                        } else if (p.supermarketName && p.supermarketName[currentLang]) {
-                            smName = p.supermarketName[currentLang]; 
-                        } else if (p.supermarketName && p.supermarketName['zh-Hant']) {
-                            smName = p.supermarketName['zh-Hant'];
-                        } else {
-                            unknownSupermarkets.add(p.supermarketCode);
-                            smName = p.supermarketCode.charAt(0).toUpperCase() + p.supermarketCode.slice(1).toLowerCase();
-                        }
-
-                        let promoDisplay = "";
-                        let promoCalcEn = ""; 
-                        const promoKeys = ['promotions', 'promotion', 'offer', 'promotionDesc', 'promotionName', 'itemOffsetText'];
-                        for (let key of promoKeys) {
-                            if (p[key]) {
-                                let extractedDisplay = extractDeepPromoText(p[key], currentLang);
-                                if (extractedDisplay && extractedDisplay !== "[object Object]") { 
-                                    promoDisplay = extractedDisplay; 
-                                    promoCalcEn = extractDeepPromoText(p[key], 'en');
-                                    break; 
-                                }
-                            }
-                        }
-                        if (!promoDisplay) {
-                            const itemKeys = ['promotions', 'offers', 'discounts'];
-                            for (let key of itemKeys) {
-                                if (Array.isArray(item[key])) {
-                                    const smPromo = item[key].find(pr => pr.supermarketCode === p.supermarketCode || pr.code === p.supermarketCode);
-                                    if (smPromo) {
-                                        let extractedDisplay = extractDeepPromoText(smPromo, currentLang);
-                                        if (extractedDisplay && extractedDisplay !== "[object Object]") {
-                                            promoDisplay = extractedDisplay;
-                                            promoCalcEn = extractDeepPromoText(smPromo, 'en');
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        
-                        structuredData[cat1][cat2][name].prices.push({ 
-                            rawCode: p.supermarketCode, 
-                            supermarket: smName, 
-                            price: p.price ?? '--', 
-                            promoDisplay: promoDisplay,
-                            promoCalc: promoCalcEn 
-                        });
-                    });
-                }
-            });
-
-            if (unknownSupermarkets.size > 0) {
-                const missingCodes = Array.from(unknownSupermarkets).join(', ');
-                fetch('/api/alert', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ codes: missingCodes })
-                }).catch(e => { console.log("情報網靜默失敗", e) });
+            if (action === 'goHome') { showLevel1(); }
+            else if (action === 'sayBye') {
+                addUserMessage(text);
+                setTimeout(() => addBotMessage(uiText[currentLang].replyBye), 300);
+            } else if (action === 'showAll') {
+                addUserMessage(text);
+                currentKeyword = "";
+                setTimeout(() => performScopedSearch('所有'), 300);
+            } else if (action === 'filterDiscount') {
+                addUserMessage(text);
+                setTimeout(() => performScopedSearch('__DISCOUNT_ONLY__'), 300);
             }
         }
 
+                function buildStructuredData() {
+    structuredData = {};
+    const unknownSupermarkets = new Set(); 
+
+    rawApiData.forEach(item => {
+        let cat1 = item.cat1Name?.[currentLang] || item.cat1Name?.['zh-Hant'];
+        if (!cat1) return;
+        
+        let cat2 = item.cat3Name?.[currentLang] || item.cat2Name?.[currentLang] || 'Other';
+        
+        // --- 📺 UI 顯示專用 (乖乖地跟隨當前語言介面) ---
+        let name = item.name?.[currentLang] || item.name?.['zh-Hant'] || 'Unknown';
+        let brandObj = item.brand || item.brandName || '';
+        let localBrand = (typeof brandObj === 'object') ? (brandObj[currentLang] || brandObj['zh-Hant'] || '') : brandObj;
+
+        // --- 🔍 終極無國界搜尋大陣法 (將繁、簡、英全部打包做隱藏關鍵字) ---
+        let allNames = Object.values(item.name || {}).join(' '); 
+        let allBrands = (typeof brandObj === 'object') ? Object.values(brandObj).join(' ') : brandObj;
+        let allCat2 = Object.values(item.cat2Name || {}).join(' ') + ' ' + Object.values(item.cat3Name || {}).join(' ');
+
+        if (!structuredData[cat1]) structuredData[cat1] = {};
+        if (!structuredData[cat1][cat2]) structuredData[cat1][cat2] = {};
+        if (!structuredData[cat1][cat2][name]) {
+            structuredData[cat1][cat2][name] = { 
+                brand: localBrand, 
+                // 將所有語言嘅名、牌子、分類，甚至大分類 cat1 全部塞入去！
+                searchKeywords: normalizeStr(`${allNames} ${allBrands} ${allCat2} ${cat1}`),
+                prices: [] 
+            };
+        }
+        
+        if (Array.isArray(item.prices)) {
+            item.prices.forEach(p => {
+                let smName = p.supermarketCode; 
+                let codeUpper = (p.supermarketCode || '').toUpperCase();
+                
+                // 💡 升級：將超市嘅所有語言名稱 (百佳, PARKnSHOP 等) 加入搜尋池！
+                let smAllLangs = [codeUpper];
+                if (typeof supermarketDict !== 'undefined') {
+                    ['zh-Hant', 'zh-Hans', 'en'].forEach(lang => {
+                        if (supermarketDict[lang] && supermarketDict[lang][codeUpper]) {
+                            smAllLangs.push(supermarketDict[lang][codeUpper]);
+                        }
+                    });
+                } else if (p.supermarketName) {
+                    smAllLangs.push(...Object.values(p.supermarketName));
+                }
+                
+                let smKeywords = normalizeStr(smAllLangs.join(' '));
+                // 如果 searchKeywords 未包含呢間超市，就自動痴落尾
+                if (!structuredData[cat1][cat2][name].searchKeywords.includes(smKeywords)) {
+                    structuredData[cat1][cat2][name].searchKeywords += ' ' + smKeywords;
+                }
+                // ------------------------------------------------
+
+                if (typeof supermarketDict !== 'undefined' && supermarketDict[currentLang] && supermarketDict[currentLang][p.supermarketCode]) {
+                    smName = supermarketDict[currentLang][p.supermarketCode]; 
+                } else if (p.supermarketName && p.supermarketName[currentLang]) {
+                    smName = p.supermarketName[currentLang]; 
+                } else if (p.supermarketName && p.supermarketName['zh-Hant']) {
+                    smName = p.supermarketName['zh-Hant'];
+                } else {
+                    // 發現孤兒！
+                    unknownSupermarkets.add(p.supermarketCode);
+                    smName = p.supermarketCode.charAt(0).toUpperCase() + p.supermarketCode.slice(1).toLowerCase();
+                }
+
+                let promoDisplay = "";
+                let promoCalcEn = ""; 
+                const promoKeys = ['promotions', 'promotion', 'offer', 'promotionDesc', 'promotionName', 'itemOffsetText'];
+                for (let key of promoKeys) {
+                    if (p[key]) {
+                        let extractedDisplay = extractDeepPromoText(p[key], currentLang);
+                        if (extractedDisplay && extractedDisplay !== "[object Object]") { 
+                            promoDisplay = extractedDisplay; 
+                            promoCalcEn = extractDeepPromoText(p[key], 'en');
+                            break; 
+                        }
+                    }
+                }
+                if (!promoDisplay) {
+                    const itemKeys = ['promotions', 'offers', 'discounts'];
+                    for (let key of itemKeys) {
+                        if (Array.isArray(item[key])) {
+                            const smPromo = item[key].find(pr => pr.supermarketCode === p.supermarketCode || pr.code === p.supermarketCode);
+                            if (smPromo) {
+                                let extractedDisplay = extractDeepPromoText(smPromo, currentLang);
+                                if (extractedDisplay && extractedDisplay !== "[object Object]") {
+                                    promoDisplay = extractedDisplay;
+                                    promoCalcEn = extractDeepPromoText(smPromo, 'en');
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                structuredData[cat1][cat2][name].prices.push({ 
+                    rawCode: p.supermarketCode, 
+                    supermarket: smName, 
+                    price: p.price ?? '--', 
+                    promoDisplay: promoDisplay,
+                    promoCalc: promoCalcEn 
+                });
+            });
+        }
+    });
+
+    // 🚀 3. 發送情報 (安全靜音版 - 完全唔阻畫面)
+    if (unknownSupermarkets.size > 0) {
+        const missingCodes = Array.from(unknownSupermarkets).join(', ');
+        fetch('/api/alert', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ codes: missingCodes })
+        }).catch(e => { console.log("情報網靜默失敗", e) });
+    }
+}
         function renderLevel1() {
             level1Container.innerHTML = '';
             const history = JSON.parse(localStorage.getItem('cat_usage_history') || '{}');
@@ -611,93 +632,21 @@
             const style = getCatStyle(cat1);
             chatTitle.innerHTML = `<span class="mr-1.5">${style.icon}</span> ${cat1}`;
             chatMessages.innerHTML = '';
-            
-            isBigGapMode = false;
-            isDiscountMode = false;
-            currentKeyword = "";
-            
             addBotMessage(`${uiText[currentLang].chatWelcome} <strong class="text-blue-600">${style.icon} ${cat1}</strong>。<br>${uiText[currentLang].chatAsk}`);
         }
 
-        // 💡 修正 1：原汁原味還原！堅決移除 checkSmallTalk，用戶打咩都直接當搜尋貨品
-        function submitChat() {
+                function submitChat() {
             const q = chatInput.value.trim(); if (!q) return;
             addUserMessage(q); chatInput.value = ''; chatInput.blur();
 
             setTimeout(() => {
+                // 🛑 移走咗原本優先 checkSmallTalk 嘅邏輯
                 // 直接強制將用戶輸入交畀搜尋引擎，搵產品先！
                 performScopedSearch(q);
             }, 300);
         }
 
-        // 💡 修改：完美複合過濾，結合文字搜尋與狀態過濾，無假氣泡對話
-        function performScopedSearch(query) {
-            const isDiscountTrigger = (query === '__DISCOUNT_ONLY__');
-            const isBigGapTrigger = (query === '__BIG_GAP_ONLY__');
-
-            // 只有當用戶真係打字搜尋，先更新關鍵字；如果撳過濾掣，就保留上一次搜尋緊嘅關鍵字
-            if (!isDiscountTrigger && !isBigGapTrigger) { 
-                currentKeyword = normalizeStr(query).trim(); 
-            }
-            
-            const isAll = ['所有', '全部', 'all', 'list'].some(kw => currentKeyword.includes(normalizeStr(kw))) || !currentKeyword;
-            
-            let html = '';
-            Object.keys(structuredData[selectedCat1]).forEach(cat2 => {
-                Object.keys(structuredData[selectedCat1][cat2]).forEach(pName => {
-                    const info = structuredData[selectedCat1][cat2][pName];
-                    
-                    const matchesKeyword = isAll || info.searchKeywords.includes(currentKeyword);
-                    const hasDiscount = info.prices.some(p => p.promoDisplay || p.promoCalc);
-                    const matchesDiscount = !isDiscountMode || hasDiscount;
-                    const matchesBigGap = !isBigGapMode || checkPriceGap(info).isBigGap; 
-
-                    if (matchesKeyword && matchesDiscount && matchesBigGap) { 
-                        html += generateProductCardHTML(pName, info); 
-                    }
-                });
-            });
-
-            if (!html) {
-                let noResultMsg = uiText[currentLang].chatNoResult;
-                if (isDiscountMode) {
-                    const langMsgs = {
-                        'zh-Hant': (currentKeyword && !isAll) ? `「${currentKeyword}」結果入面暫時未有優惠貨品喎！🤷‍♂️` : "呢個分類暫時未有優惠貨品喎！🤷‍♂️",
-                        'zh-Hans': (currentKeyword && !isAll) ? `「${currentKeyword}」结果中暂时没有优惠商品哦！🤷‍♂️` : "该分类下暂时没有优惠商品哦！🤷‍♂️",
-                        'en': (currentKeyword && !isAll) ? `No discounts for "${currentKeyword}" found! 🤷‍♂️` : "No discounted products found in this category! 🤷‍♂️"
-                    };
-                    noResultMsg = langMsgs[currentLang];
-                } else if (isBigGapMode) {
-                    const showWord = (currentKeyword && !isAll) ? `喺「${currentKeyword}」結果入面` : "呢個分類暫時";
-                    const langMsgs = {
-                        'zh-Hant': `${showWord}未有相差超過 10% 嘅貨品喎！🤷‍♂️`,
-                        'zh-Hans': (currentKeyword && !isAll) ? `在「${currentKeyword}」结果中暂时没有相差超过 10% 的商品哦！🤷‍♂️` : "该分类下暂时没有相差超过 10% 的商品哦！🤷‍♂️",
-                        'en': (currentKeyword && !isAll) ? `No products with >10% price gap found in "${currentKeyword}"! 🤷‍♂️` : "No products with >10% price gap found in this category! 🤷‍♂️"
-                    };
-                    noResultMsg = langMsgs[currentLang];
-                } else if (currentKeyword && !isAll) {
-                    const langMsgs = {
-                        'zh-Hant': `搵唔到「${currentKeyword}」喎，試下其他字眼？🤷‍♂️`,
-                        'zh-Hans': `找不到「${currentKeyword}」哦，试试其他关键字？🤷‍♂️`,
-                        'en': `Cannot find "${currentKeyword}", try another keyword? 🤷‍♂️`
-                    };
-                    noResultMsg = langMsgs[currentLang];
-                }
-                addBotMessage(noResultMsg);
-            } else {
-                let botTip = uiText[currentLang].chatFound;
-                if (isBigGapMode) {
-                    botTip = (currentKeyword && !isAll) ? `為你搜尋到「${currentKeyword}」中符合超大差價嘅最抵結果：` : `為你搜羅到該分類下符合超大差價嘅最抵結果：`;
-                } else if (isDiscountMode) {
-                    botTip = (currentKeyword && !isAll) ? `為你搜尋到「${currentKeyword}」中精選優惠貨品結果：` : `為你搜羅到該分類下精選優惠貨品結果：`;
-                } else if (isAll) {
-                    botTip = uiText[currentLang].chatShowAll;
-                } else {
-                    botTip = `為你搜尋到「${currentKeyword}」嘅最抵結果：`;
-                }
-                addBotMessage(botTip, html);
-            }
-        }
+        
 
         function addBotMessage(text, cardsHTML = null) {
             const wrapper = document.createElement('div');
@@ -715,26 +664,6 @@
             chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
         }
 
-        function checkPriceGap(info) {
-            let validPrices = [];
-            info.prices.forEach(p => {
-                let parsed = parseFloat(p.price);
-                if (!isNaN(parsed)) {
-                    let avg = calculateAvgPrice(p.promoCalc, parsed);
-                    validPrices.push((avg && avg > 0 && avg < parsed) ? avg : parsed);
-                }
-            });
-            if (validPrices.length < 2) return { isBigGap: false, percentage: 0 };
-            let min = Math.min(...validPrices);
-            let max = Math.max(...validPrices);
-            if (min <= 0) return { isBigGap: false, percentage: 0 };
-            let gap = ((max - min) / min) * 100;
-            return {
-                isBigGap: gap >= 10,
-                percentage: Math.round(gap)
-            };
-        }
-
         function generateProductCardHTML(pName, info) {
             let validPrices = [];
             info.prices.forEach(p => {
@@ -749,38 +678,34 @@
             let allSameBasePrice = info.prices.filter(p=>!isNaN(parseFloat(p.price))).every(v => parseFloat(v.price) === minBasePrice);
             let allSameEffectivePrice = validPrices.length > 1 && validPrices.every(v => Math.abs(v - validPrices[0]) < 0.01);
 
-            const gapInfo = checkPriceGap(info);
-            let gapBadgeHtml = '';
-            if (gapInfo.isBigGap) {
-                let badgeText = currentLang === 'en' ? `🔥 Save ${gapInfo.percentage}%` : `🔥 差價 ${gapInfo.percentage}%`;
-                gapBadgeHtml = `<span class="ml-2 px-1.5 py-0.5 bg-red-100 text-red-600 font-bold text-[11px] rounded-md shadow-sm border border-red-200 inline-flex items-center" style="white-space: nowrap; transform: translateY(-1px);">${badgeText}</span>`;
-            }
-
-            const priceList = info.prices.map(p => {
+                        const priceList = info.prices.map(p => {
                 let parsed = parseFloat(p.price);
                 let isLowestBase = (!isNaN(parsed) && parsed === minBasePrice && info.prices.length > 1 && !allSameBasePrice);
                 
+                // 🎨 預設顏色 (灰色) 同埋預設顯示名稱
                 let cls = 'border-slate-100 bg-slate-50/50'; 
                 let textCls = 'text-slate-600';
                 let displayName = p.supermarket;
                 
+                // 💡 將 rawCode 轉做大寫，確保配對百分百準確
                 let code = (p.rawCode || '').toUpperCase();
 
+                // 🌈 超市專屬調色板 + 名稱處理
                 if (code === 'WELLCOME' || code === 'LUNGFUNG') { 
-                    cls = 'border-red-200 bg-red-50/30'; textCls = 'text-red-700';
+                    cls = 'border-red-200 bg-red-50/30'; textCls = 'text-red-700'; // 惠康、龍豐：紅色
                 } else if (code === 'PARKNSHOP') { 
-                    cls = 'border-blue-200 bg-blue-50/30'; textCls = 'text-blue-700';
+                    cls = 'border-blue-200 bg-blue-50/30'; textCls = 'text-blue-700'; // 百佳：藍色
                 } else if (code === 'WATSONS') { 
-                    cls = 'border-teal-200 bg-teal-50/30'; textCls = 'text-teal-700';
+                    cls = 'border-teal-200 bg-teal-50/30'; textCls = 'text-teal-700'; // 屈臣氏：藍綠色 (Teal)
                 } else if (code === 'HKTVMALL') { 
-                    cls = 'border-green-200 bg-green-50/30'; textCls = 'text-green-700';
+                    cls = 'border-green-200 bg-green-50/30'; textCls = 'text-green-700'; // HKTVmall：綠色
                 } else if (code === 'JASONS') { 
-                    cls = 'border-emerald-300 bg-emerald-100/40'; textCls = 'text-emerald-800';
-                    if (!displayName.includes('Market Place')) displayName += ' (Market Place)';
+                    cls = 'border-emerald-300 bg-emerald-100/40'; textCls = 'text-emerald-800'; // Jasons：深沉綠色
+                    if (!displayName.includes('Market Place')) displayName += ' (Market Place)'; // 自動加名
                 } else if (code === 'MANNINGS') { 
-                    cls = 'border-orange-200 bg-orange-50/30'; textCls = 'text-orange-600';
+                    cls = 'border-orange-200 bg-orange-50/30'; textCls = 'text-orange-600'; // 萬寧：橙色
                 } else if (code === 'AEON') { 
-                    cls = 'border-fuchsia-200 bg-fuchsia-50/30'; textCls = 'text-fuchsia-700';
+                    cls = 'border-fuchsia-200 bg-fuchsia-50/30'; textCls = 'text-fuchsia-700'; // AEON：粉紫色
                 }
 
                 let avg = calculateAvgPrice(p.promoCalc, parsed);
@@ -791,17 +716,15 @@
                     avgLabel = `<span class="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-black shadow-sm ml-1 shrink-0 whitespace-nowrap flex items-center">💰 ${(currentLang === 'en' ? 'Avg' : '折合')} $${avg.toFixed(1)}/${(currentLang === 'en' ? 'ea' : '件')}${starHtml}</span>`;
                 }
                 
+                // ⚠️ HTML 入面嘅 ${p.supermarket} 已經換咗做 ${displayName}
                 return `<div class="flex flex-col p-3 rounded-2xl border ${cls} ${isLowestBase ? 'ring-2 ring-green-400 bg-white scale-[1.01] shadow-md z-10' : ''} transition-all"><div class="flex justify-between items-center w-full"><span class="font-black text-[13px] ${textCls} flex items-center gap-1">${displayName}</span><span class="text-[17px] font-black text-slate-800">$${isNaN(parsed) ? p.price : parsed.toFixed(1)}${isLowestBase ? ' 👍' : ''}</span></div>${p.promoDisplay ? `<div class="mt-2 flex flex-wrap sm:flex-nowrap items-center justify-between gap-1 w-full"><span class="text-[11px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-md border border-red-100 break-words w-full sm:w-auto">🏷️ ${p.promoDisplay}</span>${avgLabel}</div>` : ''}</div>`;
             }).join('');
             
-            return `<div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-200 flex flex-col gap-3 relative overflow-hidden">
+                        return `<div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-200 flex flex-col gap-3 relative overflow-hidden">
                 <div class="flex justify-between items-start gap-3">
                     <div class="flex-1 min-w-0">
                         <div class="text-[12px] text-blue-500 font-black tracking-widest uppercase mb-1">${info.brand || '綜合品牌'}</div>
-                        <h3 class="font-bold text-slate-800 text-[16px] leading-tight flex items-center flex-wrap gap-y-1">
-                            <span>${pName}</span>
-                            ${gapBadgeHtml}
-                        </h3>
+                        <h3 class="font-bold text-slate-800 text-[16px] leading-tight">${pName}</h3>
                     </div>
                     
                     <button onclick="shareProduct('${pName}', '${info.brand}', '${minBasePrice}')" class="w-8 h-8 flex items-center justify-center rounded-full bg-[#1877F2] hover:bg-blue-600 active:scale-90 transition-all shadow-sm shrink-0">
@@ -818,14 +741,19 @@
             </div>`;
         }
 
+        // 🔑 打開 Modal，並全面動態換字 (包括標題！)
         function openDisclaimerModal() {
+            // 👇 加咗呢行！用嚟換標題
             document.getElementById('disclaimerTitle').innerText = uiText[currentLang].disclaimerTitle; 
             document.getElementById('disclaimerBody').innerHTML = uiText[currentLang].disclaimerText;
             document.getElementById('modalCloseBtn').innerText = uiText[currentLang].modalBtn;
             document.getElementById('disclaimerModal').classList.remove('hidden');
         }
         
+        // 啟動 App
         init();
     </script>
+
+
 </body>
 </html>
