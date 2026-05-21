@@ -56,18 +56,20 @@
     <header class="bg-white border-b flex-none z-30 px-4 py-3 shadow-sm             <div class="flex justify-between items-start">
                 
                 <div class="flex flex-col gap-1.5">
-                    <div class="flex items-center gap-2">
+                              <div class="flex justify-between items-start">
+                
+                <div class="flex flex-col gap-1"> <div class="flex items-center gap-2">
                         <img src="price.PNG" alt="HK Smart Price Logo" class="w-7 h-7 object-contain drop-shadow-sm">
-                        <h1 id="appTitle" class="text-[16px] bg-gradient-to-r from-indigo-600 to-blue-700 bg-clip-text text-transparent font-black tracking-tight whitespace-nowrap">慳真D</h1>
+                        <h1 id="appTitle" class="text-[16px] bg-gradient-to-r from-indigo-600 to-blue-700 bg-clip-text text-transparent font-black tracking-tight whitespace-nowrap leading-none mt-1">慳真D</h1>
                     </div>
-                    <div class="pl-9">
-                        <span id="dataSourceBadge" class="inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-blue-50 text-blue-700 border border-blue-200/60 shadow-sm tracking-wider uppercase whitespace-nowrap">
+                    <div class="pl-[36px]">
+                        <span id="dataSourceBadge" class="inline-flex items-center px-1.5 py-[2px] rounded text-[9px] font-bold bg-blue-50 text-blue-700 border border-blue-200/60 shadow-sm tracking-wider uppercase whitespace-nowrap leading-none">
                             政府數據連線
                         </span>
                     </div>
                 </div>
                 
-                <div class="flex flex-col items-end gap-1.5 mt-0.5">
+                <div class="flex flex-col items-end gap-1.5">
                     <div class="flex items-center gap-1.5">
                         <select id="langSelector" onchange="changeLanguage(this.value)" class="bg-slate-100 border-none text-[12px] font-bold text-slate-700 rounded-lg px-2 py-1 outline-none cursor-pointer focus:ring-2 focus:ring-blue-500">
                             <option value="zh-Hant">繁體</option>
@@ -81,7 +83,7 @@
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
                         </button>
                     </div>
-                    <span id="todayStatusLabel" class="text-[9px] text-slate-400 font-medium tracking-wide whitespace-nowrap">載入中...</span>
+                    <span id="todayStatusLabel" class="text-[9px] text-slate-400 font-medium tracking-wide whitespace-nowrap pr-1 leading-none mt-0.5">載入中...</span>
                 </div>
                 
             </div>
