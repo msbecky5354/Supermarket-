@@ -38,24 +38,11 @@ function checkSmallTalk(q) {
 
 function performScopedSearch(query) {
     const isDiscountOnly = (query === '__DISCOUNT_ONLY__');
-    const rawQuery = query.trim().toLowerCase(); // 攞個最原始嘅輸入做對比
+    if (!isDiscountOnly) { currentKeyword = normalizeStr(query).trim(); }
     
-    if (!isDiscountOnly) { 
-        currentKeyword = normalizeStr(query).trim(); 
-        // 防炒車：如果 normalizeStr 意外清空咗英文，用返原始字串保底
-        if (!currentKeyword && rawQuery) currentKeyword = rawQuery; 
-    }
-    
-    // 🛑 特權攔截器：如果 100% 命中以下打招呼字眼，直接傾偈，唔查產品！
-    // (防止 "hi" 誤中 C"hi"cken，或者 "hello" 誤中 "Marshmallow")
-    const exactGreetings = ['hi', 'hello', '你好', '早晨', '喂'];
-    if (exactGreetings.includes(rawQuery) && !isDiscountOnly) {
-        addBotMessage(checkSmallTalk(query));
-        return; // 答完即刻收工，唔去查貨品
-    }
-
-    // 🛑 嚴格限制：只有真正打「所有」或者吉字串，先會觸發 Show All
-    const isAll = ['所有', '全部', 'all', 'list'].includes(currentKeyword) || (rawQuery === '' && !isDiscountOnly);
+    // 🛑 終極修復：將 .includes 改為 === (完全等如)
+    // 咁樣打 "Hallo" 或 "Marshmallow" 都絕對唔會誤觸 "all" 指令！
+    const isAll = ['所有', '全部', 'all', 'list'].some(kw => currentKeyword === normalizeStr(kw) || currentKeyword === kw) || (!currentKeyword && !isDiscountOnly);
     
     let html = '';
     
@@ -63,8 +50,6 @@ function performScopedSearch(query) {
         Object.keys(structuredData[selectedCat1][cat2]).forEach(pName => {
             const info = structuredData[selectedCat1][cat2][pName];
             const hasDiscount = info.prices.some(p => p.promoDisplay || p.promoCalc);
-            
-            // 搜尋比對
             const matchesKeyword = isAll || info.searchKeywords.includes(currentKeyword);
             const matchesDiscount = !isDiscountOnly || hasDiscount;
             if (matchesKeyword && matchesDiscount) { html += generateProductCardHTML(pName, info); }
@@ -72,17 +57,17 @@ function performScopedSearch(query) {
     });
     
     if (!html) {
-        // 💡 搵唔到貨品？先查吓係咪其他閒聊 (Small Talk)！
+        // 💡 搵唔到貨品？停一停，先查吓係咪 Small Talk (閒聊)！
         let talk = null;
         if (!isDiscountOnly && typeof checkSmallTalk === 'function') {
-            talk = checkSmallTalk(query); 
+            talk = checkSmallTalk(query); // 將用戶打嘅字交畀閒聊大腦
         }
         
         if (talk) {
             // 🤖 中咗閒聊！直接出傾偈答案
             addBotMessage(talk);
         } else {
-            // ❌ 連閒聊都唔係，先至出找不到產品
+            // ❌ 連閒聊都唔係，先至真正話搵唔到
             let noResultMsg = uiText[currentLang].chatNoResult;
             if (isDiscountOnly) {
                 const langMsgs = {
@@ -98,5 +83,4 @@ function performScopedSearch(query) {
     else {
         addBotMessage(isAll ? uiText[currentLang].chatShowAll : uiText[currentLang].chatFound, html);
     }
-}
 }
