@@ -593,6 +593,58 @@
             chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
         }
 
+       // 💡 新增：計算產品最大差價嘅 Helper Function
+        function checkPriceGap(info) {
+            let validPrices = [];
+            info.prices.forEach(p => {
+                let parsed = parseFloat(p.price);
+                if (!isNaN(parsed)) {
+                    // 呼叫 promoEngine 計算折實價
+                    let avg = calculateAvgPrice(p.promoCalc, parsed);
+                    validPrices.push((avg && avg > 0 && avg < parsed) ? avg : parsed);
+                }
+            });
+            
+            if (validPrices.length < 2) return { isBigGap: false, percentage: 0 };
+            
+            let min = Math.min(...validPrices);
+            let max = Math.max(...validPrices);
+            
+            if (min <= 0) return { isBigGap: false, percentage: 0 };
+            
+            let gap = ((max - min) / min) * 100;
+            return {
+                isBigGap: gap >= 10, // 超過 10% 就觸發
+                percentage: Math.round(gap)
+            };
+        }
+
+
+                // 💡 新增：計算產品最大差價嘅 Helper Function (如果你未加，請保留呢段)
+        function checkPriceGap(info) {
+            let validPrices = [];
+            info.prices.forEach(p => {
+                let parsed = parseFloat(p.price);
+                if (!isNaN(parsed)) {
+                    let avg = calculateAvgPrice(p.promoCalc, parsed);
+                    validPrices.push((avg && avg > 0 && avg < parsed) ? avg : parsed);
+                }
+            });
+            
+            if (validPrices.length < 2) return { isBigGap: false, percentage: 0 };
+            
+            let min = Math.min(...validPrices);
+            let max = Math.max(...validPrices);
+            
+            if (min <= 0) return { isBigGap: false, percentage: 0 };
+            
+            let gap = ((max - min) / min) * 100;
+            return {
+                isBigGap: gap >= 10,
+                percentage: Math.round(gap)
+            };
+        }
+
         function generateProductCardHTML(pName, info) {
             let validPrices = [];
             info.prices.forEach(p => {
@@ -606,6 +658,15 @@
             let minEffectivePrice = validPrices.length > 0 ? Math.min(...validPrices) : null;
             let allSameBasePrice = info.prices.filter(p=>!isNaN(parseFloat(p.price))).every(v => parseFloat(v.price) === minBasePrice);
             let allSameEffectivePrice = validPrices.length > 1 && validPrices.every(v => Math.abs(v - validPrices[0]) < 0.01);
+
+            // 💡 取得差價數據，並製作標籤
+            const gapInfo = checkPriceGap(info);
+            let gapBadgeHtml = '';
+            if (gapInfo.isBigGap) {
+                let badgeText = currentLang === 'en' ? `🔥 Save ${gapInfo.percentage}%` : `🔥 差價 ${gapInfo.percentage}%`;
+                // 加入多語言支持同埋靚仔樣式
+                gapBadgeHtml = `<span class="ml-2 px-1.5 py-0.5 bg-red-100 text-red-600 font-bold text-[11px] rounded-md shadow-sm border border-red-200 inline-flex items-center" style="white-space: nowrap; transform: translateY(-1px);">${badgeText}</span>`;
+            }
 
             const priceList = info.prices.map(p => {
                 let parsed = parseFloat(p.price);
@@ -625,11 +686,14 @@
                 return `<div class="flex flex-col p-3 rounded-2xl border ${cls} ${isLowestBase ? 'ring-2 ring-green-400 bg-white scale-[1.01] shadow-md z-10' : ''} transition-all"><div class="flex justify-between items-center w-full"><span class="font-black text-[13px] ${textCls} flex items-center gap-1">${p.supermarket}</span><span class="text-[17px] font-black text-slate-800">$${isNaN(parsed) ? p.price : parsed.toFixed(1)}${isLowestBase ? ' 👍' : ''}</span></div>${p.promoDisplay ? `<div class="mt-2 flex flex-wrap sm:flex-nowrap items-center justify-between gap-1 w-full"><span class="text-[11px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-md border border-red-100 break-words w-full sm:w-auto">🏷️ ${p.promoDisplay}</span>${avgLabel}</div>` : ''}</div>`;
             }).join('');
             
-                        return `<div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-200 flex flex-col gap-3 relative overflow-hidden">
+            return `<div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-200 flex flex-col gap-3 relative overflow-hidden">
                 <div class="flex justify-between items-start gap-3">
                     <div class="flex-1 min-w-0">
                         <div class="text-[12px] text-blue-500 font-black tracking-widest uppercase mb-1">${info.brand || '綜合品牌'}</div>
-                        <h3 class="font-bold text-slate-800 text-[16px] leading-tight">${pName}</h3>
+                        <h3 class="font-bold text-slate-800 text-[16px] leading-tight flex items-center flex-wrap gap-y-1">
+                            <span>${pName}</span>
+                            ${gapBadgeHtml}
+                        </h3>
                     </div>
                     
                     <button onclick="shareProduct('${pName}', '${info.brand}', '${minBasePrice}')" class="w-8 h-8 flex items-center justify-center rounded-full bg-[#1877F2] hover:bg-blue-600 active:scale-90 transition-all shadow-sm shrink-0">
