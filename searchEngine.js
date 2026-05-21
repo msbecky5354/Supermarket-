@@ -1,55 +1,66 @@
 // searchEngine.js
-function checkSmallTalk(q) {
-    // 將用戶輸入轉做小階，方便做 LIKE 比對
-    const low = q.toLowerCase();
 
-    // 💡 呢度嘅 .some(kw => low.includes(kw)) 就等如 SQL 嘅 LIKE '%kw%'
-    // 所以我哋只放「最核心嘅單字」，唔寫長句，做到真正嘅 Fuzzy Match！
+// 🧠 升級版閒聊大腦：支援「精準 (Exact)」與「模糊 (Fuzzy)」雙模式
+function checkSmallTalk(q, exactOnly = false) {
+    const low = q.toLowerCase().trim();
 
-    // 1. 問候 (e.g. LIKE '%你好%' OR LIKE '%hello%')
-    const greetings = ['你好', 'hi', 'hello','hey', '早晨', '嗨', '您好', '喂', '哈囉','晚安','午安'];
-    if (greetings.some(kw => low.includes(kw))) return uiText[currentLang].replyGreeting;
+    // 將所有閒聊詞庫分門別類 (保留咗你新增嘅 hey, 晚安, 午安！)
+    const categories = [
+        { words: ['你好', 'hi', 'hello', 'hey', '早晨', '嗨', '您好', '喂', '哈囉', '晚安', '午安'], reply: uiText[currentLang].replyGreeting },
+        { words: ['多謝', 'thank', '謝謝', '唔該', 'thx', '感', '谢谢'], reply: uiText[currentLang].replyThanks },
+        { words: ['拜拜', '88', 'bye', '再見', '走先', 'goodbye', 'cya', '掰'], reply: uiText[currentLang].replyBye },
+        { words: ['天氣', 'weather', '落雨', '好熱', '凍', '打風'], reply: uiText[currentLang].replySmallTalkExtra },
+        { words: ['叻', 'smart', '好用', '棒', 'good', '厲害', '犀利'], reply: uiText[currentLang].replyPraise },
+        { words: ['笑話', 'joke', '好悶', '講笑', '無聊', '冇聊'], reply: uiText[currentLang].replyJoke },
+        { words: ['幾歲', '做緊咩', '食飯', '識幾多', '得閒', '有空'], reply: uiText[currentLang].replySmallTalkExtra }
+    ];
 
-    // 2. 感謝
-    const thanks = ['多謝', 'thank', '謝謝', '唔該', 'thx', '感', '谢谢'];
-    if (thanks.some(kw => low.includes(kw))) return uiText[currentLang].replyThanks;
-
-    // 3. 道別
-    const goodbyes = ['拜拜', '88', 'bye', '再見', '走先', 'goodbye', 'cya', '掰'];
-    if (goodbyes.some(kw => low.includes(kw))) return uiText[currentLang].replyBye;
-
-    // 4. 天氣類 (只要句嘢 LIKE '%天氣%' 或 LIKE '%落雨%' 就中！)
-    const weathers = ['天氣', 'weather', '落雨', '好熱', '凍', '打風'];
-    if (weathers.some(kw => low.includes(kw))) return uiText[currentLang].replySmallTalkExtra;
-
-    // 5. 讚美與講笑
-    const praises = ['叻', 'smart', '好用', '棒', 'good', '厲害', '犀利'];
-    if (praises.some(kw => low.includes(kw))) return uiText[currentLang].replyPraise;
-    
-    const jokes = ['笑話', 'joke', '好悶', '講笑', '無聊', '冇聊'];
-    if (jokes.some(kw => low.includes(kw))) return uiText[currentLang].replyJoke;
-
-    // 6. 關於 Bot 自己 (捕捉用戶問 Bot 嘅問題)
-    const aboutBot = ['幾歲', '做緊咩', '食飯', '識幾多', '得閒', '有空'];
-    if (aboutBot.some(kw => low.includes(kw))) return uiText[currentLang].replySmallTalkExtra;
-
-    return null; // ❌ 如果全部 LIKE 都唔中，就 return null 畀系統出「搵唔到貨品」
+    for (let cat of categories) {
+        if (exactOnly) {
+            // 第一層：必須 100% 完全相同 (解決 "hi" 撞 "chicken" 問題)
+            if (cat.words.some(kw => low === kw)) return cat.reply;
+        } else {
+            // 第三層：只要包含該字眼就中 (解決 "今日天氣" 撞唔中 "天氣" 問題)
+            if (cat.words.some(kw => low.includes(kw))) return cat.reply;
+        }
+    }
+    return null;
 }
 
+// 🛒 升級版搜尋引擎：落實 4 層過濾機制
 function performScopedSearch(query) {
     const isDiscountOnly = (query === '__DISCOUNT_ONLY__');
-    if (!isDiscountOnly) { currentKeyword = normalizeStr(query).trim(); }
+    const rawQuery = query.trim().toLowerCase();
     
-    // 🛑 終極修復：將 .includes 改為 === (完全等如)
-    // 咁樣打 "Hallo" 或 "Marshmallow" 都絕對唔會誤觸 "all" 指令！
+    if (!isDiscountOnly) { 
+        currentKeyword = normalizeStr(query).trim(); 
+        // 防炒車保底：如果 normalizeStr 意外清空咗英文，用返原始字串
+        if (!currentKeyword && rawQuery) currentKeyword = rawQuery; 
+    }
+
+    // 🛑 終極修復：保留你原本對 isAll 嘅嚴格比對
     const isAll = ['所有', '全部', 'all', 'list'].some(kw => currentKeyword === normalizeStr(kw) || currentKeyword === kw) || (!currentKeyword && !isDiscountOnly);
-    
+
+    // ==========================================
+    // 🛡️ 第一層防線：精準命中閒聊 (Exact Match)
+    // ==========================================
+    if (!isDiscountOnly) {
+        let exactTalk = checkSmallTalk(rawQuery, true); // 傳入 true，啟動精準模式
+        if (exactTalk) {
+            addBotMessage(exactTalk);
+            return; // 答完即刻收工，唔去查產品庫！
+        }
+    }
+
+    // ==========================================
+    // 🛡️ 第二層防線：搜尋產品
+    // ==========================================
     let html = '';
-    
     Object.keys(structuredData[selectedCat1]).forEach(cat2 => {
         Object.keys(structuredData[selectedCat1][cat2]).forEach(pName => {
             const info = structuredData[selectedCat1][cat2][pName];
             const hasDiscount = info.prices.some(p => p.promoDisplay || p.promoCalc);
+            
             const matchesKeyword = isAll || info.searchKeywords.includes(currentKeyword);
             const matchesDiscount = !isDiscountOnly || hasDiscount;
             if (matchesKeyword && matchesDiscount) { html += generateProductCardHTML(pName, info); }
@@ -57,17 +68,20 @@ function performScopedSearch(query) {
     });
     
     if (!html) {
-        // 💡 搵唔到貨品？停一停，先查吓係咪 Small Talk (閒聊)！
-        let talk = null;
-        if (!isDiscountOnly && typeof checkSmallTalk === 'function') {
-            talk = checkSmallTalk(query); // 將用戶打嘅字交畀閒聊大腦
+        // ==========================================
+        // 🛡️ 第三層防線：模糊命中閒聊 (Fuzzy Match)
+        // ==========================================
+        let fuzzyTalk = null;
+        if (!isDiscountOnly) {
+            fuzzyTalk = checkSmallTalk(rawQuery, false); // 傳入 false，啟動包含模式
         }
         
-        if (talk) {
-            // 🤖 中咗閒聊！直接出傾偈答案
-            addBotMessage(talk);
+        if (fuzzyTalk) {
+            addBotMessage(fuzzyTalk);
         } else {
-            // ❌ 連閒聊都唔係，先至真正話搵唔到
+            // ==========================================
+            // 🛡️ 第四層防線：真係咩都搵唔到 (Fallback)
+            // ==========================================
             let noResultMsg = uiText[currentLang].chatNoResult;
             if (isDiscountOnly) {
                 const langMsgs = {
@@ -79,8 +93,7 @@ function performScopedSearch(query) {
             }
             addBotMessage(noResultMsg);
         }
-    }
-    else {
+    } else {
         addBotMessage(isAll ? uiText[currentLang].chatShowAll : uiText[currentLang].chatFound, html);
     }
 }
