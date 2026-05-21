@@ -111,14 +111,35 @@
         </button>
         <div id="miniFooterCopy" class="text-[10px] text-slate-300 mt-1.5 tracking-wide">© 2026 慳真D</div>
     </div>
-                    <div id="disclaimerModal" class="hidden fixed inset-0 bg-slate-900/40 z-[100] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+                        <div id="disclaimerModal" class="hidden fixed inset-0 bg-slate-900/40 z-[100] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
         <div class="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl flex flex-col max-h-[80vh]">
             <div class="flex items-center gap-2 mb-4">
                 <span class="text-[20px]">🛡️</span>
                 <h2 id="modalTitle" class="text-[17px] font-black text-slate-800">免責聲明及服務條款</h2>
             </div>        
-            <div id="disclaimerBody" class="overflow-y-auto text-[13px] text-slate-600 space-y-4 pr-1 mb-2 leading-relaxed"></div>
-            <button onclick="document.getElementById('disclaimerModal').classList.add('hidden')" id="modalCloseBtn" class="mt-4 w-full bg-blue-600 text-white font-bold py-3.5 rounded-2xl active:scale-95 transition-transform text-[15px] shadow-md shadow-blue-100"></button>
+            
+            <div id="disclaimerBody" class="overflow-y-auto text-[13px] text-slate-600 space-y-4 pr-1 mb-2 leading-relaxed">
+                <p>
+                    <strong class="text-slate-800 text-[14px]">1. 數據來源及知識產權：</strong><br>
+                    本程式之價格及優惠數據均源自「資料一線通」(Data.gov.hk) 的「網上價格一覽通」數據集。所有相關知識產權均歸<strong>消費者委員會</strong>及各相關商戶所有。
+                </p>
+                <p>
+                    <strong class="text-slate-800 text-[14px]">2. 數據覆蓋範圍：</strong><br>
+                    數據集主要涵蓋消費者委員會挑選的數千款熱門日常必需品，並不包括超市所有庫存（例如獨家或冷門貨品）。
+                </p>
+                <p>
+                    <strong class="text-slate-800 text-[14px]">3. 自動化運算：</strong><br>
+                    顯示的折合平均價格由<strong>系統自動運算得出</strong>。所有資訊均基於政府最新發佈的實時數據及實體店最終價格標籤為準。資料僅供參考，建議用戶購買前自行核實價格。
+                </p>
+                <p>
+                    <strong class="text-slate-800 text-[14px]">4. 責任限制：</strong><br>
+                    本程式按「現狀」(AS IS) 提供，用戶需自行承擔使用風險。本程式及其開發者對任何因使用或依賴本程式資訊而導致的損失或損害，概不承擔任何法律責任。
+                </p>
+            </div>
+            
+            <button onclick="document.getElementById('disclaimerModal').classList.add('hidden')" id="modalCloseBtn" class="mt-4 w-full bg-blue-600 text-white font-bold py-3.5 rounded-2xl active:scale-95 transition-transform text-[15px] shadow-md shadow-blue-100">
+                我明白及接受
+            </button>
         </div>
     </div>
             </div>
