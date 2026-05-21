@@ -148,3 +148,39 @@ function calculateAvgPrice(enPromoText, originalPrice) {
         return null; 
     }
 }
+
+// 加入 promoEngine.js 或你的全域邏輯中
+const PriceGapAnalyzer = {
+    // 傳入單一貨品的所有商店數據，例如: [{name: '萬寧', price: 209, promoText: ''}, {name: '莎莎', price: 138, promoText: ''}]
+    analyze: function(stores) {
+        if (!stores || stores.length < 2) return { isBigGap: false };
+
+        // 1. 取得所有店舖的「折實單價」
+        let netPrices = stores.map(store => {
+            // 呼叫你現有的計算引擎，如果冇優惠就用原價
+            let net = calculateAvgPrice(store.promoText, store.price); 
+            return {
+                name: store.name,
+                netPrice: net !== null ? net : store.price 
+            };
+        });
+
+        // 2. 過濾無效數字
+        let validPrices = netPrices.filter(p => p.netPrice && p.netPrice > 0);
+        if (validPrices.length < 2) return { isBigGap: false };
+
+        // 3. 搵出最平同最貴
+        let minStore = validPrices.reduce((prev, curr) => prev.netPrice < curr.netPrice ? prev : curr);
+        let maxStore = validPrices.reduce((prev, curr) => prev.netPrice > curr.netPrice ? prev : curr);
+
+        // 4. 計算差價百分比：(最貴 - 最平) / 最平
+        let gapPercentage = ((maxStore.netPrice - minStore.netPrice) / minStore.netPrice) * 100;
+
+        // 如果大過 10%，就回傳 true
+        return {
+            isBigGap: gapPercentage >= 10,
+            percentage: Math.round(gapPercentage),
+            minPrice: minStore.netPrice
+        };
+    }
+};
