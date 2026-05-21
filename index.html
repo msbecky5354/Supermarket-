@@ -645,25 +645,55 @@
         }
 
         // 💡 修改：加入過濾大差價邏輯
+                // 💡 喺全域鎖定一個「大差價模式」開關
+        if (typeof isBigGapMode === 'undefined') { window.isBigGapMode = false; }
+
         function performScopedSearch(query) {
+            // 1. 識別當前觸發的按鈕暗號
             const isDiscountOnly = (query === '__DISCOUNT_ONLY__');
             const isBigGapOnly = (query === '__BIG_GAP_ONLY__');
+            const isShowAll = (query === '所有' || query === '全部');
 
-            if (!isDiscountOnly && !isBigGapOnly) { currentKeyword = normalizeStr(query).trim(); }
-            const isAll = ['所有', '全部', 'all', 'list'].some(kw => currentKeyword.includes(normalizeStr(kw))) || (!currentKeyword && !isDiscountOnly && !isBigGapOnly);
+            // 2. 狀態機密碼管理
+            if (isBigGapOnly) {
+                // 撳咗「🔥 超大差價」，啟動差價模式，保留原本已經搜尋緊嘅 currentKeyword
+                isBigGapMode = true; 
+            } else if (isShowAll || query === "") {
+                // 撳咗「睇晒全部」，全面還原清空
+                isBigGapMode = false;
+                currentKeyword = "";
+            } else if (!isDiscountOnly) {
+                // 用戶真正打字搜尋（例如打 "Avene" 撳搜尋），更新關鍵字，但「維持」當前嘅大差價模式！
+                currentKeyword = normalizeStr(query).trim();
+            }
+            
+            // 3. 決定使唔使放行所有文字配對
+            const isAll = ['所有', '全部', 'all', 'list'].some(kw => currentKeyword.includes(normalizeStr(kw))) || !currentKeyword;
             
             let html = '';
             Object.keys(structuredData[selectedCat1]).forEach(cat2 => {
                 Object.keys(structuredData[selectedCat1][cat2]).forEach(pName => {
                     const info = structuredData[selectedCat1][cat2][pName];
-                    const hasDiscount = info.prices.some(p => p.promoDisplay || p.promoCalc);
-                    const hasBigGap = isBigGapOnly ? checkPriceGap(info).isBigGap : true; // 大差價防護
-
+                    
+                    // --- 🌟 完美的雙重複合過濾 ---
+                    // 條件一：關鍵字配對（不論先搜尋定後搜尋）
                     const matchesKeyword = isAll || info.searchKeywords.includes(currentKeyword);
+                    
+                    // 條件二：優惠券過濾
+                    const hasDiscount = info.prices.some(p => p.promoDisplay || p.promoCalc);
                     const matchesDiscount = !isDiscountOnly || hasDiscount;
-                    if (matchesKeyword && matchesDiscount && hasBigGap) { html += generateProductCardHTML(pName, info); }
+                    
+                    // 條件三：大差價過濾（認全域狀態 isBigGapMode，而唔係單單認 query 參數）
+                    const matchesBigGap = !isBigGapMode || checkPriceGap(info).isBigGap; 
+
+                    // 三個條件必須同時通過，少一個都唔得
+                    if (matchesKeyword && matchesDiscount && matchesBigGap) { 
+                        html += generateProductCardHTML(pName, info); 
+                    }
                 });
             });
+
+            // 4. 畫面渲染與動態多語言提示
             if (!html) {
                 let noResultMsg = uiText[currentLang].chatNoResult;
                 if (isDiscountOnly) {
@@ -673,17 +703,20 @@
                         'en': currentKeyword ? `No discounts for "${currentKeyword}" found! 🤷‍♂️` : "No discounted products found in this category! 🤷‍♂️"
                     };
                     noResultMsg = langMsgs[currentLang];
-                } else if (isBigGapOnly) {
+                } else if (isBigGapMode) {
+                    // 💡 動態提示：如果是打字搜尋後再隔差價，提示會加上「喺 XXX 入面」
+                    const showWord = currentKeyword ? `喺「${currentKeyword}」結果入面` : "呢個分類暫時";
                     const langMsgs = {
-                        'zh-Hant': currentKeyword ? `「${currentKeyword}」暫時未有相差超過 10% 嘅貨品喎！🤷‍♂️` : "呢個分類暫時未有相差超過 10% 嘅貨品喎！🤷‍♂️",
-                        'zh-Hans': currentKeyword ? `「${currentKeyword}」暂时没有相差超过 10% 的商品哦！🤷‍♂️` : "该分类下暂时没有相差超过 10% 的商品哦！🤷‍♂️",
-                        'en': currentKeyword ? `No products with >10% price gap found for "${currentKeyword}"! 🤷‍♂️` : "No products with >10% price gap found in this category! 🤷‍♂️"
+                        'zh-Hant': `${showWord}未有相差超過 10% 嘅貨品喎！🤷‍♂️`,
+                        'zh-Hans': currentKeyword ? `在「${currentKeyword}」结果中暂时没有相差超过 10% 的商品哦！🤷‍♂️` : "该分类下暂时没有相差超过 10% 的商品哦！🤷‍♂️",
+                        'en': currentKeyword ? `No products with >10% price gap found in "${currentKeyword}"! 🤷‍♂️` : "No products with >10% price gap found in this category! 🤷‍♂️"
                     };
                     noResultMsg = langMsgs[currentLang];
                 }
                 addBotMessage(noResultMsg);
+            } else {
+                addBotMessage(isAll ? uiText[currentLang].chatShowAll : uiText[currentLang].chatFound, html);
             }
-            else addBotMessage(isAll ? uiText[currentLang].chatShowAll : uiText[currentLang].chatFound, html);
         }
 
         function addBotMessage(text, cardsHTML = null) {
