@@ -15,6 +15,10 @@ function checkSmallTalk(q, exactOnly = false) {
         { words: ['幾歲','幾多歲','做緊咩', '食飯', '識幾多', '得閒', '有空'], reply: uiText[currentLang].replySmallTalkExtra },
         // 👇 加喺呢度！專捉 omg 同埋其他感嘆詞！
         { words: ['omg', 'oh my god', '我的天', '天呀', '救命', '痴線', '黐線', '哇', 'wow'], reply: uiText[currentLang].replyOmg },
+        { words: ['點用', '點樣', '點做', '幫手', '唔明', 'help', '如何', '唔識', '教學'], reply: uiText[currentLang].replyHelp },
+        { words: ['你是誰', '你係邊個', 'who are you', '咩名', '機器人', 'robot', '人工智能', 'ai', '你係咩'], reply: uiText[currentLang].replyWho },
+        { words: ['啱', '對', '係呀', '沒錯', '同意', '正解', '講得好', 'yeah', 'yes'], reply: uiText[currentLang].replyAgreement },
+    
       ];
 
     for (let cat of categories) {
