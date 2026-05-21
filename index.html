@@ -19,7 +19,6 @@
 
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8256903623772163" crossorigin="anonymous"></script>
  
-    <!-- PWA 與 Icon 設定 -->
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="logo.JPG">
     <link rel="apple-touch-icon" href="logo.JPG">
@@ -336,15 +335,6 @@
             document.getElementById('backBtnText').innerText = uiText[lang].back;
             document.getElementById('sendBtnText').innerText = uiText[lang].send;
             chatInput.placeholder = uiText[lang].placeholder;
-
-            //document.getElementById('disclaimerGovData').innerHTML = uiText[lang].disclaimerGovData;
-            //document.getElementById('disclaimerOwner').innerHTML = uiText[lang].disclaimerOwner;
-            //document.getElementById('disclaimerNote').innerHTML = uiText[lang].disclaimerNote;
-
-            //document.getElementById('navAbout').innerText = uiText[lang].footerAbout;
-            //document.getElementById('navContact').innerText = uiText[lang].footerContact;
-            //document.getElementById('navPrivacy').innerText = uiText[lang].footerPrivacy;
-            //document.getElementById('navTerms').innerText = uiText[lang].footerTerms;
             
              // 🔄 確保極簡 Footer 都會跟住轉語言
             if(document.getElementById('miniFooterLinks')) {
@@ -454,11 +444,17 @@
         }
         // ------------------------------
 
+        // 💡 修改：加入「超大差價」多語言按鈕
         function renderQuickActions() {
             const container = document.getElementById('quickActionChips');
+            let bigGapText = '🔥 超大差價';
+            if (currentLang === 'zh-Hans') bigGapText = '🔥 超大差价';
+            if (currentLang === 'en') bigGapText = '🔥 Big Gap';
+
             const chips = [
                 { text: uiText[currentLang].quickAll, action: "showAll" },
                 { text: uiText[currentLang].quickDiscount, action: "filterDiscount" },
+                { text: bigGapText, action: "filterBigGap" }, // 新增嘅按鈕
                 { text: uiText[currentLang].quickHome, action: "goHome" },
                 { text: uiText[currentLang].quickBye, action: "sayBye" }
             ];
@@ -470,6 +466,7 @@
             ).join('');
         }
 
+        // 💡 修改：處理 filterBigGap 事件
         function handleQuickAction(action, text) {
             if (action === 'goHome') { showLevel1(); }
             else if (action === 'sayBye') {
@@ -482,6 +479,9 @@
             } else if (action === 'filterDiscount') {
                 addUserMessage(text);
                 setTimeout(() => performScopedSearch('__DISCOUNT_ONLY__'), 300);
+            } else if (action === 'filterBigGap') {
+                addUserMessage(text);
+                setTimeout(() => performScopedSearch('__BIG_GAP_ONLY__'), 300);
             }
         }
 
@@ -644,7 +644,47 @@
             }, 300);
         }
 
-        
+        // 💡 修改：加入過濾大差價邏輯
+        function performScopedSearch(query) {
+            const isDiscountOnly = (query === '__DISCOUNT_ONLY__');
+            const isBigGapOnly = (query === '__BIG_GAP_ONLY__');
+
+            if (!isDiscountOnly && !isBigGapOnly) { currentKeyword = normalizeStr(query).trim(); }
+            const isAll = ['所有', '全部', 'all', 'list'].some(kw => currentKeyword.includes(normalizeStr(kw))) || (!currentKeyword && !isDiscountOnly && !isBigGapOnly);
+            
+            let html = '';
+            Object.keys(structuredData[selectedCat1]).forEach(cat2 => {
+                Object.keys(structuredData[selectedCat1][cat2]).forEach(pName => {
+                    const info = structuredData[selectedCat1][cat2][pName];
+                    const hasDiscount = info.prices.some(p => p.promoDisplay || p.promoCalc);
+                    const hasBigGap = isBigGapOnly ? checkPriceGap(info).isBigGap : true; // 大差價防護
+
+                    const matchesKeyword = isAll || info.searchKeywords.includes(currentKeyword);
+                    const matchesDiscount = !isDiscountOnly || hasDiscount;
+                    if (matchesKeyword && matchesDiscount && hasBigGap) { html += generateProductCardHTML(pName, info); }
+                });
+            });
+            if (!html) {
+                let noResultMsg = uiText[currentLang].chatNoResult;
+                if (isDiscountOnly) {
+                    const langMsgs = {
+                        'zh-Hant': currentKeyword ? `「${currentKeyword}」暫時未有優惠貨品喎！🤷‍♂️` : "呢個分類暫時未有優惠貨品喎！🤷‍♂️",
+                        'zh-Hans': currentKeyword ? `「${currentKeyword}」暂时没有优惠商品哦！🤷‍♂️` : "该分类下暂时没有优惠商品哦！🤷‍♂️",
+                        'en': currentKeyword ? `No discounts for "${currentKeyword}" found! 🤷‍♂️` : "No discounted products found in this category! 🤷‍♂️"
+                    };
+                    noResultMsg = langMsgs[currentLang];
+                } else if (isBigGapOnly) {
+                    const langMsgs = {
+                        'zh-Hant': currentKeyword ? `「${currentKeyword}」暫時未有相差超過 10% 嘅貨品喎！🤷‍♂️` : "呢個分類暫時未有相差超過 10% 嘅貨品喎！🤷‍♂️",
+                        'zh-Hans': currentKeyword ? `「${currentKeyword}」暂时没有相差超过 10% 的商品哦！🤷‍♂️` : "该分类下暂时没有相差超过 10% 的商品哦！🤷‍♂️",
+                        'en': currentKeyword ? `No products with >10% price gap found for "${currentKeyword}"! 🤷‍♂️` : "No products with >10% price gap found in this category! 🤷‍♂️"
+                    };
+                    noResultMsg = langMsgs[currentLang];
+                }
+                addBotMessage(noResultMsg);
+            }
+            else addBotMessage(isAll ? uiText[currentLang].chatShowAll : uiText[currentLang].chatFound, html);
+        }
 
         function addBotMessage(text, cardsHTML = null) {
             const wrapper = document.createElement('div');
@@ -662,6 +702,28 @@
             chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
         }
 
+        // 💡 新增：計算產品最大差價嘅 Helper Function
+        function checkPriceGap(info) {
+            let validPrices = [];
+            info.prices.forEach(p => {
+                let parsed = parseFloat(p.price);
+                if (!isNaN(parsed)) {
+                    let avg = calculateAvgPrice(p.promoCalc, parsed);
+                    validPrices.push((avg && avg > 0 && avg < parsed) ? avg : parsed);
+                }
+            });
+            if (validPrices.length < 2) return { isBigGap: false, percentage: 0 };
+            let min = Math.min(...validPrices);
+            let max = Math.max(...validPrices);
+            if (min <= 0) return { isBigGap: false, percentage: 0 };
+            let gap = ((max - min) / min) * 100;
+            return {
+                isBigGap: gap >= 10,
+                percentage: Math.round(gap)
+            };
+        }
+
+        // 💡 修改：加入差價標籤
         function generateProductCardHTML(pName, info) {
             let validPrices = [];
             info.prices.forEach(p => {
@@ -675,6 +737,14 @@
             let minEffectivePrice = validPrices.length > 0 ? Math.min(...validPrices) : null;
             let allSameBasePrice = info.prices.filter(p=>!isNaN(parseFloat(p.price))).every(v => parseFloat(v.price) === minBasePrice);
             let allSameEffectivePrice = validPrices.length > 1 && validPrices.every(v => Math.abs(v - validPrices[0]) < 0.01);
+
+            // 製作差價標籤
+            const gapInfo = checkPriceGap(info);
+            let gapBadgeHtml = '';
+            if (gapInfo.isBigGap) {
+                let badgeText = currentLang === 'en' ? `🔥 Save ${gapInfo.percentage}%` : `🔥 差價 ${gapInfo.percentage}%`;
+                gapBadgeHtml = `<span class="ml-2 px-1.5 py-0.5 bg-red-100 text-red-600 font-bold text-[11px] rounded-md shadow-sm border border-red-200 inline-flex items-center" style="white-space: nowrap; transform: translateY(-1px);">${badgeText}</span>`;
+            }
 
                         const priceList = info.prices.map(p => {
                 let parsed = parseFloat(p.price);
@@ -722,7 +792,10 @@
                 <div class="flex justify-between items-start gap-3">
                     <div class="flex-1 min-w-0">
                         <div class="text-[12px] text-blue-500 font-black tracking-widest uppercase mb-1">${info.brand || '綜合品牌'}</div>
-                        <h3 class="font-bold text-slate-800 text-[16px] leading-tight">${pName}</h3>
+                        <h3 class="font-bold text-slate-800 text-[16px] leading-tight flex items-center flex-wrap gap-y-1">
+                            <span>${pName}</span>
+                            ${gapBadgeHtml}
+                        </h3>
                     </div>
                     
                     <button onclick="shareProduct('${pName}', '${info.brand}', '${minBasePrice}')" class="w-8 h-8 flex items-center justify-center rounded-full bg-[#1877F2] hover:bg-blue-600 active:scale-90 transition-all shadow-sm shrink-0">
@@ -741,7 +814,6 @@
 
         // 🔑 打開 Modal，並全面動態換字 (包括標題！)
         function openDisclaimerModal() {
-            // 👇 加咗呢行！用嚟換標題
             document.getElementById('disclaimerTitle').innerText = uiText[currentLang].disclaimerTitle; 
             document.getElementById('disclaimerBody').innerHTML = uiText[currentLang].disclaimerText;
             document.getElementById('modalCloseBtn').innerText = uiText[currentLang].modalBtn;
