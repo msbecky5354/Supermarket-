@@ -34,10 +34,23 @@ function performScopedSearch(query) {
     const isDiscountOnly = (query === '__DISCOUNT_ONLY__');
     const rawQuery = query.trim().toLowerCase();
     
-    if (!isDiscountOnly) { 
-        currentKeyword = normalizeStr(query).trim(); 
-        // 防炒車保底：如果 normalizeStr 意外清空咗英文，用返原始字串
-        if (!currentKeyword && rawQuery) currentKeyword = rawQuery; 
+    // 💡 修正邏輯：如果係撳「優惠掣」，強制將搜尋關鍵字清空，
+    // 咁樣後面嘅 searchKeywords.includes(currentKeyword) 就會變成 true (isAll 邏輯)
+    if (isDiscountOnly) {
+        currentKeyword = ''; 
+    } else {
+        currentKeyword = normalizeStr(query).trim();
+        if (!currentKeyword && rawQuery) currentKeyword = rawQuery;
+    }
+
+    // 🛡️ 第一層防線：精準命中閒聊
+    // 注意：如果撳咗「優惠掣」，isDiscountOnly 係 true，呢度會自動跳過，符合預期
+    if (!isDiscountOnly) {
+        let exactTalk = checkSmallTalk(rawQuery, true);
+        if (exactTalk) {
+            addBotMessage(exactTalk);
+            return;
+        }
     }
 
     // 🛑 終極修復：保留你原本對 isAll 嘅嚴格比對
