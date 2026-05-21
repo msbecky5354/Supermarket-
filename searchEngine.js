@@ -12,7 +12,7 @@ function checkSmallTalk(q, exactOnly = false) {
         { words: ['天氣', 'weather', '落雨', '好熱', '凍', '打風'], reply: uiText[currentLang].replySmallTalkExtra },
         { words: ['叻', 'smart', '好用', '棒', 'good', '厲害', '犀利'], reply: uiText[currentLang].replyPraise },
         { words: ['笑話', 'joke', '好悶', '講笑', '無聊', '冇聊'], reply: uiText[currentLang].replyJoke },
-        { words: ['幾歲', '做緊咩', '食飯', '識幾多', '得閒', '有空'], reply: uiText[currentLang].replySmallTalkExtra },
+        { words: ['幾歲','幾多歲','做緊咩', '食飯', '識幾多', '得閒', '有空'], reply: uiText[currentLang].replySmallTalkExtra },
         // 👇 加喺呢度！專捉 omg 同埋其他感嘆詞！
         { words: ['omg', 'oh my god', '我的天', '天呀', '救命', '痴線', '黐線', '哇', 'wow'], reply: uiText[currentLang].replyOmg },
       ];
