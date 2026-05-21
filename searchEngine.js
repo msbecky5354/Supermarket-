@@ -1,37 +1,39 @@
 // searchEngine.js
 function checkSmallTalk(q) {
+    // 將用戶輸入轉做小階，方便做 LIKE 比對
     const low = q.toLowerCase();
 
-    // 新增更多問候語
+    // 💡 呢度嘅 .some(kw => low.includes(kw)) 就等如 SQL 嘅 LIKE '%kw%'
+    // 所以我哋只放「最核心嘅單字」，唔寫長句，做到真正嘅 Fuzzy Match！
+
+    // 1. 問候 (e.g. LIKE '%你好%' OR LIKE '%hello%')
     const greetings = ['你好', 'hi', 'hello', '早晨', '嗨', '您好', '喂', '哈囉'];
     if (greetings.some(kw => low.includes(kw))) return uiText[currentLang].replyGreeting;
 
-    // 感謝語句
-    const thanks = ['多謝', 'thank', '謝謝', '唔該', 'thx', '감사합니다', '谢谢'];
+    // 2. 感謝
+    const thanks = ['多謝', 'thank', '謝謝', '唔該', 'thx', '感', '谢谢'];
     if (thanks.some(kw => low.includes(kw))) return uiText[currentLang].replyThanks;
 
-    // 道別語句
-    const goodbyes = ['拜拜', '88','bye', '再見', '走先', 'goodbye', 'cya', '掰掰', '拜拜啦'];
+    // 3. 道別
+    const goodbyes = ['拜拜', '88', 'bye', '再見', '走先', 'goodbye', 'cya', '掰'];
     if (goodbyes.some(kw => low.includes(kw))) return uiText[currentLang].replyBye;
 
-    // 褒獎或讚美
-    const praises = ['叻', 'smart', '好用', '棒', 'good', '厲害', '厲害啦', '好犀利'];
-    if (praises.some(kw => low.includes(kw))) return uiText[currentLang].replyPraise;
+    // 4. 天氣類 (只要句嘢 LIKE '%天氣%' 或 LIKE '%落雨%' 就中！)
+    const weathers = ['天氣', 'weather', '落雨', '好熱', '凍', '打風'];
+    if (weathers.some(kw => low.includes(kw))) return uiText[currentLang].replySmallTalkExtra;
 
-    // 幽默或無聊相關
-    const jokes = ['笑話', 'joke', '好悶', '講笑', '無聊', '冇聊', '笑死我'];
+    // 5. 讚美與講笑
+    const praises = ['叻', 'smart', '好用', '棒', 'good', '厲害', '犀利'];
+    if (praises.some(kw => low.includes(kw))) return uiText[currentLang].replyPraise;
+    
+    const jokes = ['笑話', 'joke', '好悶', '講笑', '無聊', '冇聊'];
     if (jokes.some(kw => low.includes(kw))) return uiText[currentLang].replyJoke;
 
-    // 其他常用表達
-    const smallTalkExtras = [
-        '今天天氣幾好', '今天天氣點', '你幾時有空', '你識幾多', '你幾歲',
-        '你幾忙', '你做緊咩', '你幾耐未食飯'
-    ];
-    if (smallTalkExtras.some(phrase => low.includes(phrase))) {
-        return uiText[currentLang].replySmallTalkExtra;
-    }
+    // 6. 關於 Bot 自己 (捕捉用戶問 Bot 嘅問題)
+    const aboutBot = ['幾歲', '做緊咩', '食飯', '識幾多', '得閒', '有空'];
+    if (aboutBot.some(kw => low.includes(kw))) return uiText[currentLang].replySmallTalkExtra;
 
-    return null;
+    return null; // ❌ 如果全部 LIKE 都唔中，就 return null 畀系統出「搵唔到貨品」
 }
 
 function performScopedSearch(query) {
