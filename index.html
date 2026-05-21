@@ -645,53 +645,76 @@
         }
 
         // 💡 修改：加入過濾大差價邏輯
-        function performScopedSearch(query) {
-            const isDiscountOnly = (query === '__DISCOUNT_ONLY__');
-            const isBigGapOnly = (query === '__BIG_GAP_ONLY__');
+                // 💡 建議在 <script> 頂部跟 currentKeyword 放埋一齊，如果無加，呢度會自動全域聲明
+        if (typeof isBigGapMode === 'undefined') { window.isBigGapMode = false; }
+        if (typeof isDiscountMode === 'undefined') { window.isDiscountMode = false; }
 
-            if (!isDiscountOnly && !isBigGapOnly) { currentKeyword = normalizeStr(query).trim(); }
-            const isAll = ['所有', '全部', 'all', 'list'].some(kw => currentKeyword.includes(normalizeStr(kw))) || (!currentKeyword && !isDiscountOnly && !isBigGapOnly);
+        function performScopedSearch(query) {
+            // 1. 識別當前觸發的動作
+            const isDiscountTrigger = (query === '__DISCOUNT_ONLY__');
+            const isBigGapTrigger = (query === '__BIG_GAP_ONLY__');
+            const isShowAllTrigger = (query === '所有' || query === '全部');
+
+            // 2. 狀態管理更新
+            if (isBigGapTrigger) {
+                isBigGapMode = true;
+                isDiscountMode = false; // 切換模式時，清空另一個特殊過濾
+            } else if (isDiscountTrigger) {
+                isDiscountMode = true;
+                isBigGapMode = false;
+            } else if (isShowAllTrigger || query === "") {
+                isBigGapMode = false;
+                isDiscountMode = false;
+                currentKeyword = "";
+            } else {
+                // 如果是真正的文字搜尋輸入，保持當前的過濾模式，只更新關鍵字
+                currentKeyword = normalizeStr(query).trim();
+            }
+
+            // 3. 判斷是否需要放行所有文字配對 (當關鍵字為空，或者打「所有」)
+            const isAll = ['所有', '全部', 'all', 'list'].some(kw => currentKeyword.includes(normalizeStr(kw))) || !currentKeyword;
             
             let html = '';
             Object.keys(structuredData[selectedCat1]).forEach(cat2 => {
                 Object.keys(structuredData[selectedCat1][cat2]).forEach(pName => {
                     const info = structuredData[selectedCat1][cat2][pName];
-                    const hasDiscount = info.prices.some(p => p.promoDisplay || p.promoCalc);
-                    const hasBigGap = isBigGapOnly ? checkPriceGap(info).isBigGap : true; // 大差價防護
-
+                    
+                    // 4. 複合條件過濾
                     const matchesKeyword = isAll || info.searchKeywords.includes(currentKeyword);
-                    const matchesDiscount = !isDiscountOnly || hasDiscount;
-                    if (matchesKeyword && matchesDiscount && hasBigGap) { html += generateProductCardHTML(pName, info); }
+                    const matchesDiscount = !isDiscountMode || info.prices.some(p => p.promoDisplay || p.promoCalc);
+                    const matchesBigGap = !isBigGapMode || checkPriceGap(info).isBigGap; // 核心：根據全局狀態鎖定過濾
+
+                    if (matchesKeyword && matchesDiscount && matchesBigGap) { 
+                        html += generateProductCardHTML(pName, info); 
+                    }
                 });
             });
+
+            // 5. 畫面渲染與動態多語言提示
             if (!html) {
                 let noResultMsg = uiText[currentLang].chatNoResult;
-                if (isDiscountOnly) {
+                
+                if (isDiscountMode) {
                     const langMsgs = {
                         'zh-Hant': currentKeyword ? `「${currentKeyword}」暫時未有優惠貨品喎！🤷‍♂️` : "呢個分類暫時未有優惠貨品喎！🤷‍♂️",
                         'zh-Hans': currentKeyword ? `「${currentKeyword}」暂时没有优惠商品哦！🤷‍♂️` : "该分类下暂时没有优惠商品哦！🤷‍♂️",
                         'en': currentKeyword ? `No discounts for "${currentKeyword}" found! 🤷‍♂️` : "No discounted products found in this category! 🤷‍♂️"
                     };
                     noResultMsg = langMsgs[currentLang];
-                } else if (isBigGapOnly) {
+                } else if (isBigGapMode) {
+                    const showWord = currentKeyword ? `「${currentKeyword}」` : "呢個分類";
                     const langMsgs = {
-                        'zh-Hant': currentKeyword ? `「${currentKeyword}」暫時未有相差超過 10% 嘅貨品喎！🤷‍♂️` : "呢個分類暫時未有相差超過 10% 嘅貨品喎！🤷‍♂️",
-                        'zh-Hans': currentKeyword ? `「${currentKeyword}」暂时没有相差超过 10% 的商品哦！🤷‍♂️` : "该分类下暂时没有相差超过 10% 的商品哦！🤷‍♂️",
+                        'zh-Hant': `${showWord}暫時未有相差超過 10% 嘅貨品喎！🤷‍♂️`,
+                        'zh-Hans': currentKeyword ? `在「${currentKeyword}」中暂时没有相差超过 10% 的商品哦！🤷‍♂️` : "该分类下暂时没有相差超过 10% 的商品哦！🤷‍♂️",
                         'en': currentKeyword ? `No products with >10% price gap found for "${currentKeyword}"! 🤷‍♂️` : "No products with >10% price gap found in this category! 🤷‍♂️"
                     };
                     noResultMsg = langMsgs[currentLang];
                 }
                 addBotMessage(noResultMsg);
+            } else {
+                // 如果有字眼搜尋，顯示「為你搜尋到以下結果」，否則顯示「瞧瞧全部 / 模式結果」
+                addBotMessage(isAll ? uiText[currentLang].chatShowAll : uiText[currentLang].chatFound, html);
             }
-            else addBotMessage(isAll ? uiText[currentLang].chatShowAll : uiText[currentLang].chatFound, html);
-        }
-
-        function addBotMessage(text, cardsHTML = null) {
-            const wrapper = document.createElement('div');
-            wrapper.className = 'flex flex-col items-start w-full';
-            wrapper.innerHTML = `<div class="flex items-end gap-2 max-w-[90%]"><div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-lg shadow-sm border border-blue-200 shrink-0">🤖</div><div class="bg-white border border-slate-200 text-slate-800 px-4 py-3 rounded-2xl rounded-bl-sm shadow-sm text-[15px]">${text}</div></div>${cardsHTML ? `<div class="w-full mt-4 space-y-5">${cardsHTML}</div>` : ''}`;
-            chatMessages.appendChild(wrapper);
-            chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
         }
 
         function addUserMessage(text) {
