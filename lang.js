@@ -99,7 +99,7 @@ const uiText = {
         quickBye: "👋 拜拜",
         
         miniFooterLinks: "關於我們、條款及免責聲明",
-        miniFooterCopy: "© 2026 慳真D",
+        miniFooterCopy: "© 2026 悭真D",
         disclaimerTitle: "免责声明及服务条款",
         
         // 2. 免責聲明：
@@ -115,8 +115,8 @@ const uiText = {
         footerPrivacy: "隐私权政策",
         footerTerms: "服务条款",
         
-        aboutTitle: "关于 「慳真D🔎」",
-        aboutContent: "「慳真D🔎」旨在为香港市民提供一个便捷的价格比较平台。<br><br>大家从此无需再下载及筛选繁复的政府 Excel 数据表，只需透过这个内置 AI 搜索引擎的应用程序，即可轻松比价、秒速找出全港超市的最划算优惠与最低价格！",
+        aboutTitle: "关于 「悭真D🔎」",
+        aboutContent: "「悭真D🔎」旨在为香港市民提供一个便捷的价格比较平台。<br><br>大家从此无需再下载及筛选繁复的政府 Excel 数据表，只需透过这个内置 AI 搜索引擎的应用程序，即可轻松比价、秒速找出全港超市的最划算优惠与最低价格！",
         contactTitle: "联络我们",
         contactContent: "如有任何查询或合作建议，欢迎联络我们。<br><br>（联络资料即将更新，敬请期待！）",
         privacyTitle: "隐私权政策",
@@ -124,13 +124,13 @@ const uiText = {
         termsTitle: "服务条款",
         termsContent: "本应用程序之价格及优惠数据均直接取自香港政府「资料一线通」(data.gov.hk) 之官方数据集。系统折合价为程序自动运算之结果，所有信息均以政府每日发布之最新数据为准。",
 
-        shareAppTitle: "推荐「慳真D🔎」给朋友！",
+        shareAppTitle: "推荐「悭真D🔎」给朋友！",
         shareAppDesc: "扫描下方 QR Code，或复制链接分享给亲友，一起省钱！",
         shareBtnCopy: "复制链接",
         shareBtnWhatsApp: "WhatsApp 分享",
         shareBtnMore: "更多选项",
         copiedToast: "✅ 链接已复制！",
-        shareMessage: "推荐您使用「慳真D🔎」！秒速比价，帮您省到家！🛒\n"
+        shareMessage: "推荐您使用「悭真D🔎」！秒速比价，帮您省到家！🛒\n"
     },
     
     'en': { 
