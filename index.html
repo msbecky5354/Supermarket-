@@ -482,26 +482,33 @@
             }
         }
 
-        function buildStructuredData() {
+                function buildStructuredData() {
             structuredData = {};
             const unknownSupermarkets = new Set(); 
 
             rawApiData.forEach(item => {
                 let cat1 = item.cat1Name?.[currentLang] || item.cat1Name?.['zh-Hant'];
                 if (!cat1) return;
+                
                 let cat2 = item.cat3Name?.[currentLang] || item.cat2Name?.[currentLang] || 'Other';
+                
+                // --- 📺 UI 顯示專用 (乖乖地跟隨當前語言介面) ---
                 let name = item.name?.[currentLang] || item.name?.['zh-Hant'] || 'Unknown';
-                let enName = item.name?.['en'] || '';
                 let brandObj = item.brand || item.brandName || '';
                 let localBrand = (typeof brandObj === 'object') ? (brandObj[currentLang] || brandObj['zh-Hant'] || '') : brandObj;
-                let enBrand = (typeof brandObj === 'object') ? (brandObj['en'] || '') : brandObj;
+
+                // --- 🔍 終極無國界搜尋大陣法 (將繁、簡、英全部打包做隱藏關鍵字) ---
+                let allNames = Object.values(item.name || {}).join(' '); 
+                let allBrands = (typeof brandObj === 'object') ? Object.values(brandObj).join(' ') : brandObj;
+                let allCat2 = Object.values(item.cat2Name || {}).join(' ') + ' ' + Object.values(item.cat3Name || {}).join(' ');
 
                 if (!structuredData[cat1]) structuredData[cat1] = {};
                 if (!structuredData[cat1][cat2]) structuredData[cat1][cat2] = {};
                 if (!structuredData[cat1][cat2][name]) {
                     structuredData[cat1][cat2][name] = { 
                         brand: localBrand, 
-                        searchKeywords: normalizeStr(`${name} ${enName} ${localBrand} ${enBrand} ${cat2}`),
+                        // 將所有語言嘅名、牌子、分類，甚至大分類 cat1 全部塞入去！
+                        searchKeywords: normalizeStr(`${allNames} ${allBrands} ${allCat2} ${cat1}`),
                         prices: [] 
                     };
                 }
