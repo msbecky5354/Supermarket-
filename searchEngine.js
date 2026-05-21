@@ -37,7 +37,11 @@ function checkSmallTalk(q) {
 function performScopedSearch(query) {
     const isDiscountOnly = (query === '__DISCOUNT_ONLY__');
     if (!isDiscountOnly) { currentKeyword = normalizeStr(query).trim(); }
-    const isAll = ['所有', '全部', 'all', 'list'].some(kw => currentKeyword.includes(normalizeStr(kw))) || (!currentKeyword && !isDiscountOnly);
+    
+    // 🛑 終極修復：將 .includes 改為 === (完全等如)
+    // 咁樣打 "Hallo" 或 "Marshmallow" 都絕對唔會誤觸 "all" 指令！
+    const isAll = ['所有', '全部', 'all', 'list'].some(kw => currentKeyword === normalizeStr(kw) || currentKeyword === kw) || (!currentKeyword && !isDiscountOnly);
+    
     let html = '';
     
     Object.keys(structuredData[selectedCat1]).forEach(cat2 => {
