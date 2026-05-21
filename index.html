@@ -459,7 +459,7 @@
             }
         }
 
-                       function buildStructuredData() {
+        function buildStructuredData() {
             structuredData = {};
             const unknownSupermarkets = new Set(); 
 
@@ -580,7 +580,7 @@
             addBotMessage(`${uiText[currentLang].chatWelcome} <strong class="text-blue-600">${style.icon} ${cat1}</strong>。<br>${uiText[currentLang].chatAsk}`);
         }
 
-                function submitChat() {
+        function submitChat() {
             const q = chatInput.value.trim(); if (!q) return;
             addUserMessage(q); chatInput.value = ''; chatInput.blur();
 
@@ -622,14 +622,36 @@
             let allSameBasePrice = info.prices.filter(p=>!isNaN(parseFloat(p.price))).every(v => parseFloat(v.price) === minBasePrice);
             let allSameEffectivePrice = validPrices.length > 1 && validPrices.every(v => Math.abs(v - validPrices[0]) < 0.01);
 
-            const priceList = info.prices.map(p => {
+                        const priceList = info.prices.map(p => {
                 let parsed = parseFloat(p.price);
                 let isLowestBase = (!isNaN(parsed) && parsed === minBasePrice && info.prices.length > 1 && !allSameBasePrice);
-                let cls = 'border-slate-100 bg-slate-50/50'; let textCls = 'text-slate-600';
-                if (p.rawCode === 'WELLCOME') { cls = 'border-red-100 bg-red-50/30'; textCls = 'text-red-700'; }
-                else if (p.rawCode === 'PARKNSHOP') { cls = 'border-yellow-200 bg-yellow-50/30'; textCls = 'text-yellow-800'; }
-                else if (p.rawCode === 'AEON') { cls = 'border-purple-100 bg-purple-50/30'; textCls = 'text-purple-700'; }
-                else if (['MANNINGS','Watsons','LUNGFUNG'].includes(p.rawCode)) { cls = 'border-blue-100 bg-blue-50/30'; textCls = 'text-blue-700'; }
+                
+                // 🎨 預設顏色 (灰色) 同埋預設顯示名稱
+                let cls = 'border-slate-100 bg-slate-50/50'; 
+                let textCls = 'text-slate-600';
+                let displayName = p.supermarket;
+                
+                // 💡 將 rawCode 轉做大寫，確保配對百分百準確
+                let code = (p.rawCode || '').toUpperCase();
+
+                // 🌈 超市專屬調色板 + 名稱處理
+                if (code === 'WELLCOME' || code === 'LUNGFUNG') { 
+                    cls = 'border-red-200 bg-red-50/30'; textCls = 'text-red-700'; // 惠康、龍豐：紅色
+                } else if (code === 'PARKNSHOP') { 
+                    cls = 'border-blue-200 bg-blue-50/30'; textCls = 'text-blue-700'; // 百佳：藍色
+                } else if (code === 'WATSONS') { 
+                    cls = 'border-teal-200 bg-teal-50/30'; textCls = 'text-teal-700'; // 屈臣氏：藍綠色 (Teal)
+                } else if (code === 'HKTVMALL') { 
+                    cls = 'border-green-200 bg-green-50/30'; textCls = 'text-green-700'; // HKTVmall：綠色
+                } else if (code === 'JASONS') { 
+                    cls = 'border-emerald-300 bg-emerald-100/40'; textCls = 'text-emerald-800'; // Jasons：深沉綠色
+                    if (!displayName.includes('Market Place')) displayName += ' (Market Place)'; // 自動加名
+                } else if (code === 'MANNINGS') { 
+                    cls = 'border-orange-200 bg-orange-50/30'; textCls = 'text-orange-600'; // 萬寧：橙色
+                } else if (code === 'AEON') { 
+                    cls = 'border-fuchsia-200 bg-fuchsia-50/30'; textCls = 'text-fuchsia-700'; // AEON：粉紫色
+                }
+
                 let avg = calculateAvgPrice(p.promoCalc, parsed);
                 let avgLabel = '';
                 if (avg && avg > 0 && avg < parsed) {
@@ -637,7 +659,9 @@
                     let starHtml = isAbsoluteLowest ? `<span class="star-blink ml-1 text-[13px]">⭐</span>` : '';
                     avgLabel = `<span class="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-black shadow-sm ml-1 shrink-0 whitespace-nowrap flex items-center">💰 ${(currentLang === 'en' ? 'Avg' : '折合')} $${avg.toFixed(1)}/${(currentLang === 'en' ? 'ea' : '件')}${starHtml}</span>`;
                 }
-                return `<div class="flex flex-col p-3 rounded-2xl border ${cls} ${isLowestBase ? 'ring-2 ring-green-400 bg-white scale-[1.01] shadow-md z-10' : ''} transition-all"><div class="flex justify-between items-center w-full"><span class="font-black text-[13px] ${textCls} flex items-center gap-1">${p.supermarket}</span><span class="text-[17px] font-black text-slate-800">$${isNaN(parsed) ? p.price : parsed.toFixed(1)}${isLowestBase ? ' 👍' : ''}</span></div>${p.promoDisplay ? `<div class="mt-2 flex flex-wrap sm:flex-nowrap items-center justify-between gap-1 w-full"><span class="text-[11px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-md border border-red-100 break-words w-full sm:w-auto">🏷️ ${p.promoDisplay}</span>${avgLabel}</div>` : ''}</div>`;
+                
+                // ⚠️ HTML 入面嘅 ${p.supermarket} 已經換咗做 ${displayName}
+                return `<div class="flex flex-col p-3 rounded-2xl border ${cls} ${isLowestBase ? 'ring-2 ring-green-400 bg-white scale-[1.01] shadow-md z-10' : ''} transition-all"><div class="flex justify-between items-center w-full"><span class="font-black text-[13px] ${textCls} flex items-center gap-1">${displayName}</span><span class="text-[17px] font-black text-slate-800">$${isNaN(parsed) ? p.price : parsed.toFixed(1)}${isLowestBase ? ' 👍' : ''}</span></div>${p.promoDisplay ? `<div class="mt-2 flex flex-wrap sm:flex-nowrap items-center justify-between gap-1 w-full"><span class="text-[11px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-md border border-red-100 break-words w-full sm:w-auto">🏷️ ${p.promoDisplay}</span>${avgLabel}</div>` : ''}</div>`;
             }).join('');
             
                         return `<div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-200 flex flex-col gap-3 relative overflow-hidden">
