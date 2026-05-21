@@ -708,8 +708,10 @@
             </div>`;
         }
 
-                                // 🔑 重新解封！每次打開都會去字典 (uiText) 搵對應語言嘅字
+        // 🔑 打開 Modal，並全面動態換字 (包括標題！)
         function openDisclaimerModal() {
+            // 👇 加咗呢行！用嚟換標題
+            document.getElementById('disclaimerTitle').innerText = uiText[currentLang].disclaimerTitle; 
             document.getElementById('disclaimerBody').innerHTML = uiText[currentLang].disclaimerText;
             document.getElementById('modalCloseBtn').innerText = uiText[currentLang].modalBtn;
             document.getElementById('disclaimerModal').classList.remove('hidden');
