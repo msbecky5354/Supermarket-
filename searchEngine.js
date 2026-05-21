@@ -11,7 +11,7 @@ function checkSmallTalk(q) {
     if (thanks.some(kw => low.includes(kw))) return uiText[currentLang].replyThanks;
 
     // 道別語句
-    const goodbyes = ['拜拜', 'bye', '再見', '走先', 'goodbye', 'cya', '掰掰', '拜拜啦'];
+    const goodbyes = ['拜拜', '88','bye', '再見', '走先', 'goodbye', 'cya', '掰掰', '拜拜啦'];
     if (goodbyes.some(kw => low.includes(kw))) return uiText[currentLang].replyBye;
 
     // 褒獎或讚美
