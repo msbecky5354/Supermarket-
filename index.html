@@ -708,10 +708,9 @@
             </div>`;
         }
 
-                // 🔑 呢個係打開 Modal 嘅功能 (放喺 init 之前)
+                        // 🔑 呢個係打開 Modal 嘅功能 (放喺 init 之前)
         function openDisclaimerModal() {
-            document.getElementById('disclaimerBody').innerHTML = uiText[currentLang].disclaimerText;
-            document.getElementById('modalCloseBtn').innerText = uiText[currentLang].modalBtn;
+            // 💡 阿Pro 已經將下面兩行 Delete 走，等 JS 唔會再用英文洗走啲中文！
             document.getElementById('disclaimerModal').classList.remove('hidden');
         }
         
