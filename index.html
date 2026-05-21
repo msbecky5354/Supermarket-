@@ -610,13 +610,14 @@
             addBotMessage(`${uiText[currentLang].chatWelcome} <strong class="text-blue-600">${style.icon} ${cat1}</strong>。<br>${uiText[currentLang].chatAsk}`);
         }
 
-        function submitChat() {
+                function submitChat() {
             const q = chatInput.value.trim(); if (!q) return;
             addUserMessage(q); chatInput.value = ''; chatInput.blur();
 
             setTimeout(() => {
-                const talk = checkSmallTalk(q);
-                if (talk) addBotMessage(talk); else performScopedSearch(q);
+                // 🛑 移走咗原本優先 checkSmallTalk 嘅邏輯
+                // 直接強制將用戶輸入交畀搜尋引擎，搵產品先！
+                performScopedSearch(q);
             }, 300);
         }
 
