@@ -7,7 +7,7 @@ function checkSmallTalk(q) {
     // 所以我哋只放「最核心嘅單字」，唔寫長句，做到真正嘅 Fuzzy Match！
 
     // 1. 問候 (e.g. LIKE '%你好%' OR LIKE '%hello%')
-    const greetings = ['你好', 'hi', 'hello', '早晨', '嗨', '您好', '喂', '哈囉'];
+    const greetings = ['你好', 'hi', 'hello', '早晨', '嗨', '您好', '喂', '哈囉','晚安','午安'];
     if (greetings.some(kw => low.includes(kw))) return uiText[currentLang].replyGreeting;
 
     // 2. 感謝
