@@ -41,7 +41,7 @@ function performScopedSearch(query) {
     }
 
     // 🛑 終極修復：保留你原本對 isAll 嘅嚴格比對
-    const isAll = ['所有', '全部', 'all', 'list'].some(kw => currentKeyword === normalizeStr(kw) || currentKeyword === kw) || (!currentKeyword && !isDiscountOnly);
+    const isAll = ['所有', '全部', 'all', 'list','*'].some(kw => currentKeyword === normalizeStr(kw) || currentKeyword === kw) || (!currentKeyword && !isDiscountOnly);
 
     // ==========================================
     // 🛡️ 第一層防線：精準命中閒聊 (Exact Match)
