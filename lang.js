@@ -25,7 +25,7 @@ const uiText = {
         replyBye: "拜拜！有買貴冇買錯，下次去超市掃貨前記得再搵我格價呀！👋",
         replyPraise: "多謝讚賞！😎 我會繼續努力𥄫實各大超市嘅最新靚價！",
         replyJoke: "點解去超市買嘢要帶計數機？...因為要計住啲神仙（仙=cents）！😆 好啦，爛Gag講完，有咩想搵？",
-        replySmallTalkExtra: "今日天氣幾好呀！需要幫手攞特價資訊？"
+        replySmallTalkExtra: "今日天氣幾好呀！需要幫手攞特價資訊？",
         
         quickAll: "📦 睇晒全部",
         quickDiscount: "🏷️ 淨係睇有優惠",
