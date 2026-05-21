@@ -39,6 +39,7 @@ function performScopedSearch(query) {
     if (!isDiscountOnly) { currentKeyword = normalizeStr(query).trim(); }
     const isAll = ['所有', '全部', 'all', 'list'].some(kw => currentKeyword.includes(normalizeStr(kw))) || (!currentKeyword && !isDiscountOnly);
     let html = '';
+    
     Object.keys(structuredData[selectedCat1]).forEach(cat2 => {
         Object.keys(structuredData[selectedCat1][cat2]).forEach(pName => {
             const info = structuredData[selectedCat1][cat2][pName];
@@ -48,17 +49,32 @@ function performScopedSearch(query) {
             if (matchesKeyword && matchesDiscount) { html += generateProductCardHTML(pName, info); }
         });
     });
+    
     if (!html) {
-        let noResultMsg = uiText[currentLang].chatNoResult;
-        if (isDiscountOnly) {
-            const langMsgs = {
-                'zh-Hant': currentKeyword ? `「${currentKeyword}」暫時未有優惠貨品喎！🤷‍♂️` : "呢個分類暫時未有優惠貨品喎！🤷‍♂️",
-                'zh-Hans': currentKeyword ? `「${currentKeyword}」暂时没有优惠商品哦！🤷‍♂️` : "该分类下暂时没有优惠商品哦！🤷‍♂️",
-                'en': currentKeyword ? `No discounts for "${currentKeyword}" found! 🤷‍♂️` : "No discounted products found in this category! 🤷‍♂️"
-            };
-            noResultMsg = langMsgs[currentLang];
+        // 💡 搵唔到貨品？停一停，先查吓係咪 Small Talk (閒聊)！
+        let talk = null;
+        if (!isDiscountOnly && typeof checkSmallTalk === 'function') {
+            talk = checkSmallTalk(query); // 將用戶打嘅字交畀閒聊大腦
         }
-        addBotMessage(noResultMsg);
+        
+        if (talk) {
+            // 🤖 中咗閒聊！直接出傾偈答案
+            addBotMessage(talk);
+        } else {
+            // ❌ 連閒聊都唔係，先至真正話搵唔到
+            let noResultMsg = uiText[currentLang].chatNoResult;
+            if (isDiscountOnly) {
+                const langMsgs = {
+                    'zh-Hant': currentKeyword ? `「${currentKeyword}」暫時未有優惠貨品喎！🤷‍♂️` : "呢個分類暫時未有優惠貨品喎！🤷‍♂️",
+                    'zh-Hans': currentKeyword ? `「${currentKeyword}」暂时没有优惠商品哦！🤷‍♂️` : "该分类下暂时没有优惠商品哦！🤷‍♂️",
+                    'en': currentKeyword ? `No discounts for "${currentKeyword}" found! 🤷‍♂️` : "No discounted products found in this category! 🤷‍♂️"
+                };
+                noResultMsg = langMsgs[currentLang];
+            }
+            addBotMessage(noResultMsg);
+        }
     }
-    else addBotMessage(isAll ? uiText[currentLang].chatShowAll : uiText[currentLang].chatFound, html);
+    else {
+        addBotMessage(isAll ? uiText[currentLang].chatShowAll : uiText[currentLang].chatFound, html);
+    }
 }
