@@ -8,7 +8,7 @@ function checkSmallTalk(q, exactOnly = false) {
     const categories = [
         { words: ['你好', 'hi', 'hello', 'hey', '早晨', '嗨', '您好', '喂', '哈囉', '晚安', '午安'], reply: uiText[currentLang].replyGreeting },
         { words: ['多謝', 'thank', '謝謝', '唔該', 'thx', '感', '谢谢'], reply: uiText[currentLang].replyThanks },
-        { words: ['拜拜', '88', 'bye', '再見', '走先', 'goodbye', 'cya', '掰'], reply: uiText[currentLang].replyBye },
+        { words: ['拜拜', '88', 'bye', '再見', '走先', 'goodbye', 'cya', '掰','走先'], reply: uiText[currentLang].replyBye },
         { words: ['天氣', 'weather', '落雨', '好熱', '凍', '打風'], reply: uiText[currentLang].replySmallTalkExtra },
         { words: ['叻', 'smart', '好用', '棒', 'good', '厲害', '犀利'], reply: uiText[currentLang].replyPraise },
         { words: ['笑話', 'joke', '好悶', '講笑', '無聊', '冇聊'], reply: uiText[currentLang].replyJoke },
