@@ -639,20 +639,22 @@
  //***********$$
 
 function submitChat() {
-    const q = chatInput.value.trim();
+    const q = chatInput.value.trim(); 
     if (!q) return;
-    addUserMessage(q);
-    chatInput.value = '';
-    
+    addUserMessage(q); 
+    chatInput.value = ''; 
+    chatInput.blur();
+
     setTimeout(() => {
-        // 核心改動：直接問 Engine 應該做咩
-        const intent = getIntentAndReply(q);
+        // 1. 直接交俾 Engine 判斷 (將邏輯全部移走，只留呼叫)
+        const chatReply = checkSmallTalk(q); // 喺 searchEngine.js 裡面
         
-        if (intent.type === 'CHAT') {
-            addBotMessage(intent.reply);
+        // 2. 如果係閒聊，就回覆 (唔好再 check 咩 getFilteredProductsHTML)
+        if (chatReply) {
+            addBotMessage(chatReply);
         } else {
-            // 搜尋意圖直接執行 Engine 嘅搜尋
-            currentKeyword = intent.query;
+            // 3. 唔係閒聊，先執行搜尋
+            currentKeyword = normalizeStr(q);
             executeProductSearch();
         }
     }, 300);
