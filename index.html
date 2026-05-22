@@ -645,30 +645,22 @@
     chatInput.blur();
 
     setTimeout(() => {
-        const normalizedQ = normalizeStr(q);
-        
-        // --- 1. 閒聊優先 (純關鍵字檢查，唔好去查貨) ---
+        // --- 1. 【意圖絕對優先】：閒聊詞庫檢查 ---
+        // 直接 check，唔好理有無貨，唔好理 searchKeywords
         const talk = checkSmallTalk(q);
         if (talk) {
             addBotMessage(talk);
-            return; // 🛑 只要係閒聊，即刻離開，徹底阻止任何搜尋行為！
+            return; // 只要係閒聊，即刻 return，Search 引擎連掂都掂唔到
         }
 
-        // --- 2. 產品搜尋 (只有確定唔係閒聊，先會嚟到呢度) ---
-        // 先判斷有冇貨
-        const testHtml = getFilteredProductsHTML(normalizedQ);
+        // --- 2. 【搜尋意圖】：確定唔係閒聊，先去搵貨 ---
+        const normalizedQ = normalizeStr(q);
+        currentKeyword = normalizedQ;
         
-        if (testHtml !== '') {
-            currentKeyword = normalizedQ;
-            executeProductSearch(); 
-        } else {
-            // --- 3. 最終無結果 (包括無貨，或者你想處理嘅 fallback) ---
-            currentKeyword = normalizedQ;
-            executeProductSearch(); 
-        }
+        // 搵貨邏輯全部塞入 executeProductSearch 入面做
+        executeProductSearch(); 
     }, 300);
 }
-    
        function handleMessage(q) {
             const smallTalkReply = checkSmallTalk(q);
     
