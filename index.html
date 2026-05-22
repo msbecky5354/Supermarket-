@@ -242,7 +242,7 @@
         const toastMsg = document.getElementById('toastMsg');
 
         let rawApiData = [];     
-        let structuredData = {}; 
+        window.structuredData = {}; 
         let currentLang = 'zh-Hant';
         let selectedCat1 = null; 
         
@@ -301,7 +301,11 @@
                 }
                 rawApiData = data;
                 
+               // 3. 觸發 UI 更新
                 changeLanguage('zh-Hant');
+                
+                // 🌟 加呢句：觸發到價對比，更新紅點狀態
+                if (typeof updateAlertBadge === 'function') updateAlertBadge();
             } catch (e) {
                 level1Container.innerHTML = `<p class="text-red-500 text-center col-span-2">${uiText[currentLang].error}</p>`;
             }
