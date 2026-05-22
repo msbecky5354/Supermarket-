@@ -42,7 +42,7 @@ function checkSmallTalk(q, exactOnly = false) {
     { words: ['天氣', 'weather', '落雨', '好熱', '凍', '打風', '紅雨', '黑雨', '黃雨', '行雷', '打雷', '暴雨', '颱風', '熱死', '凍冰冰', '天晴', '落狗屎'], reply: uiText[currentLang].replySmallTalkExtra },
     
     // 5. 讚賞 (加入地道香港讚美人嘅字眼)
-    { words: ['叻', 'smart', '好用', '棒', 'good', '厲害', '犀利', '叻仔', '叻女', '好勁', '好掂', '世一', '讚', 'awesome', 'brilliant', 'excellent', '正', '勁'], reply: uiText[currentLang].replyPraise },
+    { words: ['叻', 'smart', '好', '棒', 'good', '厲害', '犀利', '叻仔', '叻女', '好勁', '好掂', '世一', '讚', 'awesome', 'brilliant', 'excellent', '正', '勁'], reply: uiText[currentLang].replyPraise },
     
     // 6. 講笑/無聊 (加入用家投訴悶嘅字眼)
     { words: ['笑話', 'joke', '好悶', '講笑', '無聊', '冇聊', '有冇搞錯', '爛gag', '搞笑', '解悶', 'boring', '悶死'], reply: uiText[currentLang].replyJoke },
