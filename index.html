@@ -636,31 +636,31 @@
             addBotMessage(`${uiText[currentLang].chatWelcome} <strong class="text-blue-600">${style.icon} ${cat1}</strong>。<br>${uiText[currentLang].chatAsk}`);
         }
 
-        // 💡 Document Station 第 1 & 2 步實踐：先試搵貨，搵唔到先搵 Talk
+        // 💡
+        // 💡 Document Station 第 1 & 2 步實踐：先試搵閒聊，搵唔到先去搜尋貨品
         function submitChat() {
-            const q = chatInput.value.trim(); if (!q) return;
-            addUserMessage(q); chatInput.value = ''; chatInput.blur();
+            const q = chatInput.value.trim(); 
+            if (!q) return;
+            addUserMessage(q); 
+            chatInput.value = ''; 
+            chatInput.blur();
 
             setTimeout(() => {
-                const testKeyword = normalizeStr(q).trim();
-                const testHtml = getFilteredProductsHTML(testKeyword);
+                // 1) 🧠 直接呼叫 searchEngine.js 裡面的 checkSmallTalk
+                // 這裏會優先判斷是否命中「88」、「安裝」、「天氣」等閒聊詞庫
+                const talk = checkSmallTalk(q);
 
-                if (testHtml !== '') {
-                    // 1) 搵到產品！正式更新狀態並顯示
-                    currentKeyword = testKeyword;
-                    executeProductSearch(); 
-                } else {
-                    // 2) 搵唔到產品！進入 Fuzzy Talk Check
-                    const talk = checkSmallTalk(q);
-                    if (talk) {
-                        // 係傾偈！回覆對話，【不更新】currentKeyword，保護原有過濾狀態
-                        addBotMessage(talk);
-                    } else {
-                        // 真係搵唔到貨，又唔係閒聊，更新關鍵字出提示
-                        currentKeyword = testKeyword;
-                        executeProductSearch(); 
-                    }
+                if (talk) {
+                    // 命中閒聊！直接回覆對話，徹底阻斷後續的搜尋行為
+                    addBotMessage(talk);
+                    return; 
                 }
+
+                // 2) 🛒 如果唔係閒聊，先至正式更新狀態並進行模糊搜尋
+                const testKeyword = normalizeStr(q).trim();
+                currentKeyword = testKeyword;
+                executeProductSearch(); 
+                
             }, 300);
         }
 
