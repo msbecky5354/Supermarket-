@@ -636,40 +636,47 @@
             addBotMessage(`${uiText[currentLang].chatWelcome} <strong class="text-blue-600">${style.icon} ${cat1}</strong>。<br>${uiText[currentLang].chatAsk}`);
         }
 
-        // 💡 Document Station 第 1 & 2 步實踐：先試搵貨，搵唔到先搵 Talk
-                function submitChat() {
-            const q = chatInput.value.trim(); 
-            if (!q) return;
-            addUserMessage(q); 
-            chatInput.value = ''; 
-            chatInput.blur();
+ //***********$$
+    function submitChat() {
+    const q = chatInput.value.trim(); 
+    if (!q) return;
+    addUserMessage(q); 
+    chatInput.value = ''; 
+    chatInput.blur();
 
-            setTimeout(() => {
-                const normalizedQ = normalizeStr(q);
-                
-                // --- 第一層：Exact Match (假設你有個函數做 Exact) ---
-                // 暫時按你要求排優先級，如果無 ExactMatch 函數，可以 skip 呢步
-                
-                // --- 第二層：Small Talk (閒聊檢查) ---
-                // 優先處理閒聊，因為 "Hi" 唔應該進入搜尋器
-                const talk = checkSmallTalk(q);
-                if (talk) {
-                    addBotMessage(talk);
-                    return; // 只要係閒聊，即刻結束，唔好再去搜尋貨品
-                }
-
-                // --- 第三層：Fuzzy Search (產品/商戶名稱) ---
-                const testHtml = getFilteredProductsHTML(normalizedQ);
-                if (testHtml !== '') {
-                    currentKeyword = normalizedQ;
-                    executeProductSearch(); 
-                } else {
-                    // --- 第四層：最終無結果 ---
-                    currentKeyword = normalizedQ;
-                    executeProductSearch(); // 顯示「沒有相關產品」
-                }
-            }, 300);
+    setTimeout(() => {
+        // --- 第一層：Exact Match (搜尋產品名或供應商) ---
+        // 假設你有 searchDatabaseExact(q)，如果無，呢度會 return null
+        const exactResult = typeof searchDatabaseExact === 'function' ? searchDatabaseExact(q) : null;
+        if (exactResult) {
+            currentKeyword = q;
+            renderResults(exactResult); // 直接出貨品結果
+            return;
         }
+
+        // --- 第二層：Small Talk (意圖分類 - 閒聊與 FAQ) ---
+        // 只要 checkSmallTalk 有回覆，一律視為閒聊，直接回覆，阻斷搜尋
+        const talk = checkSmallTalk(q);
+        if (talk) {
+            addBotMessage(talk);
+            return; 
+        }
+
+        // --- 第三層：Fuzzy Search (商品/供應商模糊搜尋) ---
+        // 只有頭兩層都無命中，先去執行你既 Fuzzy 邏輯
+        const normalizedQ = normalizeStr(q);
+        const testHtml = getFilteredProductsHTML(normalizedQ);
+        
+        if (testHtml !== '') {
+            currentKeyword = normalizedQ;
+            executeProductSearch(); // 出 fuzzy 結果
+        } else {
+            // --- 第四層：無相關產品 (最終 fallback) ---
+            currentKeyword = normalizedQ;
+            executeProductSearch(); // 統一去 execute 顯示「沒有相關產品」
+        }
+    }, 300);
+}
     
        function handleMessage(q) {
     const smallTalkReply = checkSmallTalk(q);
