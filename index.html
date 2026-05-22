@@ -666,15 +666,17 @@
         
     
        function handleMessage(q) {
-       // 直接調用 searchEngine.js 提供的 function，index.html 不含任何邏輯與文字
-       const smallTalkReply = checkSmallTalk(q);
+    const smallTalkReply = checkSmallTalk(q);
     
-       if (smallTalkReply) {
+    // ✅ 檢查是否有命中閒聊，有的話顯示後立即離開
+    if (smallTalkReply) {
         renderChatBubble(smallTalkReply);
-         } else {
-        executeProductSearch(q);
-          }
-          }
+        return; // 🛑 加呢個 return，阻斷之後所有搵貨動作！
+    }
+    
+    // 只有當 smallTalkReply 係 null 嘅時候，程式先會行到呢度去搵貨
+    executeProductSearch(q);
+}
 
         // 💡 補全 Fuzzy 閒聊防護網 (特登加咗 天氣/黑雨/落雨 等應對)
         function checkSmallTalk(q) {
