@@ -645,47 +645,38 @@
     chatInput.blur();
 
     setTimeout(() => {
-        // --- 第一層：Exact Match (搜尋產品名或供應商) ---
-        // 假設你有 searchDatabaseExact(q)，如果無，呢度會 return null
-        const exactResult = typeof searchDatabaseExact === 'function' ? searchDatabaseExact(q) : null;
-        if (exactResult) {
-            currentKeyword = q;
-            renderResults(exactResult); // 直接出貨品結果
-            return;
-        }
-
-        // --- 第二層：Small Talk (意圖分類 - 閒聊與 FAQ) ---
-        // 只要 checkSmallTalk 有回覆，一律視為閒聊，直接回覆，阻斷搜尋
+        const normalizedQ = normalizeStr(q);
+        
+        // --- 1. 閒聊優先 (純關鍵字檢查，唔好去查貨) ---
         const talk = checkSmallTalk(q);
         if (talk) {
             addBotMessage(talk);
-            return; 
+            return; // 🛑 只要係閒聊，即刻離開，徹底阻止任何搜尋行為！
         }
 
-        // --- 第三層：Fuzzy Search (商品/供應商模糊搜尋) ---
-        // 只有頭兩層都無命中，先去執行你既 Fuzzy 邏輯
-        const normalizedQ = normalizeStr(q);
+        // --- 2. 產品搜尋 (只有確定唔係閒聊，先會嚟到呢度) ---
+        // 先判斷有冇貨
         const testHtml = getFilteredProductsHTML(normalizedQ);
         
         if (testHtml !== '') {
             currentKeyword = normalizedQ;
-            executeProductSearch(); // 出 fuzzy 結果
+            executeProductSearch(); 
         } else {
-            // --- 第四層：無相關產品 (最終 fallback) ---
+            // --- 3. 最終無結果 (包括無貨，或者你想處理嘅 fallback) ---
             currentKeyword = normalizedQ;
-            executeProductSearch(); // 統一去 execute 顯示「沒有相關產品」
+            executeProductSearch(); 
         }
     }, 300);
 }
     
        function handleMessage(q) {
-    const smallTalkReply = checkSmallTalk(q);
+            const smallTalkReply = checkSmallTalk(q);
     
-    // ✅ 檢查是否有命中閒聊，有的話顯示後立即離開
-    if (smallTalkReply) {
+         // ✅ 檢查是否有命中閒聊，有的話顯示後立即離開
+         if (smallTalkReply) {
         renderChatBubble(smallTalkReply);
         return; // 🛑 加呢個 return，阻斷之後所有搵貨動作！
-    }
+         }
     
     // 只有當 smallTalkReply 係 null 嘅時候，程式先會行到呢度去搵貨
     executeProductSearch(q);
