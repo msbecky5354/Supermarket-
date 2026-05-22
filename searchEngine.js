@@ -1,4 +1,34 @@
 // searchEngine.js
+      // searchEngine.js
+
+// 1. 意圖分類器 (Intent Classifier)
+function classifyIntent(q) {
+    const low = q.toLowerCase().trim();
+    
+    // 優先級 1: 強搜索詞
+    const searchKeywords = ['搵', '買', 'search', '睇吓', 'show', '幾多', '價錢', '有咩', '邊隻', 'list'];
+    if (searchKeywords.some(kw => low.includes(kw))) return 'SEARCH';
+
+    // 優先級 2: 閒聊/FAQ
+    if (checkSmallTalk(q)) return 'CHAT';
+
+    // 優先級 3: 模糊商品比對 (檢查是否屬於 DB 內的產品)
+    if (isProductKeyword(low)) return 'SEARCH';
+
+    return 'CHAT'; // 預設跌落閒聊，防止無故撈 Data
+}
+
+// 2. 商品詞庫過濾 (停用詞處理)
+function extractProductKeywords(q) {
+    const stopWords = ['我', '想', '要', '兩', '包', '罐', '支', '盒', '嘅', '呀', '啦', '幫我', '買'];
+    let cleaned = q;
+    stopWords.forEach(word => cleaned = cleaned.replace(new RegExp(word, 'g'), ''));
+    return cleaned.trim();
+}
+    
+
+
+
 
 // 🧠 升級版閒聊大腦：支援「精準 (Exact)」與「模糊 (Fuzzy)」雙模式
 function checkSmallTalk(q, exactOnly = false) {
