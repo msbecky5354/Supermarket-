@@ -637,33 +637,39 @@
         }
 
         // 💡 Document Station 第 1 & 2 步實踐：先試搵貨，搵唔到先搵 Talk
-        function submitChat() {
-            const q = chatInput.value.trim(); if (!q) return;
-            addUserMessage(q); chatInput.value = ''; chatInput.blur();
+                function submitChat() {
+            const q = chatInput.value.trim(); 
+            if (!q) return;
+            addUserMessage(q); 
+            chatInput.value = ''; 
+            chatInput.blur();
 
             setTimeout(() => {
-                const testKeyword = normalizeStr(q).trim();
-                const testHtml = getFilteredProductsHTML(testKeyword);
+                const normalizedQ = normalizeStr(q);
+                
+                // --- 第一層：Exact Match (假設你有個函數做 Exact) ---
+                // 暫時按你要求排優先級，如果無 ExactMatch 函數，可以 skip 呢步
+                
+                // --- 第二層：Small Talk (閒聊檢查) ---
+                // 優先處理閒聊，因為 "Hi" 唔應該進入搜尋器
+                const talk = checkSmallTalk(q);
+                if (talk) {
+                    addBotMessage(talk);
+                    return; // 只要係閒聊，即刻結束，唔好再去搜尋貨品
+                }
 
+                // --- 第三層：Fuzzy Search (產品/商戶名稱) ---
+                const testHtml = getFilteredProductsHTML(normalizedQ);
                 if (testHtml !== '') {
-                    // 1) 搵到產品！正式更新狀態並顯示
-                    currentKeyword = testKeyword;
+                    currentKeyword = normalizedQ;
                     executeProductSearch(); 
                 } else {
-                    // 2) 搵唔到產品！進入 Fuzzy Talk Check
-                    const talk = checkSmallTalk(q);
-                    if (talk) {
-                        // 係傾偈！回覆對話，【不更新】currentKeyword，保護原有過濾狀態
-                        addBotMessage(talk);
-                    } else {
-                        // 真係搵唔到貨，又唔係閒聊，更新關鍵字出提示
-                        currentKeyword = testKeyword;
-                        executeProductSearch(); 
-                    }
+                    // --- 第四層：最終無結果 ---
+                    currentKeyword = normalizedQ;
+                    executeProductSearch(); // 顯示「沒有相關產品」
                 }
             }, 300);
         }
-        
     
        function handleMessage(q) {
     const smallTalkReply = checkSmallTalk(q);
