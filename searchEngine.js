@@ -1,5 +1,21 @@
 // searchEngine.js
-      // searchEngine.js
+     
+function getExactMatch(q) {
+    const trimmedQ = q.trim();
+    // 遍歷所有貨品，檢查名稱或品牌是否「完全等於」用戶輸入
+    for (let cat1 in structuredData) {
+        for (let cat2 in structuredData[cat1]) {
+            for (let pName in structuredData[cat1][cat2]) {
+                const info = structuredData[cat1][cat2][pName];
+                // 這裡改成嚴格相等 (===)
+                if (pName === trimmedQ || (info.brand && info.brand === trimmedQ)) {
+                    return { name: pName, info: info }; // 搵到就 return
+                }
+            }
+        }
+    }
+    return null; // 真係搵唔到，先去下一步
+}
 
 // 1. 意圖分類器 (Intent Classifier)
 function classifyIntent(q) {
