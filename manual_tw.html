@@ -1,7 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>用戶手冊 | 慳真D</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 antialiased p-4 md:p-8">
+    <div class="max-w-2xl mx-auto bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="bg-blue-600 px-5 py-4 flex items-center sticky top-0 z-10">
+            <button onclick="window.history.back()" class="text-white bg-blue-700 hover:bg-blue-800 px-3 py-1.5 rounded-xl text-sm font-bold active:scale-95 transition flex items-center">← 返回</button>
+            <h1 class="text-white font-black ml-4 text-lg">用戶手冊</h1>
+        </div>
+        
+        <div class="p-6 text-sm leading-relaxed text-slate-600">
+            <p class="mb-5">歡迎使用「慳真D」！本系統每日自動同步政府「網上價格一覽通」數據，助你輕鬆比較全港各大超市及連鎖商戶的價格。</p>
+            
             <h3 class="font-bold text-slate-900 text-base mb-2">🔍 核心功能與搜尋技巧</h3>
             <ul class="list-disc pl-5 space-y-2 mb-6">
                 <li><strong>智能對話式搜尋：</strong> 點選主分類後，可直接輸入「品牌」或「貨品名稱」尋找貨品。</li>
                 <li><strong>一鍵篩選優惠：</strong> 善用上方「淨睇優惠」快捷鍵，只顯示有促銷活動的貨品。</li>
-                <li><strong>🔥 捕捉超大差價：</strong> 點擊畫面底部的 <b>「🔥 超大差價」快捷鍵</b>，系統會瞬間篩選出商戶之間**價格相差超過 10%** 的暴利或激抵貨品，幫你一眼抓出哪間店在斬客、哪間店最佛心！</li>
+                <li><strong>🔥 捕捉超大差價：</strong> 點擊畫面底部的 <b>「🔥 超大差價」快捷鍵</b>，系統會瞬間篩選出商戶之間<b>價格相差超過 10%</b> 的暴利或激抵貨品，幫你一眼抓出哪間店在斬客、哪間店最佛心！</li>
                 <li><strong>智能換算單價：</strong> 自動計算買一送一等複雜優惠的折合單價。</li>
             </ul>
+
+            <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6 shadow-sm">
+                <h3 class="text-[15px] font-black text-amber-800 mb-2 flex items-center gap-2">
+                    <span>🔔</span> 全新功能：智能心水價提示
+                </h3>
+                <p class="text-[13px] text-slate-700 leading-relaxed mb-3">
+                    見到心水貨品但嫌未夠平？依家你可以設定「到價提示」！只要喺產品卡片撳一下 <b>橙色鐘仔 🔔</b>，輸入你嘅目標心水價，即可加入追蹤清單。
+                </p>
+                <ul class="list-disc pl-5 space-y-1.5 text-[12px] text-slate-600 mb-3">
+                    <li><strong>每日自動對獎：</strong> 每日打開「慳真D」App，系統會自動比對最新超市價格。</li>
+                    <li><strong>到價即時點亮：</strong> 當貨品跌穿你設定嘅心水價，畫面頂部嘅 <b>玫瑰紅鐘仔 🔔</b> 就會亮起紅點提示！</li>
+                </ul>
+                <div class="bg-white/80 rounded-xl p-2.5 border border-amber-100 flex gap-2 items-start">
+                    <span class="text-[13px]">🛡️</span>
+                    <p class="text-[11px] text-slate-500 leading-normal">
+                        <b>極致私隱保護：</b>本功能採用純前端離線技術，你追蹤嘅心水價清單<b>只會儲存在你自己的手機內</b>。我們不收集、不儲存你的電話或 Email，真正做到零個資、無廣告追蹤！
+                    </p>
+                </div>
+            </div>
+
+            <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4 mb-6 shadow-sm">
+                <h3 class="text-[15px] font-black text-blue-800 mb-2 flex items-center gap-2">
+                    <span>💡</span> 點解會搵唔到某啲貨品？
+                </h3>
+                <p class="text-[13px] text-slate-700 leading-relaxed">
+                    「慳真D」嘅數據直接連結政府及消委會的「網上價格一覽通」。為確保價格準確及能夠每日穩定更新，系統主要監察約 <strong>3,000 款</strong>市民最常買的「民生必需品」。<br><br>
+                    因此，部分極度冷門、期間限定，或者只有單一超市獨家發售的貨品，未必會涵蓋在我們的數據庫內。建議盡量使用簡單的「牌子名」或「關鍵字」進行搜尋！
+                </p>
+            </div>
+            
+            <h3 class="font-bold text-slate-900 text-base mb-2">📱 如何加入手機主螢幕</h3>
+            <p><strong>Android 系統：</strong> 用 Chrome 開啟 ➔ 點擊右上角「⋮」 ➔ 選擇「加至主畫面」。<br>
+            <strong>iOS 系統：</strong> 用 Safari 開啟 ➔ 點擊底部「分享」圖示 ➔ 選擇「加入主畫面」。</p>
+        </div>
+    </div>
+</body>
+</html>
