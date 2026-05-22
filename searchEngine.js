@@ -61,7 +61,7 @@ function checkSmallTalk(q, exactOnly = false) {
     return null;
 }
 
-核心邏輯：統一處理意圖
+//核心邏輯：統一處理意圖
 function getIntentAndReply(q) {
     const low = q.toLowerCase().trim();
     
