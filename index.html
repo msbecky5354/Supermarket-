@@ -663,6 +663,18 @@
                 }
             }, 300);
         }
+        
+    
+       function handleMessage(q) {
+       // 直接調用 searchEngine.js 提供的 function，index.html 不含任何邏輯與文字
+       const smallTalkReply = checkSmallTalk(q);
+    
+       if (smallTalkReply) {
+        renderChatBubble(smallTalkReply);
+         } else {
+        executeProductSearch(q);
+          }
+          }
 
         // 💡 補全 Fuzzy 閒聊防護網 (特登加咗 天氣/黑雨/落雨 等應對)
         function checkSmallTalk(q) {
