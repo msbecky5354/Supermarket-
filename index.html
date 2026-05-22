@@ -637,43 +637,26 @@
         }
 
  //***********$$
-    function submitChat() {
-    const q = chatInput.value.trim(); 
+
+function submitChat() {
+    const q = chatInput.value.trim();
     if (!q) return;
-    addUserMessage(q); 
-    chatInput.value = ''; 
-    chatInput.blur();
-
+    addUserMessage(q);
+    chatInput.value = '';
+    
     setTimeout(() => {
-        // --- 1. 【意圖絕對優先】：閒聊詞庫檢查 ---
-        // 直接 check，唔好理有無貨，唔好理 searchKeywords
-        const talk = checkSmallTalk(q);
-        if (talk) {
-            addBotMessage(talk);
-            return; // 只要係閒聊，即刻 return，Search 引擎連掂都掂唔到
-        }
-
-        // --- 2. 【搜尋意圖】：確定唔係閒聊，先去搵貨 ---
-        const normalizedQ = normalizeStr(q);
-        currentKeyword = normalizedQ;
+        // 核心改動：直接問 Engine 應該做咩
+        const intent = getIntentAndReply(q);
         
-        // 搵貨邏輯全部塞入 executeProductSearch 入面做
-        executeProductSearch(); 
+        if (intent.type === 'CHAT') {
+            addBotMessage(intent.reply);
+        } else {
+            // 搜尋意圖直接執行 Engine 嘅搜尋
+            currentKeyword = intent.query;
+            executeProductSearch();
+        }
     }, 300);
 }
-       function handleMessage(q) {
-            const smallTalkReply = checkSmallTalk(q);
-    
-         // ✅ 檢查是否有命中閒聊，有的話顯示後立即離開
-         if (smallTalkReply) {
-        renderChatBubble(smallTalkReply);
-        return; // 🛑 加呢個 return，阻斷之後所有搵貨動作！
-         }
-    
-    // 只有當 smallTalkReply 係 null 嘅時候，程式先會行到呢度去搵貨
-    executeProductSearch(q);
-}
-
         
 
         // 💡 取得產品 HTML 的獨立 Helper
