@@ -19,17 +19,7 @@ function getExactMatch(q) {
 
 
     
- 核心邏輯：統一處理意圖
-function getIntentAndReply(q) {
-    const low = q.toLowerCase().trim();
-    
-    // 檢查閒聊
-    const match = categories.find(c => c.words.some(kw => low.includes(kw)));
-    if (match) return { type: 'CHAT', reply: match.reply };
-    
-    // 否則視為搜尋
-    return { type: 'SEARCH', query: q };
-}
+ 
 
 
 
@@ -69,6 +59,18 @@ function checkSmallTalk(q, exactOnly = false) {
         }
     }
     return null;
+}
+
+核心邏輯：統一處理意圖
+function getIntentAndReply(q) {
+    const low = q.toLowerCase().trim();
+    
+    // 檢查閒聊
+    const match = categories.find(c => c.words.some(kw => low.includes(kw)));
+    if (match) return { type: 'CHAT', reply: match.reply };
+    
+    // 否則視為搜尋
+    return { type: 'SEARCH', query: q };
 }
 
 // 🛒 升級版搜尋引擎：落實 4 層過濾機制
