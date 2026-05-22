@@ -56,8 +56,8 @@ function checkSmallTalk(q, exactOnly = false) {
     // 9. 求助 (加入更多功能性查詢)
     { words: ['點用', '點樣', '點做', '幫手', '唔明', 'help', '如何', '唔識', '教學', '求救', 'sos', '教我', '點算', '指南', '操作', '點搞'], reply: uiText[currentLang].replyHelp },
     
-    // 10. 身份查問 (加入口語化問法)
-    { words: ['你是誰', '你係邊個', 'who are you', '咩名', '機器人', 'robot', '人工智能', 'ai', '你係咩', 'who r u', '咩機', '咩黎', '咩嚟', '咩來', 'bot'], reply: uiText[currentLang].replyWho },
+    // 10. 身份查問 (加入咗語音輸入常見嘅「乜名」、「叫咩名」)
+    { words: ['你是誰', '你係邊個', 'who are you', '咩名', '你係乜名', '你叫咩名', '你叫乜名', '叫咩名', '機器人', 'robot', '人工智能', 'ai', '你係咩', 'who r u', '咩機', '咩黎', '咩嚟', '咩來', 'bot'], reply: uiText[currentLang].replyWho },
     
     // 11. 認同/肯定 (加入中英口語肯定詞)
     { words: ['啱', '對', '係呀', '沒錯', '同意', '正解', '講得好', 'yeah', 'yes', 'yup', 'yep', 'of course', '絕對', '當然', '係囉', '冇錯', '係咪'], reply: uiText[currentLang].replyAgreement },
