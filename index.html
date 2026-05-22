@@ -674,25 +674,7 @@
     executeProductSearch(q);
 }
 
-        // 💡 補全 Fuzzy 閒聊防護網 (特登加咗 天氣/黑雨/落雨 等應對)
-        function checkSmallTalk(q) {
-            const low = q.toLowerCase();
-            if (['你好', 'hi', 'hello', '早晨', '嗨'].some(kw => low.includes(kw))) return uiText[currentLang].replyGreeting;
-            if (['多謝', 'thank', '謝謝', '唔該', 'thx'].some(kw => low.includes(kw))) return uiText[currentLang].replyThanks;
-            if (['拜拜', 'bye', '再見', '走先', 'goodbye', 'cya'].some(kw => low.includes(kw))) return uiText[currentLang].replyBye;
-            if (['叻', 'smart', '好用', '棒', 'good', '厲害'].some(kw => low.includes(kw))) return uiText[currentLang].replyPraise;
-            if (['笑話', 'joke', '好悶', '講笑', '無聊'].some(kw => low.includes(kw))) return uiText[currentLang].replyJoke;
-            
-            if (['天氣', '落雨', '黑雨', '打風', 'weather', '雨'].some(kw => low.includes(kw))) {
-                const msgs = {
-                    'zh-Hant': "我係格價專員，唔識睇天氣呀 😅！不過提提你，天氣唔好最好留喺屋企網購，記得用我格吓價先！🛒",
-                    'zh-Hans': "我是比价专员，不懂看天气呀 😅！不过提醒您，天气不好最好留在家里网购，记得先用我比价哦！🛒",
-                    'en': "I'm a price tracker, not a weatherman 😅! But bad weather is perfect for online shopping—check prices with me first! 🛒"
-                };
-                return msgs[currentLang] || msgs['zh-Hant'];
-            }
-            return null; 
-        }
+        
 
         // 💡 取得產品 HTML 的獨立 Helper
         function getFilteredProductsHTML(keywordToTest) {
