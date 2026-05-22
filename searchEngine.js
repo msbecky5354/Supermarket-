@@ -4,7 +4,7 @@
 function checkSmallTalk(q, exactOnly = false) {
     const low = q.toLowerCase().trim();
 
-    // 將所有閒聊詞庫分門別類 (保留咗你新增嘅 hey, 晚安, 午安！)
+    // 將所有閒聊詞庫分門別類
     const categories = [
         { words: ['你好', 'hi', 'hello', 'hey', '早晨', '嗨', '您好', '喂', '哈囉', '午安'], reply: uiText[currentLang].replyGreeting },
         { words: ['多謝', 'thank', '謝謝', '唔該', 'thx', '感', '谢谢','good night','晚安'], reply: uiText[currentLang].replyThanks },
@@ -13,20 +13,25 @@ function checkSmallTalk(q, exactOnly = false) {
         { words: ['叻', 'smart', '好用', '棒', 'good', '厲害', '犀利'], reply: uiText[currentLang].replyPraise },
         { words: ['笑話', 'joke', '好悶', '講笑', '無聊', '冇聊','有冇搞錯'], reply: uiText[currentLang].replyJoke },
         { words: ['幾歲','幾多歲','做緊咩', '食飯', '識幾多', '得閒', '有空'], reply: uiText[currentLang].replySmallTalkExtra },
-        // 👇 加喺呢度！專捉 omg 同埋其他感嘆詞！
         { words: ['omg', 'oh my god', '我的天', '天呀', '救命', '痴線', '黐線', '哇', 'wow'], reply: uiText[currentLang].replyOmg },
         { words: ['點用', '點樣', '點做', '幫手', '唔明', 'help', '如何', '唔識', '教學'], reply: uiText[currentLang].replyHelp },
         { words: ['你是誰', '你係邊個', 'who are you', '咩名', '機器人', 'robot', '人工智能', 'ai', '你係咩'], reply: uiText[currentLang].replyWho },
         { words: ['啱', '對', '係呀', '沒錯', '同意', '正解', '講得好', 'yeah', 'yes'], reply: uiText[currentLang].replyAgreement },
-    
-      ];
+        
+        // 👇 新功能邏輯 (完全保持你嘅格式)
+        { words: ['搵唔到', '找不到', '冷門', '冇貨', '缺貨'], reply: uiText[currentLang].r_no_product },
+        { words: ['個資', '隱私', '私隱', '安全', '個人資料'], reply: uiText[currentLang].r_privacy },
+        { words: ['提示', '鐘仔', 'alert', '追蹤', '到價'], reply: uiText[currentLang].r_alert },
+        { words: ['差價', '激抵', '唔抵', '貴', '便宜'], reply: uiText[currentLang].r_gap },
+        { words: ['畫面', '主螢幕', '安裝', '桌面', '加落去'], reply: uiText[currentLang].r_home }
+    ];
 
     for (let cat of categories) {
         if (exactOnly) {
-            // 第一層：必須 100% 完全相同 (解決 "hi" 撞 "chicken" 問題)
+            // 第一層：必須 100% 完全相同
             if (cat.words.some(kw => low === kw)) return cat.reply;
         } else {
-            // 第三層：只要包含該字眼就中 (解決 "今日天氣" 撞唔中 "天氣" 問題)
+            // 第三層：只要包含該字眼就中
             if (cat.words.some(kw => low.includes(kw))) return cat.reply;
         }
     }
