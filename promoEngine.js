@@ -1,5 +1,44 @@
 // promoEngine.js - 100% 純英文 (Safari/iOS 突破攔截版 + Google Sheet 收集器)
 
+// 📡 未知優惠收集器 (隱藏原生 HTML Form 絕招 - 100% 突破 iOS 限制)
+function logUnknownPromo(promoText, originalPrice, calculatedPrice) {
+    const formUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSe7oOQ-7klgKPvjgRof2_Ztae1fBMWuA0_us32ewkK8TbbxbA/formResponse';
+    
+    let iframeName = 'hidden_iframe_' + Math.random().toString(36).substring(7);
+    let iframe = document.createElement('iframe');
+    iframe.name = iframeName;
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+
+    let form = document.createElement('form');
+    form.method = 'POST';
+    form.action = formUrl;
+    form.target = iframeName; 
+    form.style.display = 'none';
+
+    let data = {
+        'entry.1839150021': promoText,
+        'entry.1121303872': String(originalPrice),
+        'entry.1938861444': calculatedPrice !== null ? calculatedPrice.toFixed(2) : 'null'
+    };
+
+    for (let key in data) {
+        let input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = key;
+        input.value = data[key];
+        form.appendChild(input);
+    }
+
+    document.body.appendChild(form);
+    form.submit();
+    
+    console.log('✅ 已用原生 Form 絕招強行發送資料至 Google Sheet！');
+
+    setTimeout(() => {
+        if (document.body.contains(form)) document.body.removeChild(form);
+        if (document.body.contains(iframe)) document.body.removeChild(iframe);
+    }, 2000);
 }
 
 // 💡 搜尋強化：移除非字母、數字及中文字元
