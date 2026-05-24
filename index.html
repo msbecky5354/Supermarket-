@@ -67,12 +67,15 @@
             </div>
         </div>
         
-        <div class="flex items-center gap-1.5 shrink-0">
+                <div class="flex flex-col items-center justify-center shrink-0">
+            <span class="text-[9px] font-bold text-slate-400 mb-0.5 leading-none">EN/中</span>
+            
             <select id="langSelector" onchange="changeLanguage(this.value)" class="bg-slate-100 border-none text-[11px] font-bold text-slate-700 rounded-lg px-1.5 py-1 outline-none cursor-pointer">
                 <option value="zh-Hant">繁體</option>
                 <option value="zh-Hans">简体</option>
                 <option value="en">English</option>
             </select>
+        </div>
             <button onclick="openMyAlerts()" class="w-7 h-7 flex items-center justify-center rounded-full bg-rose-50 text-rose-600 border border-rose-100 shadow-sm">🔔</button>
             <button onclick="openManual()" class="w-7 h-7 flex items-center justify-center rounded-full bg-amber-50 text-amber-600 border border-amber-100 shadow-sm text-[12px]">📖</button>
             <button onclick="openShareAppModal()" class="w-7 h-7 flex items-center justify-center rounded-full bg-blue-50 text-blue-600 border border-blue-100 shadow-sm">
