@@ -20,17 +20,7 @@ const uiText = {
         chatShowAll: "呢個分類嘅全部貨品清單：", 
         chatNoResult: "哎呀，搵唔到相關貨品添！🤔 不如試吓縮短關鍵字，或者用其他字眼再搵過？",
         
-        // --- 原有回覆 ---
-replyGreeting: "你好呀！我係你嘅專屬格價助手 🤖，今日想買啲咩？", 
-replyThanks: "唔使客氣！幫你慳到錢我都好開心！🛒✨",
-replyBye: "拜拜！有買貴冇買錯，下次去超市掃貨前記得再搵我格價呀！👋",
-replyPraise: "多謝讚賞！😎 我會繼續努力𥄫實各大超市嘅最新靚價！",
-replyJoke: "點解去超市買嘢要帶計數機？...因為要計住啲神仙（仙=cents）！😆 好啦，爛Gag講完，有咩想搵？",
-replySmallTalkExtra: "我係專注幫大家慳錢嘅格價助手！🛒 雖然我唔太識睇天氣或者傾偈，但我搵特價貨絕對係一流㗎！",
-replyOmg: "OMG！😱 係咪見到啲超抵特價嚇親呀？定係買得太多攞唔走？🛒💨",
-replyAgreement: "係呀！我呢個助手係咪好醒呢？😎",
-replyHelp: "唔使驚！只要輸入貨品名，我就會幫你格價！或者撳『查看全部』睇吓有咩筍嘢？🛒",
-replyWho: "我係專為你而設嘅格價助手！目的只有一個：幫你慳錢，慳到盡！💰",
+        
 
 // --- 新功能回覆 ---
 r_no_product: "「慳真D」主要監察約 3,000 款民生必需品。極冷門或單一超市獨家發售的貨品未必涵蓋，建議用簡單的關鍵字搜尋！",
@@ -95,7 +85,20 @@ kwHome: "畫面",
         shareBtnWhatsApp: "WhatsApp 分享",
         shareBtnMore: "更多選項",
         copiedToast: "✅ 連結已複製！",
-        shareMessage: "推薦你用「慳真D🔎」！秒速格價，幫你慳到盡！🛒\n"
+        shareMessage: "推薦你用「慳真D🔎」！秒速格價，幫你慳到盡！🛒\n",
+
+        globalTitle: "全網數據搜尋",
+        modeStart: "為你啟動「{label}」模式 🌍<br>馬上為你搜尋...",
+        globalStart: "收到！啟動「全網數據搜尋」模式 🌍<br>等我幫你搵吓。",
+        askKeyword: "請問你想搵咩貨品呢？可以試下打「可樂」或者「公仔麵」。",
+
+        foundBigGapKw: '為你搜尋到「{keyword}」中符合超大差價嘅最抵結果：',
+        foundBigGapCat: '為你搜羅到該分類下符合超大差價嘅最抵結果：',
+        foundDiscountKw: '為你搜尋到「{keyword}」中精選優惠貨品結果：',
+        foundDiscountCat: '為你搜羅到該分類下精選優惠貨品結果：',
+        foundKw: '為你搜尋到「{keyword}」嘅最抵結果：'
+
+
     },
     
     'zh-Hans': { 
@@ -117,16 +120,6 @@ kwHome: "畫面",
         chatShowAll: "该分类下的全部商品清单：", 
         chatNoResult: "哎呀，找不到相关商品！🤔 不如尝试缩短关键词，或者换个字眼再搜搜看？",
         
-        replyGreeting: "您好！我是您的专属比价助手 🤖，今天想买点什么？", 
-        replyThanks: "不客气！能帮您省钱就好！🛒✨",
-        replyBye: "拜拜！下次去超市前记得再找我比价哦！👋",
-        replyPraise: "谢谢夸奖！😎 我会继续努力帮您盯紧最新的价格！",
-        replyJoke: "去超市买东西最怕什么？最怕排错结账队伍！😆 好了，言归正传，想找点什么？",
-        replySmallTalkExtra: "我是专注帮大家省钱的比价助手！🛒 虽然我不太懂看天气或者聊天，但我找特价商品绝对是一流的哦！",
-        replyOmg: "OMG！😱 是不是看到超低特价吓到了？还是买得太多拿不走？🛒💨",
-        replyAgreement: "是呀！我这个助手是不是很聪明呢？😎",
-        replyHelp: "别担心！只要输入商品名称，我就会帮你比价！或者按『查看全部』看看有什么划算的好东西？🛒",
-        replyWho: "我是专为你而设的比价助手！目的只有一个：帮你省钱，省到尽！💰",
         
         quickAll: "📦 查看全部",
         quickDiscount: "🏷️ 只看有优惠",
@@ -166,12 +159,25 @@ kwHome: "畫面",
         shareBtnWhatsApp: "WhatsApp 分享",
         shareBtnMore: "更多选项",
         copiedToast: "✅ 链接已复制！",
-        shareMessage: "推荐您使用「悭真D🔎」！秒速比价，帮您省到家！🛒\n"
+        shareMessage: "推荐您使用「悭真D🔎」！秒速比价，帮您省到家！🛒\n",
+
+        globalTitle: "全网数据搜索",
+        modeStart: "为您启动「{label}」模式 🌍<br>马上为您搜索...",
+        globalStart: "收到！启动「全网数据搜索」模式 🌍<br>让我帮您找找。",
+        askKeyword: "请问想找什么商品呢？可以试着输入「可乐」或者「方便面」。",
+
+        foundBigGapKw: '为您搜寻到「{keyword}」中符合超大差价的最抵结果：',
+        foundBigGapCat: '为您搜罗到该分类下符合超大差价的最抵结果：',
+        foundDiscountKw: '为您搜寻到「{keyword}」中精选优惠货品结果：',
+        foundDiscountCat: '为您搜罗到该分类下精选优惠货品结果：',
+        foundKw: '为您搜寻到「{keyword}」的最抵结果：'
+
+
     },
     
     'en': { 
         title: "HK Smart Price", 
-        badge: "HK Open Data", 
+        badge: "Live Gov Data", 
         subLabel: "Fetching update time...", 
         lastUpdated: "Updated: ",
         mainCat: "Step 1: Select Category", 
@@ -188,16 +194,6 @@ kwHome: "畫面",
         chatShowAll: "Here is the full list of products in this category:", 
         chatNoResult: "Oops, we couldn't find any matching products! 🤔 Try using shorter or different keywords.",
         
-        replyGreeting: "Hello there! I'm your personal Price Assistant 🤖. What are we shopping for today?", 
-        replyThanks: "You're very welcome! Happy saving and happy shopping! 🛒✨",
-        replyBye: "Goodbye! Catch you later. Remember to check prices here before your next shopping trip! 👋",
-        replyPraise: "Thanks for the compliment! 😎 I'll keep tracking the best deals for you.",
-        replyJoke: "Why did the tomato blush? Because it saw the salad dressing! 🍅😆 Alright, back to business, what are we looking for?",
-        replySmallTalkExtra: "I'm a price comparison assistant! 🛒 While I can't check the weather or chat about everything, I'm super fast at finding supermarket deals!",
-        replyOmg: "OMG! 😱 Are you shocked by a super cheap deal? Or did you buy too much to carry? 🛒💨",
-        replyAgreement: "Yes, I am! Pretty smart, right? 😎",
-        replyHelp: "Don't worry! Just type in the product name, and I'll help you compare prices! Or tap 'Show All' to see what's on sale. 🛒",
-        replyWho: "I'm your personal price-comparison assistant! My only mission is to help you save every penny possible! 💰",
         
         
         quickAll: "📦 Show All",
@@ -238,8 +234,28 @@ kwHome: "畫面",
         shareBtnWhatsApp: "WhatsApp",
         shareBtnMore: "More Options",
         copiedToast: "✅ Link copied to clipboard!",
-        shareMessage: "Check out the HK Smart Price Tracker🔎! Compare supermarket prices instantly and save money! 🛒\n"
+        shareMessage: "Check out the HK Smart Price Tracker🔎! Compare supermarket prices instantly and save money! 🛒\n",
+   
+        globalTitle: "Global Catalog Search",
+        modeStart: "Starting '{label}' mode 🌍<br>Searching now...",
+        globalStart: "Got it! Starting 'Global Catalog Search' mode 🌍<br>Let me find it for you.",
+        askKeyword: "What product are you looking for? Try typing 'Cola' or 'Noodles'.",
+
+        foundBigGapKw: 'Here are the top deals for "{keyword}" with huge price gaps:',
+        foundBigGapCat: 'Here are the top deals with huge price gaps in this category:',
+        foundDiscountKw: 'Here are the discounted products for "{keyword}":',
+        foundDiscountCat: 'Here are the discounted products in this category:',
+        foundKw: 'Here are the best results for "{keyword}":'
+      
+
+   
     }
+        
+
+
+
+
+
 };
     
 const supermarketDict = {
@@ -282,4 +298,10 @@ const supermarketDict = {
         'DCHFOOD': 'DCH Food',
         'SASA': 'Sasa'
     }
+
+
+
+
+
+
 };
