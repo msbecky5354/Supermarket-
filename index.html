@@ -1,9 +1,992 @@
-<div class="flex items-center gap-1.5 bg-slate-50 px-2 py-1 rounded-xl border border-slate-200">
-    <span class="text-[11px] font-bold text-slate-500 tracking-wider">中/EN</span>
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>慳真D | HK Smart Price</title>
     
-    <select id="languageSelect" class="bg-transparent border-none text-xs font-bold text-slate-700 outline-none cursor-pointer pr-1">
-        <option value="zh-Hant">繁體</option>
-        <option value="zh-Hans">簡體</option>
-        <option value="en">English</option>
-    </select>
-</div>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-HHQDSPWR2N"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-HHQDSPWR2N');
+    </script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8256903623772163" crossorigin="anonymous"></script>
+ 
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="logo.JPG">
+    <link rel="apple-touch-icon" href="logo.JPG">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="HK Smart Price">
+   
+    <script src="botResponses.js?v=999"></script> 
+    <script src="lang.js?v=9"></script>
+    <script src="promoEngine.js?v=9"></script>
+    <script src="searchEngine.js?v=9"></script>
+    <script src="alertSystem.js?v=1"></script> 
+    <script src="https://cdn.tailwindcss.com"></script>
+
+
+
+    <style>
+        .clickable-card:active { transform: scale(0.95); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        
+        @keyframes pulse-lightning {
+            0%, 100% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 2px #fbbf24); }
+            50% { opacity: 0.7; transform: scale(1.1); filter: drop-shadow(0 0 8px #fbbf24); }
+        }
+        .lightning-icon { animation: pulse-lightning 2s infinite ease-in-out; display: inline-block; }
+
+        @keyframes star-blink {
+            0%, 100% { opacity: 1; transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 3px #fde047); }
+            50% { opacity: 0.5; transform: scale(1.3) rotate(15deg); filter: drop-shadow(0 0 8px #eab308); }
+        }
+        .star-blink { animation: star-blink 1.5s infinite ease-in-out; display: inline-block; }
+    </style>
+</head>
+<body class="bg-slate-50 h-[100dvh] flex flex-col font-sans text-slate-900 overflow-hidden w-full text-[15px]">
+
+    <header class="bg-white border-b flex-none z-30 px-3 py-3 shadow-sm sticky top-0">
+    <div class="flex justify-between items-center gap-2">
+        <div onclick="showLevel1()" class="flex items-center gap-2 cursor-pointer active:scale-[0.97] transition-transform shrink-0" title="返回主頁">
+            <img src="logo.JPG" alt="Logo" class="w-10 h-10 object-cover rounded-xl border border-slate-100 shadow-sm">
+            <div class="flex flex-col gap-0.5">
+                <h1 id="appTitle" class="text-[16px] bg-gradient-to-r from-indigo-600 to-blue-700 bg-clip-text text-transparent font-black tracking-tight leading-none">慳真D</h1>
+                <div class="flex items-center gap-1">
+                    <span id="dataSourceBadge" class="px-1 py-[1px] rounded text-[8px] font-bold bg-blue-50 text-blue-700 border border-blue-200/60 uppercase whitespace-nowrap leading-none">政府數據</span>
+                    <span id="todayStatusLabel" class="text-[8px] text-slate-400 font-medium whitespace-nowrap leading-none">載入中...</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="flex items-center gap-1.5 shrink-0">
+            <select id="langSelector" onchange="changeLanguage(this.value)" class="bg-slate-100 border-none text-[11px] font-bold text-slate-700 rounded-lg px-1.5 py-1 outline-none cursor-pointer">
+                <option value="zh-Hant">繁體</option>
+                <option value="zh-Hans">简体</option>
+                <option value="en">English</option>
+            </select>
+            <button onclick="openMyAlerts()" class="w-7 h-7 flex items-center justify-center rounded-full bg-rose-50 text-rose-600 border border-rose-100 shadow-sm">🔔</button>
+            <button onclick="openManual()" class="w-7 h-7 flex items-center justify-center rounded-full bg-amber-50 text-amber-600 border border-amber-100 shadow-sm text-[12px]">📖</button>
+            <button onclick="openShareAppModal()" class="w-7 h-7 flex items-center justify-center rounded-full bg-blue-50 text-blue-600 border border-blue-100 shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+            </button>
+        </div>
+    </div>
+</header>
+
+    <main class="flex-1 overflow-hidden w-full max-w-2xl mx-auto relative flex flex-col">
+    <section id="level1Section" class="absolute inset-0 flex flex-col bg-slate-50 overflow-y-auto no-scrollbar">
+        <div class="flex flex-col flex-1 p-5 max-w-2xl mx-auto w-full min-h-full">
+
+            <div class="flex flex-col items-center justify-center mt-6 mb-8">
+                <div class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center text-3xl shadow-[0_4px_15px_-3px_rgba(59,130,246,0.2)] border border-blue-200 mb-4 transform hover:scale-105 transition-transform">🤖</div>
+                <h2 id="homeTitle" class="text-[18px] sm:text-[20px] font-black text-slate-800 mb-6 tracking-tight">想搵咩平嘢？直接話我知</h2>
+                
+                <form onsubmit="event.preventDefault(); triggerGlobalSearch();" class="w-full relative shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] rounded-[2rem]">
+                    <input type="text" id="globalSearchInput" placeholder="例如: 可口可樂、出前一丁..." class="w-full pl-6 pr-16 py-4 sm:py-4.5 bg-white border-2 border-transparent focus:border-blue-500 rounded-[2rem] outline-none transition-all text-[15px] sm:text-[16px] font-medium placeholder-slate-400">
+                    <button type="submit" class="absolute right-2 top-2 bottom-2 w-[52px] bg-blue-600 text-white rounded-full flex items-center justify-center shadow-sm active:scale-95 transition-transform hover:bg-blue-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                    </button>
+                </form>
+            </div>
+
+            <div class="w-full mb-auto pb-4">
+                <div class="flex items-center justify-between mb-3 px-1">
+                    <span id="quickTitle" class="text-[12px] font-black text-slate-400 tracking-wider uppercase">✨ 快捷尋寶</span>
+                </div>
+                <div id="quickBtnGroup" class="grid grid-cols-2 gap-2.5 pb-2">
+                </div>
+            </div>
+
+            <div class="w-full mt-6 bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden flex-none">
+                <button onclick="toggleCategories()" class="w-full px-5 py-4.5 flex items-center justify-between bg-white active:bg-slate-50 transition outline-none">
+                    <span id="catTitle" class="font-bold text-slate-700 text-[14px] sm:text-[15px] flex items-center gap-2.5">
+                        <span class="text-lg">🛒</span> 或者按主分類慢慢行
+                    </span>
+                    <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+                        <svg id="catToggleIcon" class="transition-transform duration-300" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                </button>
+                
+                <div id="collapsibleCatContainer" class="hidden px-4 pb-5 pt-1 border-t border-slate-100 bg-slate-50/30">
+                    <div id="level1Container" class="grid grid-cols-2 gap-3 mt-3">
+                        <div id="loadingText" class="text-center p-4 text-slate-400 text-sm col-span-2">正在同步最新行情...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center pt-8 pb-4 flex-none w-full"> 
+                <button id="miniFooterLinks" onclick="openDisclaimerModal()" class="text-[11px] text-slate-400 hover:text-slate-600 underline decoration-slate-200 transition">
+                    關於我們、條款及免責聲明
+                </button>
+                <div id="miniFooterCopy" class="text-[10px] text-slate-300 mt-1.5 mb-8 tracking-wide">© 2026 慳真D</div>
+                
+                <div style="display: none;" class="w-full h-[90px] max-w-[320px] mx-auto bg-slate-100 border border-slate-200 border-dashed rounded-2xl flex-col items-center justify-center text-slate-400 shadow-sm mt-4">
+                    <span class="text-[12px] font-bold tracking-widest uppercase mb-1">Advertisement</span>
+                    <span class="text-[10px]">預留 Google 廣告橫幅位置</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="disclaimerModal" class="hidden fixed inset-0 bg-slate-900/40 z-[100] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+            <div class="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl flex flex-col max-h-[80vh]">
+                <div class="flex items-center gap-2 mb-4">
+                    <span class="text-[20px]">🛡️</span>
+                    <h2 id="disclaimerTitle" class="text-[17px] font-black text-slate-800">免責聲明及服務條款</h2>
+                </div>        
+                <div id="disclaimerBody" class="overflow-y-auto text-[13px] text-slate-600 space-y-4 pr-1 mb-2 leading-relaxed">
+                    <p><strong class="text-slate-800 text-[14px]">1. 數據來源及知識產權：</strong><br>本程式之價格及優惠數據均源自「資料一線通」(Data.gov.hk) 的「網上價格一覽通」數據集。所有相關知識產權均歸<strong>消費者委員會</strong>及各相關商戶所有。</p>
+                    <p><strong class="text-slate-800 text-[14px]">2. 數據覆蓋範圍：</strong><br>數據集主要涵蓋消費者委員會挑選的數千款熱門日常必需品，並不包括超市所有庫存（例如獨家或冷門貨品）。</p>
+                    <p><strong class="text-slate-800 text-[14px]">3. 自動化運算：</strong><br>顯示的折合平均價格由<strong>系統自動運算得出</strong>。所有資訊均基於政府最新發佈的實時數據及實體店最終價格標籤為準。資料僅供參考，建議用戶購買前自行核實價格。</p>
+                    <p><strong class="text-slate-800 text-[14px]">4. 責任限制：</strong><br>本程式按「現狀」(AS IS) 提供，用戶需自行承擔使用風險。本程式及其開發者對任何因使用或依賴本程式資訊而導致的損失或損害，概不承擔任何法律責任。</p>
+                </div>
+                <button onclick="document.getElementById('disclaimerModal').classList.add('hidden')" id="modalCloseBtn" class="mt-4 w-full bg-blue-600 text-white font-bold py-3.5 rounded-2xl active:scale-95 transition-transform text-[15px] shadow-md shadow-blue-100">
+                    我明白及接受
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <section id="chatSection" class="hidden absolute inset-0 flex flex-col bg-slate-50 z-20">
+        <div class="bg-white border-b px-4 py-3 flex items-center shadow-sm flex-none z-10">
+            <button onclick="showLevel1()" class="text-blue-600 font-medium flex items-center bg-blue-50 px-3 py-1.5 rounded-xl mr-3 active:scale-95 transition">
+                ← <span id="backBtnText" class="ml-1">返回</span>
+            </button>
+            <h2 id="chatTitle" class="font-bold text-slate-800 truncate text-[15px] flex items-center"></h2>
+        </div>
+        
+        <div id="chatMessages" class="flex-1 overflow-y-auto no-scrollbar p-4 space-y-5"></div>
+        
+        <div class="bg-white border-t p-3 pb-[max(16px,env(safe-area-inset-bottom))] flex-none shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20 flex flex-col gap-2">
+            <div id="quickActionChips" class="flex gap-2 overflow-x-auto no-scrollbar max-w-2xl mx-auto w-full px-1"></div>
+
+            <form id="chatForm" class="flex gap-2 max-w-2xl mx-auto w-full" onsubmit="event.preventDefault(); submitChat();">
+                <input type="text" id="chatInput" class="flex-1 px-4 py-3.5 bg-slate-100 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-[15px]" autocomplete="off">
+                <button type="submit" class="bg-blue-600 text-white px-5 rounded-2xl font-bold shadow-sm active:scale-95 transition flex items-center justify-center shrink-0">
+                    <span id="sendBtnText">搜尋</span>
+                </button>
+            </form>
+        </div>
+    </section>
+</main>
+    
+    <div id="infoModal" class="fixed inset-0 bg-slate-900/40 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm opacity-0 transition-opacity duration-300">        
+        <div class="bg-white rounded-3xl shadow-xl w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-300" id="modalBox">
+            <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 id="modalTitle" class="text-[17px] font-black text-slate-800">標題</h3>
+                <button onclick="closeModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-200 text-slate-500 active:scale-90 transition">✕</button>
+            </div>
+            <div class="p-6">
+                <p id="modalContent" class="text-[14px] text-slate-600 leading-relaxed"></p>
+            </div>
+            <div class="px-6 pb-6 pt-2">
+                <button onclick="closeModal()" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-sm active:scale-95 transition">關閉</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="shareAppModal" class="fixed inset-0 bg-slate-900/40 z-[60] hidden flex items-center justify-center p-4 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-3xl shadow-xl w-full max-w-sm overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col" id="shareAppBox">
+            <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center">
+                <h3 id="shareAppTitle" class="text-[16px] font-black text-slate-800">分享 App</h3>
+                <button onclick="closeShareAppModal()" class="w-7 h-7 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 active:scale-90 transition">✕</button>
+            </div>
+            <div class="p-5 flex flex-col items-center text-center">
+                <p id="shareAppDesc" class="text-[13px] text-slate-500 mb-4"></p>
+                <div class="p-2 bg-white border-2 border-slate-100 rounded-2xl shadow-sm mb-5">
+                    <img id="qrCodeImg" src="" alt="QR Code" class="w-40 h-40 object-contain rounded-xl">
+                </div>
+                
+                <div class="grid grid-cols-2 gap-3 w-full">
+                    <button onclick="copyAppUrl()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-slate-50 border border-slate-200 active:bg-slate-100 transition">
+                        <span class="text-lg">🔗</span>
+                        <span id="shareBtnCopy" class="text-[12px] font-bold text-slate-700">複製連結</span>
+                    </button>
+                    <button onclick="shareToWhatsApp()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-green-50 border border-green-200 active:bg-green-100 transition">
+                        <span class="text-lg">💬</span>
+                        <span id="shareBtnWhatsApp" class="text-[12px] font-bold text-green-700">WhatsApp</span>
+                    </button>
+                </div>
+                <button onclick="shareNative()" class="mt-3 w-full flex items-center justify-center gap-2 p-3 rounded-2xl bg-blue-50 text-blue-600 font-bold text-[13px] border border-blue-100 active:scale-95 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                    <span id="shareBtnMore">更多選項</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastMsg" class="fixed top-14 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white px-4 py-2 rounded-full shadow-lg text-[13px] font-bold z-[70] transition-all duration-300 opacity-0 pointer-events-none translate-y-[-20px]">
+        ✅ 連結已複製！
+    </div>
+
+   <script>
+       
+        window.normalizeStr = window.normalizeStr || function(str) {
+            return str ? str.toLowerCase().replace(/[^\w\s\u4e00-\u9fa5]/gi, '') : '';
+        };
+        window.checkSmallTalk = window.checkSmallTalk || function(q) { return null; };
+
+        const level1Section = document.getElementById('level1Section');
+        const chatSection = document.getElementById('chatSection');
+        const level1Container = document.getElementById('level1Container');
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+        const chatTitle = document.getElementById('chatTitle');
+        const infoModal = document.getElementById('infoModal');
+        const modalBox = document.getElementById('modalBox');
+        
+        const shareAppModal = document.getElementById('shareAppModal');
+        const shareAppBox = document.getElementById('shareAppBox');
+        const qrCodeImg = document.getElementById('qrCodeImg');
+        const toastMsg = document.getElementById('toastMsg');
+
+        let rawApiData = [];     
+        window.structuredData = {}; 
+        let currentLang = 'zh-Hant';
+        let selectedCat1 = null; 
+        
+        let currentKeyword = ""; 
+        let isBigGapMode = false;
+        let isDiscountMode = false;
+        let lastUpdatedTime = null; 
+
+        const catStyles = [
+            { keywords: ['奶粉', '嬰兒', 'baby'], icon: '🍼', bg: 'from-pink-100 to-rose-100', text: 'text-rose-900', border: 'border-rose-200' },
+            { keywords: ['麵包', '面包', '糕', 'bakery'], icon: '🍞', bg: 'from-orange-100 to-amber-200', text: 'text-orange-900', border: 'border-orange-300' },
+            { keywords: ['米', '油', '罐', 'rice', 'oil'], icon: '🍚', bg: 'from-amber-100 to-orange-100', text: 'text-orange-900', border: 'border-orange-200' },
+            { keywords: ['奶', '蛋', 'dairy', 'egg'], icon: '🥚', bg: 'from-yellow-100 to-amber-100', text: 'text-amber-900', border: 'border-yellow-300' },
+            { keywords: ['粉', '麵', '面', '冷', 'noodle'], icon: '🍜', bg: 'from-sky-100 to-indigo-100', text: 'text-indigo-900', border: 'border-indigo-200' },
+            { keywords: ['居', '寵', 'pet'], icon: '🧻', bg: 'from-purple-100 to-fuchsia-100', text: 'text-fuchsia-900', border: 'border-fuchsia-200' },
+            { keywords: ['護理', '护理', 'personal'], icon: '🧴', bg: 'from-teal-100 to-emerald-100', text: 'text-teal-900', border: 'border-teal-200' },
+            { keywords: ['糖', '餅', '饼', '食', 'snack'], icon: '🍫', bg: 'from-rose-100 to-pink-200', text: 'text-rose-900', border: 'border-rose-300' },
+            { keywords: ['飲', 'drink'], icon: '🧃', bg: 'from-cyan-100 to-blue-100', text: 'text-blue-900', border: 'border-blue-200' },
+            { keywords: ['酒', 'wine', 'beer'], icon: '🍷', bg: 'from-fuchsia-100 to-purple-200', text: 'text-purple-900', border: 'border-purple-300' }
+        ];
+
+        function formatDateTime(date) {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            const h = String(date.getHours()).padStart(2, '0');
+            const min = String(date.getMinutes()).padStart(2, '0');
+            return `${y}-${m}-${d} ${h}:${min}`;
+        }
+
+        async function init() {
+            try {
+                try {
+                    const timeRes = await fetch('update_log.txt?t=' + new Date().getTime());
+                    if (timeRes.ok) {
+                        const timeText = await timeRes.text();
+                        lastUpdatedTime = new Date(timeText.trim()); 
+                    } else {
+                        lastUpdatedTime = null; 
+                    }
+                } catch (timeErr) {
+                    console.log("無法獲取時間記錄檔", timeErr);
+                    lastUpdatedTime = null;
+                }
+
+                let data = null;
+                const localResponse = await fetch('pricewatch.json?t=' + new Date().getTime());
+                
+                if (localResponse.ok) {
+                    data = await localResponse.json();
+                } else {
+                    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent('https://online-price-watch.consumer.org.hk/opw/opendata/pricewatch.json')}`;
+                    const res = await fetch(proxyUrl);
+                    data = await res.json();
+                }
+                rawApiData = data;
+                
+                changeLanguage('zh-Hant');
+                
+                if (typeof updateAlertBadge === 'function') updateAlertBadge();
+            } catch (e) {
+                level1Container.innerHTML = `<p class="text-red-500 text-center col-span-2">${uiText[currentLang].error}</p>`;
+            }
+        }
+
+        async function shareProduct(name, brand, minPrice) {
+            const shareData = {
+                title: '慳真D🔎推介',
+                text: `【慳錢情報】${brand} - ${name}，最低價見 $${minPrice}！快啲去慳真D🔎睇吓啦！🛒`,
+                url: window.location.href
+            };
+            try {
+                if (navigator.share) { await navigator.share(shareData); }
+                else {
+                    navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
+                    showToast();
+                }
+            } catch (err) { console.log('Share error:', err); }
+        }
+
+       function changeLanguage(lang) {
+    try {
+        currentLang = lang;
+        document.documentElement.lang = lang;
+        
+        // 1. 安全讀取 uiText (防止未定義導致死機)
+        const dict = (typeof uiText !== 'undefined' && uiText[lang]) ? uiText[lang] : {};
+
+        // 2. 更新原本的 UI
+        if (document.getElementById('appTitle')) document.getElementById('appTitle').innerText = dict.title || '慳真D';
+        document.title = dict.title || '慳真D';
+        if (document.getElementById('dataSourceBadge')) document.getElementById('dataSourceBadge').innerText = dict.badge || '政府數據連線';
+        
+        if (lastUpdatedTime) {
+            if (document.getElementById('todayStatusLabel')) document.getElementById('todayStatusLabel').innerText = (dict.lastUpdated || '最後更新: ') + formatDateTime(lastUpdatedTime);
+        } else {
+            if (document.getElementById('todayStatusLabel')) document.getElementById('todayStatusLabel').innerText = dict.subLabel || '載入中...';
+        }
+
+        if (document.getElementById('mainCatLabel')) document.getElementById('mainCatLabel').innerText = dict.mainCat || '主分類';
+        if (document.getElementById('sortTip')) document.getElementById('sortTip').innerText = dict.sortTip || '分類';
+        if (document.getElementById('backBtnText')) document.getElementById('backBtnText').innerText = dict.back || '返回';
+        if (document.getElementById('sendBtnText')) document.getElementById('sendBtnText').innerText = dict.send || '搜尋';
+        if (document.getElementById('chatInput')) document.getElementById('chatInput').placeholder = dict.placeholder || '搜尋...';
+
+        if (document.getElementById('shareAppTitle')) document.getElementById('shareAppTitle').innerText = dict.shareAppTitle || '分享';
+        if (document.getElementById('shareAppDesc')) document.getElementById('shareAppDesc').innerText = dict.shareAppDesc || '分享給朋友';
+        if (document.getElementById('shareBtnCopy')) document.getElementById('shareBtnCopy').innerText = dict.shareBtnCopy || '複製';
+        if (document.getElementById('shareBtnWhatsApp')) document.getElementById('shareBtnWhatsApp').innerText = dict.shareBtnWhatsApp || 'WhatsApp';
+        if (document.getElementById('shareBtnMore')) document.getElementById('shareBtnMore').innerText = dict.shareBtnMore || '更多';
+        if (document.getElementById('toastMsg')) document.getElementById('toastMsg').innerText = dict.copiedToast || '已複製';
+
+        if (document.getElementById('miniFooterLinks')) {
+            document.getElementById('miniFooterLinks').innerText = dict.miniFooterLinks || '關於我們、條款及免責聲明';
+            document.getElementById('miniFooterCopy').innerText = dict.miniFooterCopy || '© 2026 慳真D';
+        }
+
+        // 3. 首頁動態翻譯機
+        const homeUI = {
+            'zh-Hant': {
+                title: "想搵咩平嘢？直接話我知",
+                placeholder: "例如: 可口可樂、出前一丁...",
+                quickTitle: "✨ 快捷尋寶",
+                catTitle: "或者按主分類慢慢行",
+                b1: "🔥 今日超大差價", b2: "🏷️ 最新劈價精選", b3: "🥤 網民熱搜可樂", b4: "🍞 早餐平價推介"
+            },
+            'zh-Hans': {
+                title: "想找什么便宜货？直接告诉我",
+                placeholder: "例如: 可口可乐、出前一丁...",
+                quickTitle: "✨ 快捷寻宝",
+                catTitle: "或者按主分类慢慢逛",
+                b1: "🔥 今日超大差价", b2: "🏷️ 最新降价精选", b3: "🥤 网民热搜可乐", b4: "🍞 早餐平价推荐"
+            },
+            'en': {
+                title: "What are you looking for? Tell me!",
+                placeholder: "e.g., Coca Cola, Noodles...",
+                quickTitle: "✨ Quick Search",
+                catTitle: "Or browse by categories",
+                // 🛑 將太長嘅英文字縮短，防止爆格
+                b1: "🔥 Big Price Gap", b2: "🏷️ Latest Deals", b3: "🥤 Cola Deals", b4: "🍞 Breakfast Deals"
+            }
+        };
+
+        if(document.getElementById('homeTitle')) document.getElementById('homeTitle').innerText = homeUI[lang].title;
+        if(document.getElementById('globalSearchInput')) document.getElementById('globalSearchInput').placeholder = homeUI[lang].placeholder;
+        if(document.getElementById('quickTitle')) document.getElementById('quickTitle').innerText = homeUI[lang].quickTitle;
+        if(document.getElementById('catTitle')) document.getElementById('catTitle').innerHTML = `<span class="text-lg">🛒</span> ${homeUI[lang].catTitle}`;
+
+        // 🛑 核心修復 1：確保 Keyword 唔會變 undefined，而且英文版用廣義詞 'cola' 同 'bread'
+        let kwCola = '可口可樂';
+        let kwBread = '麵包';
+        if (lang === 'en') {
+            kwCola = 'cola'; 
+            kwBread = 'bread';
+        } else if (lang === 'zh-Hans') {
+            kwCola = '可乐'; 
+            kwBread = '面包';
+        }
+
+        // 🛑 核心修復 2：按鈕加入 `flex-col`, `.replace(' ', '<br>')` 同 `break-words` 解決爆格問題
+        if(document.getElementById('quickBtnGroup')) {
+            document.getElementById('quickBtnGroup').innerHTML = `
+                <button onclick="triggerHomeQuickAction('bigGap', '${homeUI[lang].b1}')" class="w-full flex flex-col items-center justify-center text-center bg-red-50 text-red-600 border border-red-100 p-2 rounded-xl text-[11px] sm:text-[13px] font-bold active:scale-95 transition shadow-sm hover:bg-red-100 leading-tight min-h-[55px] break-words">
+                    ${homeUI[lang].b1.replace(' ', '<br>')}
+                </button>
+                <button onclick="triggerHomeQuickAction('discount', '${homeUI[lang].b2}')" class="w-full flex flex-col items-center justify-center text-center bg-blue-50 text-blue-600 border border-blue-100 p-2 rounded-xl text-[11px] sm:text-[13px] font-bold active:scale-95 transition shadow-sm hover:bg-blue-100 leading-tight min-h-[55px] break-words">
+                    ${homeUI[lang].b2.replace(' ', '<br>')}
+                </button>
+                <button onclick="triggerHomeQuickAction('search', '${homeUI[lang].b3}', '${kwCola}')" class="w-full flex flex-col items-center justify-center text-center bg-slate-100 text-slate-700 border border-slate-200 p-2 rounded-xl text-[11px] sm:text-[13px] font-bold active:scale-95 transition shadow-sm hover:bg-slate-200 leading-tight min-h-[55px] break-words">
+                    ${homeUI[lang].b3.replace(' ', '<br>')}
+                </button>
+                <button onclick="triggerHomeQuickAction('search', '${homeUI[lang].b4}', '${kwBread}')" class="w-full flex flex-col items-center justify-center text-center bg-amber-50 text-amber-600 border border-amber-100 p-2 rounded-xl text-[11px] sm:text-[13px] font-bold active:scale-95 transition shadow-sm hover:bg-amber-100 leading-tight min-h-[55px] break-words">
+                    ${homeUI[lang].b4.replace(' ', '<br>')}
+                </button>
+            `;
+        }
+
+        // 4. 更新其餘邏輯
+        if (typeof renderQuickActions === 'function') renderQuickActions();
+        if (typeof buildStructuredData === 'function') buildStructuredData();
+        
+        const chatSection = document.getElementById('chatSection');
+        if (chatSection && !chatSection.classList.contains('hidden')) {
+            if (typeof showLevel1 === 'function') showLevel1();
+        } else {
+            if (typeof renderLevel1 === 'function') renderLevel1();
+        }
+    } catch (err) {
+        console.error("⚠️ changeLanguage 發生錯誤，但已成功攔截，不影響載入資料:", err);
+    }
+
+}
+        
+        function openManual() {
+            if (currentLang === 'zh-Hans') {
+                window.location.href = 'manual_cn.html';
+            } else if (currentLang === 'en') {
+                window.location.href = 'manual_en.html';
+            } else {
+                window.location.href = 'manual_tw.html';
+            }
+        }
+
+        function openModal(titleKey, contentKey) {
+            document.getElementById('modalTitle').innerText = uiText[currentLang][titleKey];
+            document.getElementById('modalContent').innerHTML = uiText[currentLang][contentKey];
+            infoModal.classList.remove('hidden');
+            setTimeout(() => {
+                infoModal.classList.remove('opacity-0');
+                modalBox.classList.remove('scale-95');
+                modalBox.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeModal() {
+            infoModal.classList.add('opacity-0');
+            modalBox.classList.remove('scale-100');
+            modalBox.classList.add('scale-95');
+            setTimeout(() => { infoModal.classList.add('hidden'); }, 300);
+        }
+
+        function openShareAppModal() {
+            const currentUrl = window.location.origin + window.location.pathname;
+            qrCodeImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(currentUrl)}&margin=10`;
+            shareAppModal.classList.remove('hidden');
+            setTimeout(() => {
+                shareAppModal.classList.remove('opacity-0');
+                shareAppBox.classList.remove('scale-95');
+                shareAppBox.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeShareAppModal() {
+            shareAppModal.classList.add('opacity-0');
+            shareAppBox.classList.remove('scale-100');
+            shareAppBox.classList.add('scale-95');
+            setTimeout(() => { shareAppModal.classList.add('hidden'); }, 300);
+        }
+
+        function showToast() {
+            toastMsg.classList.remove('opacity-0', 'translate-y-[-20px]');
+            setTimeout(() => { toastMsg.classList.add('opacity-0', 'translate-y-[-20px]'); }, 2000);
+        }
+
+        function copyAppUrl() {
+            const currentUrl = window.location.origin + window.location.pathname;
+            navigator.clipboard.writeText(currentUrl).then(() => {
+                showToast();
+                setTimeout(closeShareAppModal, 1000);
+            });
+        }
+
+        function shareToWhatsApp() {
+            const currentUrl = window.location.origin + window.location.pathname;
+            const msg = encodeURIComponent(uiText[currentLang].shareMessage + currentUrl);
+            window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
+        }
+
+        function shareNative() {
+            const currentUrl = window.location.origin + window.location.pathname;
+            if (navigator.share) {
+                navigator.share({
+                    title: uiText[currentLang].title,
+                    text: uiText[currentLang].shareMessage,
+                    url: currentUrl
+                }).catch(console.error);
+            } else {
+                copyAppUrl(); 
+            }
+        }
+
+        function renderQuickActions() {
+            const container = document.getElementById('quickActionChips');
+            let bigGapText = '🔥 超大差價';
+            if (currentLang === 'zh-Hans') bigGapText = '🔥 超大差价';
+            if (currentLang === 'en') bigGapText = '🔥 Big Gap';
+
+            const chips = [
+                { text: uiText[currentLang].quickAll, action: "showAll" },
+                { text: uiText[currentLang].quickDiscount, action: "filterDiscount" },
+                { text: bigGapText, action: "filterBigGap" },
+                { text: uiText[currentLang].quickHome, action: "goHome" },
+                { text: uiText[currentLang].quickBye, action: "sayBye" }
+            ];
+            container.innerHTML = chips.map(c => 
+                `<button type="button" onclick="handleQuickAction('${c.action}', '${c.text}')" 
+                    class="whitespace-nowrap bg-blue-50 text-blue-700 border border-blue-100 px-3 py-1.5 rounded-full text-[13px] font-bold active:scale-95 transition-transform shadow-sm flex-none">
+                    ${c.text}
+                </button>`
+            ).join('');
+        }
+
+        function handleQuickAction(action, text) {
+    if (action === 'goHome') { showLevel1(); return; }
+    if (action === 'sayBye') {
+        addUserMessage(text);
+        // 👇 改用我哋新寫嘅 getBotReply
+        setTimeout(() => addBotMessage(getBotReply('replyBye')), 300);
+        return;
+    }
+    // ...
+            addUserMessage(text); 
+            setTimeout(() => {
+                if (action === 'showAll') {
+                    isBigGapMode = false;
+                    isDiscountMode = false;
+                    currentKeyword = ""; 
+                } else if (action === 'filterDiscount') {
+                    isDiscountMode = true; 
+                    isBigGapMode = false;
+                } else if (action === 'filterBigGap') {
+                    isBigGapMode = true; 
+                    isDiscountMode = false;
+                }
+                executeProductSearch();
+            }, 300);
+        }
+
+        function buildStructuredData() {
+            structuredData = {};
+            const unknownSupermarkets = new Set(); 
+
+            rawApiData.forEach(item => {
+                let cat1 = item.cat1Name?.[currentLang] || item.cat1Name?.['zh-Hant'];
+                if (!cat1) return;
+                
+                let cat2 = item.cat3Name?.[currentLang] || item.cat2Name?.[currentLang] || 'Other';
+                let name = item.name?.[currentLang] || item.name?.['zh-Hant'] || 'Unknown';
+                let brandObj = item.brand || item.brandName || '';
+                let localBrand = (typeof brandObj === 'object') ? (brandObj[currentLang] || brandObj['zh-Hant'] || '') : brandObj;
+
+                let allNames = Object.values(item.name || {}).join(' '); 
+                let allBrands = (typeof brandObj === 'object') ? Object.values(brandObj).join(' ') : brandObj;
+                let allCat2 = Object.values(item.cat2Name || {}).join(' ') + ' ' + Object.values(item.cat3Name || {}).join(' ');
+
+                if (!structuredData[cat1]) structuredData[cat1] = {};
+                if (!structuredData[cat1][cat2]) structuredData[cat1][cat2] = {};
+                if (!structuredData[cat1][cat2][name]) {
+                    structuredData[cat1][cat2][name] = { 
+                        brand: localBrand, 
+                        searchKeywords: normalizeStr(`${allNames} ${allBrands} ${allCat2} ${cat1}`),
+                        prices: [] 
+                    };
+                }
+                
+                if (Array.isArray(item.prices)) {
+                    item.prices.forEach(p => {
+                        let smName = p.supermarketCode; 
+                        let codeUpper = (p.supermarketCode || '').toUpperCase();
+                        
+                        let smAllLangs = [codeUpper];
+                        if (typeof supermarketDict !== 'undefined') {
+                            ['zh-Hant', 'zh-Hans', 'en'].forEach(lang => {
+                                if (supermarketDict[lang] && supermarketDict[lang][codeUpper]) {
+                                    smAllLangs.push(supermarketDict[lang][codeUpper]);
+                                }
+                            });
+                        } else if (p.supermarketName) {
+                            smAllLangs.push(...Object.values(p.supermarketName));
+                        }
+                        
+                        let smKeywords = normalizeStr(smAllLangs.join(' '));
+                        if (!structuredData[cat1][cat2][name].searchKeywords.includes(smKeywords)) {
+                            structuredData[cat1][cat2][name].searchKeywords += ' ' + smKeywords;
+                        }
+
+                        if (typeof supermarketDict !== 'undefined' && supermarketDict[currentLang] && supermarketDict[currentLang][p.supermarketCode]) {
+                            smName = supermarketDict[currentLang][p.supermarketCode]; 
+                        } else if (p.supermarketName && p.supermarketName[currentLang]) {
+                            smName = p.supermarketName[currentLang]; 
+                        } else if (p.supermarketName && p.supermarketName['zh-Hant']) {
+                            smName = p.supermarketName['zh-Hant'];
+                        } else {
+                            unknownSupermarkets.add(p.supermarketCode);
+                            smName = p.supermarketCode.charAt(0).toUpperCase() + p.supermarketCode.slice(1).toLowerCase();
+                        }
+
+                        let promoDisplay = "";
+                        let promoCalcEn = ""; 
+                        const promoKeys = ['promotions', 'promotion', 'offer', 'promotionDesc', 'promotionName', 'itemOffsetText'];
+                        for (let key of promoKeys) {
+                            if (p[key]) {
+                                let extractedDisplay = extractDeepPromoText(p[key], currentLang);
+                                if (extractedDisplay && extractedDisplay !== "[object Object]") { 
+                                    promoDisplay = extractedDisplay; 
+                                    promoCalcEn = extractDeepPromoText(p[key], 'en');
+                                    break; 
+                                }
+                            }
+                        }
+                        if (!promoDisplay) {
+                            const itemKeys = ['promotions', 'offers', 'discounts'];
+                            for (let key of itemKeys) {
+                                if (Array.isArray(item[key])) {
+                                    const smPromo = item[key].find(pr => pr.supermarketCode === p.supermarketCode || pr.code === p.supermarketCode);
+                                    if (smPromo) {
+                                        let extractedDisplay = extractDeepPromoText(smPromo, currentLang);
+                                        if (extractedDisplay && extractedDisplay !== "[object Object]") {
+                                            promoDisplay = extractedDisplay;
+                                            promoCalcEn = extractDeepPromoText(smPromo, 'en');
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        structuredData[cat1][cat2][name].prices.push({ 
+                            rawCode: p.supermarketCode, 
+                            supermarket: smName, 
+                            price: p.price ?? '--', 
+                            promoDisplay: promoDisplay,
+                            promoCalc: promoCalcEn 
+                        });
+                    });
+                }
+            });
+
+            if (unknownSupermarkets.size > 0) {
+                const missingCodes = Array.from(unknownSupermarkets).join(', ');
+                fetch('/api/alert', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ codes: missingCodes })
+                }).catch(e => { console.log("情報網靜默失敗", e) });
+            }
+        }
+
+        function renderLevel1() {
+            if(!level1Container) return;
+            level1Container.innerHTML = '';
+            const history = JSON.parse(localStorage.getItem('cat_usage_history') || '{}');
+            const sorted = Object.keys(structuredData).sort((a, b) => (history[b]||0) - (history[a]||0) || a.localeCompare(b));
+            sorted.forEach(cat1 => {
+                const style = getCatStyle(cat1);
+                const card = document.createElement('div');
+                card.className = `clickable-card bg-gradient-to-br ${style.bg} px-2 py-3 rounded-2xl shadow-sm border ${style.border} cursor-pointer transition-all flex flex-col items-center justify-center text-center h-[90px] overflow-hidden relative`;
+                card.innerHTML = `<div class="text-[28px] mb-1 leading-none transform group-active:scale-95 transition-transform">${style.icon}</div><span class="font-bold ${style.text} text-[12px] leading-tight line-clamp-2 px-1 w-full">${cat1}</span>`;
+                card.onclick = () => { history[cat1] = (history[cat1]||0)+1; localStorage.setItem('cat_usage_history', JSON.stringify(history)); startChat(cat1); };
+                level1Container.appendChild(card);
+            });
+        }
+
+        function getCatStyle(catName) {
+            const lowerName = catName.toLowerCase();
+            for (let style of catStyles) { if (style.keywords.some(kw => lowerName.includes(kw.toLowerCase()))) return style; }
+            return { icon: '📦', bg: 'from-slate-100 to-slate-200', text: 'text-slate-800', border: 'border-slate-300' };
+        }
+
+        function showLevel1() { chatSection.classList.add('hidden'); level1Section.classList.remove('hidden'); renderLevel1(); }
+
+        function startChat(cat1) {
+            selectedCat1 = cat1; chatSection.classList.remove('hidden'); level1Section.classList.add('hidden');
+            const style = getCatStyle(cat1);
+            chatTitle.innerHTML = `<span class="mr-1.5">${style.icon}</span> ${cat1}`;
+            chatMessages.innerHTML = '';
+            isBigGapMode = false;
+            isDiscountMode = false;
+            currentKeyword = "";
+            addBotMessage(`${uiText[currentLang].chatWelcome} <strong class="text-blue-600">${style.icon} ${cat1}</strong>。<br>${uiText[currentLang].chatAsk}`);
+        }
+
+        function cleanUserInput(q) {
+            let kw = q;
+            const noiseWords = ['可唔可以幫我搵', '可唔可以幫我買', '幫我搵吓', '幫我搵下', '我想搵吓', '我想搵下', '我想搵', '我想買', '幫我搵', '幫我買', '有無', '有冇', '想搵', '想買', '搵', '買', 'search', '找', '有沒有'];
+            noiseWords.forEach(noise => { kw = kw.replace(new RegExp(noise, 'gi'), ''); });
+            kw = kw.replace(/[？\?。！\!，,]/g, '');
+            return kw.trim();
+        }
+
+        function triggerGlobalSearch() {
+            const inputEl = document.getElementById('globalSearchInput');
+            const originalQ = inputEl.value.trim();
+            if (!originalQ) return;
+            inputEl.value = '';
+            inputEl.blur();
+            selectedCat1 = 'GLOBAL'; 
+            chatSection.classList.remove('hidden'); 
+            level1Section.classList.add('hidden');
+            chatTitle.innerHTML = `<span class="mr-1.5">🌍</span> ${uiText[currentLang].globalTitle || '全港超市搜尋'}`;
+            chatMessages.innerHTML = '';
+            isBigGapMode = false;
+            isDiscountMode = false;
+            
+            addBotMessage(uiText[currentLang].globalStart || `收到！啟動「全港搜尋」模式 🌍<br>等我幫你搵吓。`);
+            addUserMessage(originalQ); 
+            setTimeout(() => {
+                const talk = checkSmallTalk(originalQ);
+                if (talk) { addBotMessage(talk); return; }
+                const cleanQ = cleanUserInput(originalQ);
+                currentKeyword = normalizeStr(cleanQ).trim();
+                if (!currentKeyword) { addBotMessage(uiText[currentLang].askKeyword || '請問你想搵咩貨品呢？可以試下打「可樂」或者「公仔麵」。'); return; }
+                executeProductSearch(); 
+            }, 300);
+        }
+
+        function getBotReply(key) {
+    if (window.botResponses && window.botResponses[currentLang] && window.botResponses[currentLang][key]) {
+        return window.botResponses[currentLang][key];
+    }
+    console.warn("⚠️ 搵唔到對答 Key:", key);
+    return "🤖 系統連線中..."; 
+}
+
+
+        function submitChat() {
+            const originalQ = chatInput.value.trim(); 
+            if (!originalQ) return;
+            addUserMessage(originalQ); 
+            chatInput.value = ''; 
+            chatInput.blur();
+            setTimeout(() => {
+                const talk = checkSmallTalk(originalQ);
+                if (talk) { addBotMessage(talk); return; }
+                const cleanQ = cleanUserInput(originalQ);
+                currentKeyword = normalizeStr(cleanQ).trim();
+                if (!currentKeyword) { addBotMessage(uiText[currentLang].askKeyword || '請問你想搵咩貨品呢？可以試下打「可樂」或者「公仔麵」。'); return; }
+                executeProductSearch(); 
+            }, 300);
+        }
+
+        function getFilteredProductsHTML(keywordToTest) {
+            const isAll = ['所有', '全部', 'all', 'list', '*'].includes(keywordToTest) || !keywordToTest;
+            let html = '';
+            const categoriesToSearch = selectedCat1 === 'GLOBAL' ? Object.keys(structuredData) : [selectedCat1];
+            categoriesToSearch.forEach(cat1 => {
+                if (!structuredData[cat1]) return;
+                Object.keys(structuredData[cat1]).forEach(cat2 => {
+                    Object.keys(structuredData[cat1][cat2]).forEach(pName => {
+                        const info = structuredData[cat1][cat2][pName];
+                        const matchesKeyword = isAll || info.searchKeywords.includes(keywordToTest);
+                        const hasDiscount = info.prices.some(p => p.promoDisplay || p.promoCalc);
+                        const matchesDiscount = !isDiscountMode || hasDiscount;
+                        const matchesBigGap = !isBigGapMode || checkPriceGap(info).isBigGap; 
+                        if (matchesKeyword && matchesDiscount && matchesBigGap) { 
+                            html += generateProductCardHTML(pName, info); 
+                        }
+                    });
+                });
+            });
+            return html;
+        }
+
+        function executeProductSearch() {
+            const html = getFilteredProductsHTML(currentKeyword);
+            const isAll = ['所有', '全部', 'all', 'list', '*'].includes(currentKeyword) || !currentKeyword;
+
+            if (!html) {
+                let noResultMsg = uiText[currentLang].chatNoResult;
+                if (isDiscountMode) {
+                    const langMsgs = {
+                        'zh-Hant': (currentKeyword && !isAll) ? `「${currentKeyword}」結果入面暫時未有優惠貨品喎！🤷‍♂️` : "呢個分類暫時未有優惠貨品喎！🤷‍♂️",
+                        'zh-Hans': (currentKeyword && !isAll) ? `「${currentKeyword}」结果中暂时没有优惠商品哦！🤷‍♂️` : "该分类下暂时没有优惠商品哦！🤷‍♂️",
+                        'en': (currentKeyword && !isAll) ? `No discounts for "${currentKeyword}" found! 🤷‍♂️` : "No discounted products found in this category! 🤷‍♂️"
+                    };
+                    noResultMsg = langMsgs[currentLang];
+                } else if (isBigGapMode) {
+                    const showWord = (currentKeyword && !isAll) ? `喺「${currentKeyword}」結果入面` : "呢個分類暫時";
+                    const langMsgs = {
+                        'zh-Hant': `${showWord}未有相差超過 10% 嘅貨品喎！🤷‍♂️`,
+                        'zh-Hans': (currentKeyword && !isAll) ? `在「${currentKeyword}」中暂时没有相差超过 10% 的商品哦！🤷‍♂️` : "该分类下暂时没有相差超过 10% 的商品哦！🤷‍♂️",
+                        'en': (currentKeyword && !isAll) ? `No products with >10% price gap found in "${currentKeyword}"! 🤷‍♂️` : "No products with >10% price gap found in this category! 🤷‍♂️"
+                    };
+                    noResultMsg = langMsgs[currentLang];
+                } else if (currentKeyword && !isAll) {
+                    const langMsgs = {
+                        'zh-Hant': `搵唔到「${currentKeyword}」喎，試下其他字眼？🤷‍♂️`,
+                        'zh-Hans': `找不到「${currentKeyword}」哦，试试其他关键字？🤷‍♂️`,
+                        'en': `Cannot find "${currentKeyword}", try another keyword? 🤷‍♂️`
+                    };
+                    noResultMsg = langMsgs[currentLang];
+                }
+                addBotMessage(noResultMsg);
+            } else {
+                let botTip = uiText[currentLang].chatFound; // 預設值
+
+                if (isBigGapMode) {
+                    botTip = (currentKeyword && !isAll) 
+                        ? uiText[currentLang].foundBigGapKw.replace('{keyword}', currentKeyword) 
+                        : uiText[currentLang].foundBigGapCat;
+                } else if (isDiscountMode) {
+                    botTip = (currentKeyword && !isAll) 
+                        ? uiText[currentLang].foundDiscountKw.replace('{keyword}', currentKeyword) 
+                        : uiText[currentLang].foundDiscountCat;
+                } else if (isAll) {
+                    botTip = uiText[currentLang].chatShowAll;
+                } else {
+                    botTip = uiText[currentLang].foundKw.replace('{keyword}', currentKeyword);
+                }
+
+                addBotMessage(botTip, html);
+                return true; // 記得 Keep 住呢個 return true，話俾系統知搵到貨！
+            
+            }
+        }
+
+        function addBotMessage(text, cardsHTML = null) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'flex flex-col items-start w-full';
+            wrapper.innerHTML = `<div class="flex items-end gap-2 max-w-[90%]"><div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-lg shadow-sm border border-blue-200 shrink-0">🤖</div><div class="bg-white border border-slate-200 text-slate-800 px-4 py-3 rounded-2xl rounded-bl-sm shadow-sm text-[15px]">${text}</div></div>${cardsHTML ? `<div class="w-full mt-4 space-y-5">${cardsHTML}</div>` : ''}`;
+            chatMessages.appendChild(wrapper);
+            chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
+        }
+
+        function addUserMessage(text) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'flex flex-col items-end w-full';
+            wrapper.innerHTML = `<div class="bg-blue-600 text-white px-4 py-3 rounded-2xl rounded-br-sm shadow-md max-w-[85%] text-[15px]">${text}</div>`;
+            chatMessages.appendChild(wrapper);
+            chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
+        }
+
+        function checkPriceGap(info) {
+            let validPrices = [];
+            info.prices.forEach(p => {
+                let parsed = parseFloat(p.price);
+                if (!isNaN(parsed)) {
+                    let avg = typeof calculateAvgPrice === 'function' ? calculateAvgPrice(p.promoCalc, parsed) : parsed;
+                    validPrices.push((avg && avg > 0 && avg < parsed) ? avg : parsed);
+                }
+            });
+            if (validPrices.length < 2) return { isBigGap: false, percentage: 0 };
+            let min = Math.min(...validPrices);
+            let max = Math.max(...validPrices);
+            if (min <= 0) return { isBigGap: false, percentage: 0 };
+            let gap = ((max - min) / min) * 100;
+            return { isBigGap: gap >= 10, percentage: Math.round(gap) };
+        }
+
+        function generateProductCardHTML(pName, info) {
+            let validPrices = [];
+            info.prices.forEach(p => {
+                let parsed = parseFloat(p.price);
+                if (!isNaN(parsed)) {
+                    let avg = typeof calculateAvgPrice === 'function' ? calculateAvgPrice(p.promoCalc, parsed) : parsed;
+                    validPrices.push((avg && avg > 0 && avg < parsed) ? avg : parsed);
+                }
+            });
+            let minBasePrice = Math.min(...info.prices.map(p => parseFloat(p.price)).filter(pr => !isNaN(pr)));
+            let minEffectivePrice = validPrices.length > 0 ? Math.min(...validPrices) : null;
+            let allSameBasePrice = info.prices.filter(p=>!isNaN(parseFloat(p.price))).every(v => parseFloat(v.price) === minBasePrice);
+            let allSameEffectivePrice = validPrices.length > 1 && validPrices.every(v => Math.abs(v - validPrices[0]) < 0.01);
+
+            const gapInfo = checkPriceGap(info);
+            let gapBadgeHtml = '';
+            if (gapInfo.isBigGap) {
+                let badgeText = currentLang === 'en' ? `🔥 Save ${gapInfo.percentage}%` : `🔥 差價 ${gapInfo.percentage}%`;
+                gapBadgeHtml = `<span class="ml-2 px-1.5 py-0.5 bg-red-100 text-red-600 font-bold text-[11px] rounded-md shadow-sm border border-red-200 inline-flex items-center" style="white-space: nowrap; transform: translateY(-1px);">${badgeText}</span>`;
+            }
+
+            const priceList = info.prices.map(p => {
+                let parsed = parseFloat(p.price);
+                let isLowestBase = (!isNaN(parsed) && parsed === minBasePrice && info.prices.length > 1 && !allSameBasePrice);
+                
+                let cls = 'border-slate-100 bg-slate-50/50'; 
+                let textCls = 'text-slate-600';
+                let displayName = p.supermarket;
+                let code = (p.rawCode || '').toUpperCase();
+
+                if (code === 'WELLCOME' || code === 'LUNGFUNG') { cls = 'border-red-200 bg-red-50/30'; textCls = 'text-red-700'; }
+                else if (code === 'PARKNSHOP') { cls = 'border-blue-200 bg-blue-50/30'; textCls = 'text-blue-700'; }
+                else if (code === 'WATSONS') { cls = 'border-teal-200 bg-teal-50/30'; textCls = 'text-teal-700'; }
+                else if (code === 'HKTVMALL') { cls = 'border-green-200 bg-green-50/30'; textCls = 'text-green-700'; }
+                else if (code === 'JASONS') { cls = 'border-emerald-300 bg-emerald-100/40'; textCls = 'text-emerald-800'; if (!displayName.includes('Market Place')) displayName += ' (Market Place)'; }
+                else if (code === 'MANNINGS') { cls = 'border-orange-200 bg-orange-50/30'; textCls = 'text-orange-600'; }
+                else if (code === 'AEON') { cls = 'border-fuchsia-200 bg-fuchsia-50/30'; textCls = 'text-fuchsia-700'; }
+
+                let avgLabel = '';
+                if (typeof calculateAvgPrice === 'function') {
+                    let avg = calculateAvgPrice(p.promoCalc, parsed);
+                    if (avg && avg > 0 && avg < parsed) {
+                        let isAbsoluteLowest = (minEffectivePrice !== null && Math.abs(avg - minEffectivePrice) < 0.01 && validPrices.length > 1 && !allSameEffectivePrice);
+                        let starHtml = isAbsoluteLowest ? `<span class="star-blink ml-1 text-[13px]">⭐</span>` : '';
+                        avgLabel = `<span class="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-black shadow-sm ml-1 shrink-0 whitespace-nowrap flex items-center">💰 ${(currentLang === 'en' ? 'Avg' : '折合')} $${avg.toFixed(1)}/${(currentLang === 'en' ? 'ea' : '件')}${starHtml}</span>`;
+                    }
+                }
+                
+                return `<div class="flex flex-col p-3 rounded-2xl border ${cls} ${isLowestBase ? 'ring-2 ring-green-400 bg-white scale-[1.01] shadow-md z-10' : ''} transition-all"><div class="flex justify-between items-center w-full"><span class="font-black text-[13px] ${textCls} flex items-center gap-1">${displayName}</span><span class="text-[17px] font-black text-slate-800">$${isNaN(parsed) ? p.price : parsed.toFixed(1)}${isLowestBase ? ' 👍' : ''}</span></div>${p.promoDisplay ? `<div class="mt-2 flex flex-wrap sm:flex-nowrap items-center justify-between gap-1 w-full"><span class="text-[11px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-md border border-red-100 break-words w-full sm:w-auto">🏷️ ${p.promoDisplay}</span>${avgLabel}</div>` : ''}</div>`;
+            }).join('');
+            
+            return `<div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-200 flex flex-col gap-3 relative overflow-hidden">
+                <div class="flex justify-between items-start gap-3">
+                    <div class="flex-1 min-w-0">
+                        <div class="text-[12px] text-blue-500 font-black tracking-widest uppercase mb-1">${info.brand || '綜合品牌'}</div>
+                        <h3 class="font-bold text-slate-800 text-[16px] leading-tight flex items-center flex-wrap gap-y-1"><span>${pName}</span>${gapBadgeHtml}</h3>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <button onclick="openAlertModal('${pName}', '${minBasePrice}')" class="w-8 h-8 flex items-center justify-center rounded-full bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-500 active:scale-90 transition-all shadow-sm" title="設定到價提醒">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                        </button>
+                        <button onclick="shareProduct('${pName}', '${info.brand}', '${minBasePrice}')" class="w-8 h-8 flex items-center justify-center rounded-full bg-[#1877F2] hover:bg-blue-600 active:scale-90 transition-all shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-2.5">${priceList}</div>
+            </div>`;
+        }
+
+        function openDisclaimerModal() {
+            document.getElementById('disclaimerTitle').innerText = uiText[currentLang].disclaimerTitle; 
+            document.getElementById('disclaimerBody').innerHTML = uiText[currentLang].disclaimerText;
+            document.getElementById('modalCloseBtn').innerText = uiText[currentLang].modalBtn;
+            document.getElementById('disclaimerModal').classList.remove('hidden');
+        }
+
+        function toggleCategories() {
+            const container = document.getElementById('collapsibleCatContainer');
+            const icon = document.getElementById('catToggleIcon');
+            if (container.classList.contains('hidden')) {
+                container.classList.remove('hidden');
+                icon.style.transform = 'rotate(180deg)';
+                setTimeout(() => level1Section.scrollTo({ top: level1Section.scrollHeight, behavior: 'smooth' }), 100);
+            } else {
+                container.classList.add('hidden');
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        function triggerHomeQuickAction(mode, label, kw = '') {
+            selectedCat1 = 'GLOBAL'; 
+            chatSection.classList.remove('hidden'); 
+            level1Section.classList.add('hidden');
+            chatTitle.innerHTML = `<span class="mr-1.5">🌍</span> ${uiText[currentLang].globalTitle || '全港超市搜尋'}`;
+            chatMessages.innerHTML = '';
+            isBigGapMode = (mode === 'bigGap');
+            isDiscountMode = (mode === 'discount');
+            currentKeyword = kw;
+            addUserMessage(label);
+            
+            const reply = (uiText[currentLang].modeStart || `為你啟動「{label}」模式 🌍<br>馬上為你搜尋...`).replace('{label}', label);
+            addBotMessage(reply);
+            
+            setTimeout(() => { executeProductSearch(); }, 300);
+        }
+
+        init();
+    </script>
+</body>
+</htmlz>
