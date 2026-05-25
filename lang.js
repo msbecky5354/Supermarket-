@@ -35,6 +35,12 @@ const uiText = {
         alertListClose: "關閉",
         
         
+        // 喺 lang.js 入面嘅 zh-Hant 區塊加呢行：
+        ogDesc: '香港超市格價神器，秒速幫你搵出最平貨品！',
+
+
+        
+        
 
 // --- 新功能回覆 ---
 r_no_product: "「慳真D」主要監察約 3,000 款民生必需品。極冷門或單一超市獨家發售的貨品未必涵蓋，建議用簡單的關鍵字搜尋！",
@@ -158,6 +164,11 @@ kwHome: "畫面",
         alertListTarget: "心水价:",
         alertListClose: "关闭",
         
+        // 喺 zh-Hans 區塊加呢行：
+        ogDesc: '香港超市比价神器，秒速帮你找出最平商品！',
+
+
+        
         
         quickAll: "📦 查看全部",
         quickDiscount: "🏷️ 只看有优惠",
@@ -250,6 +261,9 @@ kwHome: "畫面",
         alertListCurrent: "Current:",
         alertListTarget: "Target:",
         alertListClose: "Close",
+        
+        // 喺 en 區塊加呢行：
+        ogDesc: 'HK Supermarket Price Watch. Find the best deals instantly!',
         
         
         
