@@ -89,6 +89,9 @@ kwHome: "畫面",
         shareBtnMore: "更多選項",
         copiedToast: "✅ 連結已複製！",
         shareMessage: "推薦你用「慳真D🔎」！秒速格價，幫你慳到盡！🛒\n",
+        // 🛒 分享單一貨品 (Product Share)
+        shareProductTitle: "慳真D🔎推介",
+        shareProductTemplate: "【慳錢情報】{brand} - {name}，最低價見 ${price}！快啲去慳真D🔎睇吓啦！🛒",
 
         globalTitle: "全網數據搜尋",
         modeStart: "為你啟動「{label}」模式 🌍<br>馬上為你搜尋...",
@@ -165,6 +168,9 @@ kwHome: "畫面",
         shareBtnMore: "更多选项",
         copiedToast: "✅ 链接已复制！",
         shareMessage: "推荐您使用「悭真D🔎」！秒速比价，帮您省到家！🛒\n",
+        // 🛒 分享單一貨品 (Product Share)
+        shareProductTitle: "悭真D🔎推荐",
+        shareProductTemplate: "【省钱情报】{brand} - {name}，最低价见 ${price}！快去悭真D🔎看看吧！🛒",
 
         globalTitle: "全网数据搜索",
         modeStart: "为您启动「{label}」模式 🌍<br>马上为您搜索...",
@@ -242,6 +248,9 @@ kwHome: "畫面",
         shareBtnMore: "More Options",
         copiedToast: "✅ Link copied to clipboard!",
         shareMessage: "Check out the HK Smart Price Tracker🔎! Compare supermarket prices instantly and save money! 🛒\n",
+        // 🛒 分享單一貨品 (Product Share)
+        shareProductTitle: "HK Smart Price 🔎 Recommendation",
+        shareProductTemplate: "[Hot Deal] {brand} - {name}, lowest price at ${price}! Check it out on HK Smart Price 🔎! 🛒",
    
         globalTitle: "Global Catalog Search",
         modeStart: "Starting '{label}' mode 🌍<br>Searching now...",
