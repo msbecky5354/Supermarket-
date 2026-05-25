@@ -524,16 +524,30 @@
 
         function shareToWhatsApp() {
             const currentUrl = window.location.origin + window.location.pathname;
-            const msg = encodeURIComponent(uiText[currentLang].shareMessage + currentUrl);
+            
+            // 讀取 lang.js 入面嘅 shareMessage，如果無就用預設繁體
+            const defaultMsg = "推薦你用「慳真D🔎」！秒速格價，幫你慳到盡！🛒\n";
+            const msgText = (typeof uiText !== 'undefined' && uiText[currentLang] && uiText[currentLang].shareMessage) 
+                            ? uiText[currentLang].shareMessage 
+                            : defaultMsg;
+                            
+            const msg = encodeURIComponent(msgText + currentUrl);
             window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
         }
 
         function shareNative() {
             const currentUrl = window.location.origin + window.location.pathname;
+            
+            // 讀取 lang.js 入面嘅 shareMessage
+            const defaultMsg = "推薦你用「慳真D🔎」！秒速格價，幫你慳到盡！🛒\n";
+            const msgText = (typeof uiText !== 'undefined' && uiText[currentLang] && uiText[currentLang].shareMessage) 
+                            ? uiText[currentLang].shareMessage 
+                            : defaultMsg;
+            
             if (navigator.share) {
                 navigator.share({
-                    title: uiText[currentLang].title,
-                    text: uiText[currentLang].shareMessage,
+                    title: (typeof uiText !== 'undefined' && uiText[currentLang] && uiText[currentLang].title) ? uiText[currentLang].title : '慳真D',
+                    text: msgText,
                     url: currentUrl
                 }).catch(console.error);
             } else {
