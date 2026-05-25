@@ -92,6 +92,10 @@ kwHome: "畫面",
         // 🛒 分享單一貨品 (Product Share)
         shareProductTitle: "慳真D🔎推介",
         shareProductTemplate: "【慳錢情報】{brand} - {name}，最低價見 ${price}！快啲去慳真D🔎睇吓啦！🛒",
+        
+        // 🛒 分享單一貨品 (Product Share)
+        shareProductTitle: "慳真D🔎推介",
+        shareProductTemplate: "【慳錢情報】{brand} - {name}，最低價見 ${price}！快啲去慳真D🔎睇吓啦！🛒",
 
         globalTitle: "全網數據搜尋",
         modeStart: "為你啟動「{label}」模式 🌍<br>馬上為你搜尋...",
