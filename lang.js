@@ -19,6 +19,20 @@ const uiText = {
         chatFound: "為你搜羅到以下最抵結果：", 
         chatShowAll: "呢個分類嘅全部貨品清單：", 
         chatNoResult: "哎呀，搵唔到相關貨品添！🤔 不如試吓縮短關鍵字，或者用其他字眼再搵過？",
+
+        // 🔔 到價提醒 Modal
+        alertModalTitle: "設定到價提醒",
+        alertModalCurrentPrice: "目前最低折實價：",
+        alertModalTargetPrompt: "當跌穿以下心水價 (HK$) 時提醒我：",
+        alertModalPrivacy: "私隱保證：本功能採用離線運算技術，追蹤清單只會存在你的手機瀏覽器內，絕對不會收集任何個人資料。",
+        alertModalBtn: "加入追蹤清單",
+        alertInvalidPrice: "請輸入有效的心水價！",
+        alertListTitle: "我的追蹤清單",
+        alertListEmpty: "<span class='text-3xl block mb-2'>📭</span>你尚未追蹤任何貨品。<br>喺產品卡片撳 🔔 就可以加入追蹤！",
+        alertListHit: "到價！而家",
+        alertListCurrent: "現價:",
+        alertListTarget: "心水價:",
+        alertListClose: "關閉",
         
         
 
@@ -92,6 +106,10 @@ kwHome: "畫面",
         // 🛒 分享單一貨品 (Product Share)
         shareProductTitle: "慳真D🔎推介",
         shareProductTemplate: "【慳錢情報】{brand} - {name}，最低價見 ${price}！快啲去慳真D🔎睇吓啦！🛒",
+        
+        // 🛒 分享單一貨品 (Product Share)
+        shareProductTitle: "慳真D🔎推介",
+        shareProductTemplate: "【慳錢情報】{brand} - {name}，最低價見 ${price}！快啲去慳真D🔎睇吓啦！🛒",
 
         globalTitle: "全網數據搜尋",
         modeStart: "為你啟動「{label}」模式 🌍<br>馬上為你搜尋...",
@@ -125,6 +143,20 @@ kwHome: "畫面",
         chatFound: "为您搜索到以下比价结果：", 
         chatShowAll: "该分类下的全部商品清单：", 
         chatNoResult: "哎呀，找不到相关商品！🤔 不如尝试缩短关键词，或者换个字眼再搜搜看？",
+
+        // 🔔 到价提醒 Modal
+        alertModalTitle: "设定到价提醒",
+        alertModalCurrentPrice: "目前最低折实价：",
+        alertModalTargetPrompt: "当跌穿以下心水价 (HK$) 时提醒我：",
+        alertModalPrivacy: "隐私保证：本功能采用离线运算技术，追踪清单只会存在你的手机浏览器内，绝对不会收集任何个人资料。",
+        alertModalBtn: "加入追踪清单",
+        alertInvalidPrice: "请输入有效的心水价！",
+        alertListTitle: "我的追踪清单",
+        alertListEmpty: "<span class='text-3xl block mb-2'>📭</span>你尚未追踪任何商品。<br>在产品卡片按 🔔 即可加入追踪！",
+        alertListHit: "到价！现在",
+        alertListCurrent: "现价:",
+        alertListTarget: "心水价:",
+        alertListClose: "关闭",
         
         
         quickAll: "📦 查看全部",
@@ -204,6 +236,20 @@ kwHome: "畫面",
         chatFound: "Here are the best prices we found for you:", 
         chatShowAll: "Here is the full list of products in this category:", 
         chatNoResult: "Oops, we couldn't find any matching products! 🤔 Try using shorter or different keywords.",
+
+        // 🔔 Alert Modal
+        alertModalTitle: "Set Price Alert",
+        alertModalCurrentPrice: "Current lowest price: ",
+        alertModalTargetPrompt: "Remind me when the price drops below (HK$):",
+        alertModalPrivacy: "Privacy Guarantee: This feature uses offline processing. Your watchlist is saved locally on your device and no personal data is collected.",
+        alertModalBtn: "Add to Watchlist",
+        alertInvalidPrice: "Please enter a valid target price!",
+        alertListTitle: "My Watchlist",
+        alertListEmpty: "<span class='text-3xl block mb-2'>📭</span>Your watchlist is empty.<br>Click 🔔 on a product card to add!",
+        alertListHit: "Target Reached! Now",
+        alertListCurrent: "Current:",
+        alertListTarget: "Target:",
+        alertListClose: "Close",
         
         
         
