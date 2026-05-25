@@ -54,162 +54,36 @@
 </head>
 <body class="bg-slate-50 h-[100dvh] flex flex-col font-sans text-slate-900 overflow-hidden w-full text-[15px]">
 
- <!DOCTYPE html>
-<html lang="zh-HK">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>慳真D - 想搵咩平嘢？</title>
-  <style>
-    /* 全局預設樣式 */
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, sans-serif;
-      background-color: #f9fafb;
-      color: #1f2937;
-      transition: background-color 0.3s, color 0.3s;
-    }
-    
-    /* 深色模式變數 (當切換器被點擊時觸發) */
-    body.dark-mode {
-      background-color: #111827;
-      color: #f3f4f6;
-    }
-    body.dark-mode .header-container {
-      background: #1f2937;
-      border-color: #374151;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.5);
-    }
-    body.dark-mode .title-text { color: #818cf8; }
-    body.dark-mode .lang-dropdown { background: #374151; color: #f3f4f6; border-color: #4b5563; }
-    body.dark-mode .action-icon.theme-toggle { background: #374151; color: #fff; }
-    body.dark-mode .search-input { background: #1f2937; border-color: #4b5563; color: white; }
-    body.dark-mode .main-title { color: #f3f4f6; }
-
-    /* --- Header 排版 --- */
-    .header-container {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 12px 10px; background: white; border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05); max-width: 600px;
-      margin: 20px auto; border: 1px solid #f3f4f6; transition: all 0.3s;
-    }
-    .left-group { display: flex; align-items: center; gap: 10px; }
-    .logo-placeholder {
-      width: 36px; height: 36px; border-radius: 10px; border: 1px solid #e5e7eb;
-      display: flex; justify-content: center; align-items: center;
-      font-size: 18px; flex-shrink: 0;
-    }
-    .text-block { display: flex; flex-direction: column; justify-content: center; }
-    .title-text { color: #4f46e5; font-size: 15px; line-height: 1.2; font-weight: bold; }
-    .timestamp { font-size: 9px; color: #9ca3af; margin-top: 4px; white-space: nowrap; }
-    
-    .right-group { display: flex; align-items: center; gap: 10px; }
-    .lang-selector { display: flex; align-items: center; gap: 4px; }
-    .lang-label { font-size: 10px; color: #6b7280; font-weight: 700; }
-    .lang-dropdown {
-      padding: 2px 4px; border-radius: 6px; border: 1px solid #e5e7eb;
-      background: #f9fafb; font-size: 12px; color: #374151; outline: none;
-    }
-    .icon-group { display: flex; align-items: center; gap: 6px; }
-    .action-icon {
-      width: 28px; height: 28px; border-radius: 50%; border: none;
-      display: flex; justify-content: center; align-items: center;
-      font-size: 13px; cursor: pointer; flex-shrink: 0;
-    }
-    .theme-toggle { background: #f1f5f9; }
-
-    /* --- 搜尋區塊排版 --- */
-    .main-content {
-      display: flex; flex-direction: column; align-items: center;
-      margin-top: 48px; padding: 0 16px;
-    }
-    .robot-icon {
-      width: 64px; height: 64px; background-color: #eff6ff;
-      border-radius: 50%; display: flex; justify-content: center; align-items: center;
-      font-size: 30px; margin-bottom: 16px; border: 1px solid #dbeafe;
-    }
-    .main-title {
-      font-size: 20px; font-weight: bold; margin-bottom: 24px; letter-spacing: 0.5px;
-    }
-    .search-wrapper { width: 100%; max-width: 500px; position: relative; }
-    .search-input {
-      width: 100%; box-sizing: border-box; padding: 14px 50px 14px 20px;
-      border-radius: 30px; border: 1px solid #e5e7eb; font-size: 14px; outline: none;
-    }
-    .search-input:focus { border-color: #3b82f6; }
-    .search-btn {
-      position: absolute; right: 6px; top: 6px; bottom: 6px;
-      width: 36px; border-radius: 50%; background-color: #2563eb; color: white;
-      border: none; cursor: pointer; display: flex; justify-content: center; align-items: center;
-    }
-
-    /* 手機版響應式微調 */
-    @media (max-width: 390px) {
-      .lang-label { display: none; }
-      .icon-group { gap: 4px; }
-    }
-  </style>
-</head>
-<body>
-
-  <div class="header-container">
-    <div class="left-group">
-      <div class="logo-placeholder">🔍</div>
-      <div class="text-block">
-        <div class="title-text">慳真D</div>
-        <div class="timestamp">更新於: 2026-05-25 08:27</div>
-      </div>
-    </div>
-
-    <div class="right-group">
-      <div class="lang-selector">
-        <span class="lang-label">Eng</span>
-        <select class="lang-dropdown">
-          <option>繁體</option>
-        </select>
-      </div>
-      
-      <div class="icon-group">
-        <button class="action-icon theme-toggle" id="themeBtn" title="切換主題">☀️</button>
+    <header class="bg-white border-b flex-none z-30 px-3 py-3 shadow-sm sticky top-0">
+    <div class="flex justify-between items-center gap-2">
+        <div onclick="showLevel1()" class="flex items-center gap-2 cursor-pointer active:scale-[0.97] transition-transform shrink-0" title="返回主頁">
+            <img src="logo.JPG" alt="Logo" class="w-10 h-10 object-cover rounded-xl border border-slate-100 shadow-sm">
+            <div class="flex flex-col gap-0.5">
+                <h1 id="appTitle" class="text-[16px] bg-gradient-to-r from-indigo-600 to-blue-700 bg-clip-text text-transparent font-black tracking-tight leading-none">慳真D</h1>
+                <div class="flex items-center gap-1">
+                    <span id="dataSourceBadge" class="px-1 py-[1px] rounded text-[8px] font-bold bg-blue-50 text-blue-700 border border-blue-200/60 uppercase whitespace-nowrap leading-none">政府數據</span>
+                    <span id="todayStatusLabel" class="text-[8px] text-slate-400 font-medium whitespace-nowrap leading-none">載入中...</span>
+                </div>
+            </div>
+        </div>
         
-        <div class="action-icon" style="background: #fffbeb;">🔔</div>
-        <div class="action-icon" style="background: #fef3c7;">📖</div>
-        <div class="action-icon" style="background: #eff6ff; color: #3b82f6;">🔗</div>
-      </div>
+                      <div class="flex flex-col items-start justify-center shrink-0">
+            <span class="text-[9px] font-bold text-slate-400 mb-0.5 leading-none px-1">EN/中</span>
+            
+            <select id="langSelector" onchange="changeLanguage(this.value)" class="bg-slate-100 border-none text-[11px] font-bold text-slate-700 rounded-lg px-1.5 py-1 outline-none cursor-pointer">
+                <option value="zh-Hant">繁體</option>
+                <option value="zh-Hans">简体</option>
+                <option value="en">Eng</option>
+            </select>
+        </div>
+            <button onclick="openMyAlerts()" class="w-7 h-7 flex items-center justify-center rounded-full bg-rose-50 text-rose-600 border border-rose-100 shadow-sm">🔔</button>
+            <button onclick="openManual()" class="w-7 h-7 flex items-center justify-center rounded-full bg-amber-50 text-amber-600 border border-amber-100 shadow-sm text-[12px]">📖</button>
+            <button onclick="openShareAppModal()" class="w-7 h-7 flex items-center justify-center rounded-full bg-blue-50 text-blue-600 border border-blue-100 shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+            </button>
+        </div>
     </div>
-  </div>
-
-  <div class="main-content">
-    <div class="robot-icon">🤖</div>
-    <div class="main-title">想搵咩平嘢？直接話我知</div>
-    <div class="search-wrapper">
-      <input type="text" class="search-input" placeholder="例如：可口可樂、出前一丁...">
-      <button class="search-btn">
-        <svg style="width: 16px; height: 16px; margin-left: -2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
-        </svg>
-      </button>
-    </div>
-  </div>
-
-  <script>
-    const themeBtn = document.getElementById('themeBtn');
-    const body = document.body;
-
-    themeBtn.addEventListener('click', () => {
-      body.classList.toggle('dark-mode'); // 替 body 加上或移除 dark-mode 樣式
-      
-      // 切換按鈕的圖示
-      if (body.classList.contains('dark-mode')) {
-        themeBtn.textContent = '🌙';
-      } else {
-        themeBtn.textContent = '☀️';
-      }
-    });
-  </script>
-
-</body>
-</html>
+</header>
 
     <main class="flex-1 overflow-hidden w-full max-w-2xl mx-auto relative flex flex-col">
     <section id="level1Section" class="absolute inset-0 flex flex-col bg-slate-50 overflow-y-auto no-scrollbar">
