@@ -263,7 +263,7 @@ kwHome: "畫面",
         alertListClose: "Close",
         
         // 喺 en 區塊加呢行：
-        ogDesc: 'HK Supermarket Price Watch. Find the best deals instantly!',
+        ogDesc: 'HK Smart Price Watch. Find the best deals instantly!',
         
         
         
