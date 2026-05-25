@@ -101,12 +101,12 @@
         <div class="flex flex-col flex-1 p-5 max-w-2xl mx-auto w-full min-h-full">
 
             <div class="flex flex-col items-center justify-center mt-6 mb-8">
-                <div class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center text-3xl shadow-[0_4px_15px_-3px_rgba(59,130,246,0.2)] border border-blue-200 mb-4 transform hover:scale-105 transition-transform">🤖</div>
-                <h2 id="homeTitle" class="text-[18px] sm:text-[20px] font-black text-slate-800 mb-6 tracking-tight">想搵咩平嘢？直接話我知</h2>
+                <div class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center text-3xl shadow-[0_4px_15px_-3px_rgba(59,130,246,0.2)] dark:shadow-none border border-blue-200 dark:border-slate-600 mb-4 transform hover:scale-105 transition-transform">🤖</div>
+                <h2 id="homeTitle" class="text-[18px] sm:text-[20px] font-black text-slate-800 dark:text-slate-100 mb-6 tracking-tight transition-colors">想搵咩平嘢？直接話我知</h2>
                 
-                <form onsubmit="event.preventDefault(); triggerGlobalSearch();" class="w-full relative shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] rounded-[2rem]">
-                    <input type="text" id="globalSearchInput" placeholder="例如: 可口可樂、出前一丁..." class="w-full pl-6 pr-16 py-4 sm:py-4.5 bg-white border-2 border-transparent focus:border-blue-500 rounded-[2rem] outline-none transition-all text-[15px] sm:text-[16px] font-medium placeholder-slate-400">
-                    <button type="submit" class="absolute right-2 top-2 bottom-2 w-[52px] bg-blue-600 text-white rounded-full flex items-center justify-center shadow-sm active:scale-95 transition-transform hover:bg-blue-700">
+                <form onsubmit="event.preventDefault(); triggerGlobalSearch();" class="w-full relative shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5)] rounded-[2rem]">
+                    <input type="text" id="globalSearchInput" placeholder="例如: 可口可樂、出前一丁..." class="w-full pl-6 pr-16 py-4 sm:py-4.5 bg-white dark:bg-slate-800 border-2 border-transparent focus:border-blue-500 dark:focus:border-blue-400 rounded-[2rem] outline-none transition-all text-[15px] sm:text-[16px] font-medium text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500">
+                    <button type="submit" class="absolute right-2 top-2 bottom-2 w-[52px] bg-blue-600 dark:bg-blue-500 text-white rounded-full flex items-center justify-center shadow-sm active:scale-95 transition-transform hover:bg-blue-700 dark:hover:bg-blue-600">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
                     </button>
                 </form>
@@ -114,82 +114,78 @@
 
             <div class="w-full mb-auto pb-4">
                 <div class="flex items-center justify-between mb-3 px-1">
-                    <span id="quickTitle" class="text-[12px] font-black text-slate-400 tracking-wider uppercase">✨ 快捷尋寶</span>
+                    <span id="quickTitle" class="text-[12px] font-black text-slate-400 dark:text-slate-500 tracking-wider uppercase transition-colors">✨ 快捷尋寶</span>
                 </div>
                 <div id="quickBtnGroup" class="grid grid-cols-2 gap-2.5 pb-2">
-                </div>
+                    </div>
             </div>
 
-            <div class="w-full mt-6 bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden flex-none">
-                <button onclick="toggleCategories()" class="w-full px-5 py-4.5 flex items-center justify-between bg-white active:bg-slate-50 transition outline-none">
-                    <span id="catTitle" class="font-bold text-slate-700 text-[14px] sm:text-[15px] flex items-center gap-2.5">
+            <div class="w-full mt-6 bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden flex-none transition-colors duration-300">
+                <button onclick="toggleCategories()" class="w-full px-5 py-4.5 flex items-center justify-between bg-white dark:bg-slate-800 active:bg-slate-50 dark:active:bg-slate-700 transition outline-none">
+                    <span id="catTitle" class="font-bold text-slate-700 dark:text-slate-200 text-[14px] sm:text-[15px] flex items-center gap-2.5 transition-colors">
                         <span class="text-lg">🛒</span> 或者按主分類慢慢行
                     </span>
-                    <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+                    <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400 transition-colors">
                         <svg id="catToggleIcon" class="transition-transform duration-300" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                     </div>
                 </button>
                 
-                <div id="collapsibleCatContainer" class="hidden px-4 pb-5 pt-1 border-t border-slate-100 bg-slate-50/30">
+                <div id="collapsibleCatContainer" class="hidden px-4 pb-5 pt-1 border-t border-slate-100 dark:border-slate-700 bg-slate-50/30 dark:bg-slate-800/50 transition-colors">
                     <div id="level1Container" class="grid grid-cols-2 gap-3 mt-3">
-                        <div id="loadingText" class="text-center p-4 text-slate-400 text-sm col-span-2">正在同步最新行情...</div>
+                        <div id="loadingText" class="text-center p-4 text-slate-400 dark:text-slate-500 text-sm col-span-2 transition-colors">正在同步最新行情...</div>
                     </div>
                 </div>
             </div>
 
            <div class="text-center pt-8 pb-4 flex-none w-full"> 
-    <button id="miniFooterLinks" onclick="openDisclaimerModal()" class="text-[11px] text-slate-400 hover:text-slate-600 underline decoration-slate-200 transition">
-        關於我們、條款及免責聲明
-    </button>
-    
-    <div class="text-[10px] text-slate-300 mt-1.5 mb-8 tracking-wide flex items-center justify-center">
-        <span id="miniFooterCopy">© 2026 慳真D</span> 
-        <span class="mx-1.5">|</span> 
-        <span id="footerDevTeam">開發團隊: </span>
-        <a id="footerDevName" href="https://www.facebook.com/share/18j3qqx64K/?mibextid=wwXIfr" target="_blank" class="hover:text-slate-500 underline transition cursor-pointer ml-1">懶人工具駅</a>
-    </div>
-    
-    <div style="display: none;" class="w-full h-[90px] max-w-[320px] mx-auto bg-slate-100 border border-slate-200 border-dashed rounded-2xl flex-col items-center justify-center text-slate-400 shadow-sm mt-4">
-        <span class="text-[12px] font-bold tracking-widest uppercase mb-1">Advertisement</span>
-        <span class="text-[10px]">預留 Google 廣告橫幅位置</span>
-    </div>
-</div>
+                <button id="miniFooterLinks" onclick="openDisclaimerModal()" class="text-[11px] text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 underline decoration-slate-200 dark:decoration-slate-700 transition">
+                    關於我們、條款及免責聲明
+                </button>
+                
+                <div class="text-[10px] text-slate-300 dark:text-slate-600 mt-1.5 mb-8 tracking-wide flex items-center justify-center transition-colors">
+                    <span id="miniFooterCopy">© 2026 慳真D</span> 
+                    <span class="mx-1.5">|</span> 
+                    <span id="footerDevTeam">開發團隊: </span>
+                    <a id="footerDevName" href="https://www.facebook.com/share/18j3qqx64K/?mibextid=wwXIfr" target="_blank" class="hover:text-slate-500 dark:hover:text-slate-400 underline transition cursor-pointer ml-1">懶人工具駅</a>
+                </div>
+            </div>
+        </div>
 
-        <div id="disclaimerModal" class="hidden fixed inset-0 bg-slate-900/40 z-[100] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
-            <div class="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl flex flex-col max-h-[80vh]">
+        <div id="disclaimerModal" class="hidden fixed inset-0 bg-slate-900/40 dark:bg-slate-900/80 z-[100] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+            <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl flex flex-col max-h-[80vh] border dark:border-slate-700 transition-colors duration-300">
                 <div class="flex items-center gap-2 mb-4">
                     <span class="text-[20px]">🛡️</span>
-                    <h2 id="disclaimerTitle" class="text-[17px] font-black text-slate-800">免責聲明及服務條款</h2>
+                    <h2 id="disclaimerTitle" class="text-[17px] font-black text-slate-800 dark:text-slate-100 transition-colors">免責聲明及服務條款</h2>
                 </div>        
-                <div id="disclaimerBody" class="overflow-y-auto text-[13px] text-slate-600 space-y-4 pr-1 mb-2 leading-relaxed">
-                    <p><strong class="text-slate-800 text-[14px]">1. 數據來源及知識產權：</strong><br>本程式之價格及優惠數據均源自「資料一線通」(Data.gov.hk) 的「網上價格一覽通」數據集。所有相關知識產權均歸<strong>消費者委員會</strong>及各相關商戶所有。</p>
-                    <p><strong class="text-slate-800 text-[14px]">2. 數據覆蓋範圍：</strong><br>數據集主要涵蓋消費者委員會挑選的數千款熱門日常必需品，並不包括超市所有庫存（例如獨家或冷門貨品）。</p>
-                    <p><strong class="text-slate-800 text-[14px]">3. 自動化運算：</strong><br>顯示的折合平均價格由<strong>系統自動運算得出</strong>。所有資訊均基於政府最新發佈的實時數據及實體店最終價格標籤為準。資料僅供參考，建議用戶購買前自行核實價格。</p>
-                    <p><strong class="text-slate-800 text-[14px]">4. 責任限制：</strong><br>本程式按「現狀」(AS IS) 提供，用戶需自行承擔使用風險。本程式及其開發者對任何因使用或依賴本程式資訊而導致的損失或損害，概不承擔任何法律責任。</p>
+                <div id="disclaimerBody" class="overflow-y-auto text-[13px] text-slate-600 dark:text-slate-300 space-y-4 pr-1 mb-2 leading-relaxed transition-colors">
+                    <p><strong class="text-slate-800 dark:text-slate-200 text-[14px]">1. 數據來源及知識產權：</strong><br>本程式之價格及優惠數據均源自「資料一線通」(Data.gov.hk) 的「網上價格一覽通」數據集。所有相關知識產權均歸<strong>消費者委員會</strong>及各相關商戶所有。</p>
+                    <p><strong class="text-slate-800 dark:text-slate-200 text-[14px]">2. 數據覆蓋範圍：</strong><br>數據集主要涵蓋消費者委員會挑選的數千款熱門日常必需品，並不包括超市所有庫存（例如獨家或冷門貨品）。</p>
+                    <p><strong class="text-slate-800 dark:text-slate-200 text-[14px]">3. 自動化運算：</strong><br>顯示的折合平均價格由<strong>系統自動運算得出</strong>。所有資訊均基於政府最新發佈的實時數據及實體店最終價格標籤為準。資料僅供參考，建議用戶購買前自行核實價格。</p>
+                    <p><strong class="text-slate-800 dark:text-slate-200 text-[14px]">4. 責任限制：</strong><br>本程式按「現狀」(AS IS) 提供，用戶需自行承擔使用風險。本程式及其開發者對任何因使用或依賴本程式資訊而導致的損失或損害，概不承擔任何法律責任。</p>
                 </div>
-                <button onclick="document.getElementById('disclaimerModal').classList.add('hidden')" id="modalCloseBtn" class="mt-4 w-full bg-blue-600 text-white font-bold py-3.5 rounded-2xl active:scale-95 transition-transform text-[15px] shadow-md shadow-blue-100">
+                <button onclick="document.getElementById('disclaimerModal').classList.add('hidden')" id="modalCloseBtn" class="mt-4 w-full bg-blue-600 dark:bg-blue-500 text-white font-bold py-3.5 rounded-2xl active:scale-95 transition-transform text-[15px] shadow-md shadow-blue-100 dark:shadow-none">
                     我明白及接受
                 </button>
             </div>
         </div>
     </section>
 
-    <section id="chatSection" class="hidden absolute inset-0 flex flex-col bg-slate-50 z-20">
-        <div class="bg-white border-b px-4 py-3 flex items-center shadow-sm flex-none z-10">
-            <button onclick="showLevel1()" class="text-blue-600 font-medium flex items-center bg-blue-50 px-3 py-1.5 rounded-xl mr-3 active:scale-95 transition">
+    <section id="chatSection" class="hidden absolute inset-0 flex flex-col bg-slate-50 dark:bg-slate-900 z-20 transition-colors duration-300">
+        <div class="bg-white dark:bg-slate-800 border-b dark:border-slate-700 px-4 py-3 flex items-center shadow-sm dark:shadow-none flex-none z-10 transition-colors">
+            <button onclick="showLevel1()" class="text-blue-600 dark:text-blue-400 font-medium flex items-center bg-blue-50 dark:bg-blue-900/30 px-3 py-1.5 rounded-xl mr-3 active:scale-95 transition">
                 ← <span id="backBtnText" class="ml-1">返回</span>
             </button>
-            <h2 id="chatTitle" class="font-bold text-slate-800 truncate text-[15px] flex items-center"></h2>
+            <h2 id="chatTitle" class="font-bold text-slate-800 dark:text-slate-100 truncate text-[15px] flex items-center transition-colors"></h2>
         </div>
         
         <div id="chatMessages" class="flex-1 overflow-y-auto no-scrollbar p-4 space-y-5"></div>
         
-        <div class="bg-white border-t p-3 pb-[max(16px,env(safe-area-inset-bottom))] flex-none shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20 flex flex-col gap-2">
+        <div class="bg-white dark:bg-slate-800 border-t dark:border-slate-700 p-3 pb-[max(16px,env(safe-area-inset-bottom))] flex-none shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] dark:shadow-none z-20 flex flex-col gap-2 transition-colors">
             <div id="quickActionChips" class="flex gap-2 overflow-x-auto no-scrollbar max-w-2xl mx-auto w-full px-1"></div>
 
             <form id="chatForm" class="flex gap-2 max-w-2xl mx-auto w-full" onsubmit="event.preventDefault(); submitChat();">
-                <input type="text" id="chatInput" class="flex-1 px-4 py-3.5 bg-slate-100 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-[15px]" autocomplete="off">
-                <button type="submit" class="bg-blue-600 text-white px-5 rounded-2xl font-bold shadow-sm active:scale-95 transition flex items-center justify-center shrink-0">
+                <input type="text" id="chatInput" class="flex-1 px-4 py-3.5 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none transition-all text-[15px] text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500" autocomplete="off">
+                <button type="submit" class="bg-blue-600 dark:bg-blue-500 text-white px-5 rounded-2xl font-bold shadow-sm active:scale-95 transition flex items-center justify-center shrink-0">
                     <span id="sendBtnText">搜尋</span>
                 </button>
             </form>
