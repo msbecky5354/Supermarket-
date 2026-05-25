@@ -339,15 +339,38 @@
         }
 
         async function shareProduct(name, brand, minPrice) {
-            // 🌐 新增：自製專屬貨品連結，加上 ?q=貨品名稱
             const baseUrl = window.location.origin + window.location.pathname;
             const productUrl = `${baseUrl}?q=${encodeURIComponent(name)}`;
 
+            // 1. 設定預設值 (萬一 lang.js 未 load 切，都最少有繁體字頂住)
+            let finalTitle = "慳真D🔎推介";
+            let finalTemplate = "【慳錢情報】{brand} - {name}，最低價見 ${price}！快啲去慳真D🔎睇吓啦！🛒";
+
+            // 2. 嘗試去 lang.js 攞對應語言嘅字眼
+            if (typeof uiText !== 'undefined' && uiText[currentLang]) {
+                if (uiText[currentLang].shareProductTitle) {
+                    finalTitle = uiText[currentLang].shareProductTitle;
+                }
+                if (uiText[currentLang].shareProductTemplate) {
+                    finalTemplate = uiText[currentLang].shareProductTemplate;
+                }
+            }
+
+            // 3. 將模板入面嘅 {brand}, {name}, {price} 換成真正嘅資料
+            const safeBrand = brand ? brand : (currentLang === 'en' ? 'General' : '綜合品牌');
+            const finalText = finalTemplate
+                .replace('{brand}', safeBrand)
+                .replace('{name}', name)
+                .replace('{price}', minPrice);
+
+            // 4. 將準備好嘅資料塞入 shareData
             const shareData = {
-                title: '慳真D🔎推介',
-                text: `【慳錢情報】${brand} - ${name}，最低價見 $${minPrice}！快啲去慳真D🔎睇吓啦！🛒`,
-                url: productUrl // 呢度轉用專屬連結！
+                title: finalTitle,
+                text: finalText,
+                url: productUrl 
             };
+            
+            // 5. 執行分享
             try {
                 if (navigator.share) { await navigator.share(shareData); }
                 else {
