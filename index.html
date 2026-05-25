@@ -126,18 +126,23 @@
                 </div>
             </div>
 
-            <div class="text-center pt-8 pb-4 flex-none w-full"> 
-                <button id="miniFooterLinks" onclick="openDisclaimerModal()" class="text-[11px] text-slate-400 hover:text-slate-600 underline decoration-slate-200 transition">
-                    關於我們、條款及免責聲明
-                </button>
-                <div id="miniFooterCopy" class="text-[10px] text-slate-300 mt-1.5 mb-8 tracking-wide">© 2026 慳真D</div>
-                
-                <div style="display: none;" class="w-full h-[90px] max-w-[320px] mx-auto bg-slate-100 border border-slate-200 border-dashed rounded-2xl flex-col items-center justify-center text-slate-400 shadow-sm mt-4">
-                    <span class="text-[12px] font-bold tracking-widest uppercase mb-1">Advertisement</span>
-                    <span class="text-[10px]">預留 Google 廣告橫幅位置</span>
-                </div>
-            </div>
-        </div>
+           <div class="text-center pt-8 pb-4 flex-none w-full"> 
+    <button id="miniFooterLinks" onclick="openDisclaimerModal()" class="text-[11px] text-slate-400 hover:text-slate-600 underline decoration-slate-200 transition">
+        關於我們、條款及免責聲明
+    </button>
+    
+    <div class="text-[10px] text-slate-300 mt-1.5 mb-8 tracking-wide flex items-center justify-center">
+        <span id="miniFooterCopy">© 2026 慳真D</span> 
+        <span class="mx-1.5">|</span> 
+        <span id="footerDevTeam">開發團隊: </span>
+        <a id="footerDevName" href="https://www.facebook.com/share/18j3qqx64K/?mibextid=wwXIfr" target="_blank" class="hover:text-slate-500 underline transition cursor-pointer ml-1">懶人工具駅</a>
+    </div>
+    
+    <div style="display: none;" class="w-full h-[90px] max-w-[320px] mx-auto bg-slate-100 border border-slate-200 border-dashed rounded-2xl flex-col items-center justify-center text-slate-400 shadow-sm mt-4">
+        <span class="text-[12px] font-bold tracking-widest uppercase mb-1">Advertisement</span>
+        <span class="text-[10px]">預留 Google 廣告橫幅位置</span>
+    </div>
+</div>
 
         <div id="disclaimerModal" class="hidden fixed inset-0 bg-slate-900/40 z-[100] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
             <div class="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl flex flex-col max-h-[80vh]">
