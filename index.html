@@ -18,8 +18,14 @@
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8256903623772163" crossorigin="anonymous"></script>
  
     <link rel="manifest" href="manifest.json">
-    <link rel="icon" type="image/png" href="logo.JPG">
-    <link rel="apple-touch-icon" href="logo.JPG">
+        
+    <link rel="icon" type="image/png" href="/logo.JPG">
+    <link rel="apple-touch-icon" href="/logo.JPG">
+    <meta id="ogTitle" property="og:title" content="慳真D | HK Smart Price">
+    <meta id="ogDesc" property="og:description" content="香港超市格價神器，秒速幫你搵出最平貨品！">
+    <meta property="og:image" content="https://hk-price-watch.vercel.app/logo.JPG">
+    <meta property="og:url" content="https://hk-price-watch.vercel.
+    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="HK Smart Price">
@@ -396,6 +402,14 @@
 
         if (document.getElementById('appTitle')) document.getElementById('appTitle').innerText = dict.title || '慳真D';
         document.title = dict.title || '慳真D';
+        
+       // 🌐 動態切換分享標籤 (OG Tags)，直接問 lang.js 大管家 (dict) 攞字！
+        const ogTitle = document.getElementById('ogTitle');
+        const ogDesc = document.getElementById('ogDesc');
+        
+        if (ogTitle) ogTitle.setAttribute("content", dict.title || '慳真D');
+        if (ogDesc) ogDesc.setAttribute("content", dict.ogDesc || '香港超市格價神器，秒速幫你搵出最平貨品！');
+        
         if (document.getElementById('dataSourceBadge')) document.getElementById('dataSourceBadge').innerText = dict.badge || '政府數據連線';
         
         if (lastUpdatedTime) {
