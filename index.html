@@ -293,31 +293,46 @@
         }
 
         async function init() {
-            try {
-                try {
-                    const timeRes = await fetch('update_log.txt?t=' + new Date().getTime());
-                    if (timeRes.ok) {
-                        const timeText = await timeRes.text();
-                        lastUpdatedTime = new Date(timeText.trim()); 
-                    } else {
-                        lastUpdatedTime = null; 
-                    }
-                } catch (timeErr) {
-                    console.log("無法獲取時間記錄檔", timeErr);
-                    lastUpdatedTime = null;
-                }
+    try {
+        // --- 第一步：從 CDN 獲取最後更新時間 ---
+        try {
+            const timeUrl = 'https://cdn.jsdelivr.net/gh/msbecky5354/HK_PriceWatch-@main/data/update_log.txt';
+            // CDN 已經自帶緩存管理，唔使再加 ?t= 去打破 Cache
+            const timeRes = await fetch(timeUrl);
+            
+            if (timeRes.ok) {
+                const timeText = await timeRes.text();
+                // 你頭先設定嘅 ISO 8601 格式，JavaScript new Date() 可以完美且精準咁解析
+                lastUpdatedTime = new Date(timeText.trim()); 
+            } else {
+                lastUpdatedTime = null; 
+            }
+        } catch (timeErr) {
+            console.log("❌ 無法獲取時間記錄檔", timeErr);
+            lastUpdatedTime = null;
+        }
 
-                let data = null;
-                const localResponse = await fetch('pricewatch.json?t=' + new Date().getTime());
-                
-                if (localResponse.ok) {
-                    data = await localResponse.json();
-                } else {
-                    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent('https://online-price-watch.consumer.org.hk/opw/opendata/pricewatch.json')}`;
-                    const res = await fetch(proxyUrl);
-                    data = await res.json();
-                }
-                rawApiData = data;
+        // --- 第二步：從 CDN 獲取報價 JSON ---
+        let data = null;
+        const dataUrl = 'https://cdn.jsdelivr.net/gh/msbecky5354/HK_PriceWatch-@main/data/pricewatch.json';
+        const response = await fetch(dataUrl);
+        
+        if (response.ok) {
+            data = await response.json();
+            console.log("✅ 成功從 jsDelivr CDN 取得最新報價！");
+        } else {
+            // 既然用咗 CDN，就唔會再有 CORS 問題，如果失敗通常係網絡問題，直接報錯就得
+            console.error("❌ 無法獲取報價數據，HTTP 狀態碼:", response.status);
+        }
+        
+        rawApiData = data;
+        
+        // ... (下面繼續你原本用嚟渲染畫面或者處理數據嘅 Code) ...
+
+    } catch (err) {
+        console.error("❌ 系統初始化失敗:", err);
+    }
+}
                 
                 changeLanguage('zh-Hant');
                 
