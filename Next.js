@@ -1,61 +1,44 @@
-import { useState } from 'react';
+// 1. 引入剛才建立的 Header 組件
+// 注意：如果你的首頁和 components 資料夾在同一層，路徑就是 './components/Header'
+// 如果首頁在 app 資料夾裡面，路徑可能是 '../components/Header'
+import Header from '../components/Header';
 
-export default function Header() {
-  // Simple state for the theme toggle UI
-  const [isDarkMode, setIsDarkMode] = useState(false);
-
+export default function Home() {
   return (
-    <div className="flex justify-between items-center px-2.5 py-3 bg-white rounded-xl shadow-sm font-sans max-w-[600px] mx-auto mt-5 border border-gray-100">
+    <main className="min-h-screen bg-gray-50 pb-10 font-sans">
       
-      {/* Left Side */}
-      <div className="flex items-center gap-2.5">
-        <div className="w-9 h-9 rounded-lg border border-gray-200 flex justify-center items-center text-lg shadow-sm shrink-0">
-          🔍
-        </div>
-        <div className="flex flex-col justify-center">
-          <div className="text-indigo-600 text-[15px] leading-tight font-bold">慳真D</div>
-          <div className="text-[9px] text-gray-400 mt-1 whitespace-nowrap">
-            更新於: 2026-05-25 08:27
-          </div>
-        </div>
-      </div>
-
-      {/* Right Side */}
-      <div className="flex items-center gap-2.5">
+      {/* 2. 在頁面最上方顯示 Header */}
+      <Header />
+      
+      {/* 3. 網站主體內容 (搜尋區塊) */}
+      <div className="flex flex-col items-center mt-12 px-4">
         
-        {/* Language Selector */}
-        <div className="flex items-center gap-1">
-          <span className="hidden min-[390px]:inline text-[10px] text-gray-500 font-bold">
-            Eng
-          </span>
-          <select className="px-1 py-0.5 rounded-md border border-gray-200 bg-gray-50 text-xs text-gray-700 outline-none">
-            <option>繁體</option>
-          </select>
+        {/* 機器人圖示 */}
+        <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center text-3xl mb-4 shadow-sm border border-blue-100">
+          🤖
         </div>
-
-        {/* Action Icons including Theme Switch */}
-        <div className="flex items-center gap-1 min-[390px]:gap-1.5">
-          {/* Theme Toggle Button */}
-          <button 
-            onClick={() => setIsDarkMode(!isDarkMode)}
-            className="w-7 h-7 rounded-full bg-slate-100 flex justify-center items-center text-[13px] cursor-pointer shrink-0 hover:bg-slate-200 transition-colors border-none outline-none"
-            aria-label="Toggle Theme"
-          >
-            {isDarkMode ? '🌙' : '☀️'}
+        
+        {/* 標題 */}
+        <h1 className="text-xl font-bold text-gray-800 mb-6 tracking-wide">
+          想搵咩平嘢？直接話我知
+        </h1>
+        
+        {/* 搜尋框區塊 */}
+        <div className="w-full max-w-[500px] relative">
+          <input 
+            type="text" 
+            placeholder="例如：可口可樂、出前一丁..." 
+            className="w-full py-3.5 pl-5 pr-14 rounded-full border border-gray-200 shadow-sm text-sm outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+          />
+          {/* 送出按鈕 (紙飛機 icon 示意) */}
+          <button className="absolute right-2 top-1.5 bottom-1.5 aspect-square bg-blue-600 text-white rounded-full flex justify-center items-center hover:bg-blue-700 transition-colors shadow-md">
+            <svg className="w-4 h-4 ml-[-2px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+            </svg>
           </button>
-
-          <div className="w-7 h-7 rounded-full bg-amber-50 flex justify-center items-center text-[13px] cursor-pointer shrink-0">
-            🔔
-          </div>
-          <div className="w-7 h-7 rounded-full bg-amber-100 flex justify-center items-center text-[13px] cursor-pointer shrink-0">
-            📖
-          </div>
-          <div className="w-7 h-7 rounded-full bg-blue-50 text-blue-500 flex justify-center items-center text-[13px] cursor-pointer shrink-0">
-            🔗
-          </div>
         </div>
+
       </div>
-      
-    </div>
+    </main>
   );
 }
