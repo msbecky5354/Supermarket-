@@ -36,9 +36,6 @@
       }
     </script>
 
-
-
-
     <style>
         .clickable-card:active { transform: scale(0.95); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -58,7 +55,7 @@
         .star-blink { animation: star-blink 1.5s infinite ease-in-out; display: inline-block; }
     </style>
 </head>
-<body class="bg-slate-50 h-[100dvh] flex flex-col font-sans text-slate-900 overflow-hidden w-full text-[15px]">
+<body class="bg-slate-50 h-[100dvh] flex flex-col font-sans text-slate-900 overflow-hidden w-full text-[15px] dark:bg-slate-900 dark:text-slate-100 transition-colors duration-300">
 
   <header class="bg-white border-b flex-none z-30 px-3 py-3 shadow-sm sticky top-0 dark:bg-slate-900 dark:border-slate-800 transition-colors">
     <div class="flex justify-between items-center w-full max-w-[600px] mx-auto">
@@ -74,8 +71,8 @@
         <div class="flex items-center gap-2.5 shrink-0">
             
             <div class="flex items-center gap-1">
-                <span class="hidden min-[390px]:block text-[10px] font-bold text-slate-400 leading-none">EN/中</span>
-                <select id="langSelector" onchange="changeLanguage(this.value)" class="bg-slate-100 border-none text-[11px] font-bold text-slate-700 rounded-md px-1.5 py-1 outline-none cursor-pointer dark:bg-slate-800 dark:text-slate-200">
+                <span class="hidden min-[390px]:block text-[10px] font-bold text-slate-400 leading-none">Eng</span>
+                <select id="langSelector" onchange="changeLanguage(this.value)" class="bg-slate-100 border-none text-[11px] font-bold text-slate-700 rounded-md px-1.5 py-1 outline-none cursor-pointer dark:bg-slate-800 dark:text-slate-200 transition-colors">
                     <option value="zh-Hant">繁體</option>
                     <option value="zh-Hans">简体</option>
                     <option value="en">Eng</option>
@@ -193,44 +190,44 @@
     </section>
 </main>
     
-    <div id="infoModal" class="fixed inset-0 bg-slate-900/40 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm opacity-0 transition-opacity duration-300">        
-        <div class="bg-white rounded-3xl shadow-xl w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-300" id="modalBox">
-            <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                <h3 id="modalTitle" class="text-[17px] font-black text-slate-800">標題</h3>
-                <button onclick="closeModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-200 text-slate-500 active:scale-90 transition">✕</button>
+    <div id="infoModal" class="fixed inset-0 bg-slate-900/40 dark:bg-slate-900/80 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm opacity-0 transition-opacity duration-300">        
+        <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-xl w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-300 border dark:border-slate-700" id="modalBox">
+            <div class="px-6 py-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
+                <h3 id="modalTitle" class="text-[17px] font-black text-slate-800 dark:text-slate-100">標題</h3>
+                <button onclick="closeModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 active:scale-90 transition">✕</button>
             </div>
             <div class="p-6">
-                <p id="modalContent" class="text-[14px] text-slate-600 leading-relaxed"></p>
+                <p id="modalContent" class="text-[14px] text-slate-600 dark:text-slate-300 leading-relaxed"></p>
             </div>
             <div class="px-6 pb-6 pt-2">
-                <button onclick="closeModal()" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-sm active:scale-95 transition">關閉</button>
+                <button onclick="closeModal()" class="w-full bg-blue-600 dark:bg-blue-500 text-white font-bold py-3.5 rounded-xl shadow-sm active:scale-95 transition">關閉</button>
             </div>
         </div>
     </div>
 
-    <div id="shareAppModal" class="fixed inset-0 bg-slate-900/40 z-[60] hidden flex items-center justify-center p-4 backdrop-blur-sm opacity-0 transition-opacity duration-300">
-        <div class="bg-white rounded-3xl shadow-xl w-full max-w-sm overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col" id="shareAppBox">
-            <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center">
-                <h3 id="shareAppTitle" class="text-[16px] font-black text-slate-800">分享 App</h3>
-                <button onclick="closeShareAppModal()" class="w-7 h-7 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 active:scale-90 transition">✕</button>
+    <div id="shareAppModal" class="fixed inset-0 bg-slate-900/40 dark:bg-slate-900/80 z-[60] hidden flex items-center justify-center p-4 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-xl w-full max-w-sm overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col border dark:border-slate-700" id="shareAppBox">
+            <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                <h3 id="shareAppTitle" class="text-[16px] font-black text-slate-800 dark:text-slate-100">分享 App</h3>
+                <button onclick="closeShareAppModal()" class="w-7 h-7 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 active:scale-90 transition">✕</button>
             </div>
             <div class="p-5 flex flex-col items-center text-center">
-                <p id="shareAppDesc" class="text-[13px] text-slate-500 mb-4"></p>
-                <div class="p-2 bg-white border-2 border-slate-100 rounded-2xl shadow-sm mb-5">
+                <p id="shareAppDesc" class="text-[13px] text-slate-500 dark:text-slate-400 mb-4"></p>
+                <div class="p-2 bg-white border-2 border-slate-100 dark:border-slate-700 rounded-2xl shadow-sm mb-5">
                     <img id="qrCodeImg" src="" alt="QR Code" class="w-40 h-40 object-contain rounded-xl">
                 </div>
                 
                 <div class="grid grid-cols-2 gap-3 w-full">
-                    <button onclick="copyAppUrl()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-slate-50 border border-slate-200 active:bg-slate-100 transition">
+                    <button onclick="copyAppUrl()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 active:bg-slate-100 dark:active:bg-slate-700 transition">
                         <span class="text-lg">🔗</span>
-                        <span id="shareBtnCopy" class="text-[12px] font-bold text-slate-700">複製連結</span>
+                        <span id="shareBtnCopy" class="text-[12px] font-bold text-slate-700 dark:text-slate-200">複製連結</span>
                     </button>
-                    <button onclick="shareToWhatsApp()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-green-50 border border-green-200 active:bg-green-100 transition">
+                    <button onclick="shareToWhatsApp()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 active:bg-green-100 dark:active:bg-green-900/50 transition">
                         <span class="text-lg">💬</span>
-                        <span id="shareBtnWhatsApp" class="text-[12px] font-bold text-green-700">WhatsApp</span>
+                        <span id="shareBtnWhatsApp" class="text-[12px] font-bold text-green-700 dark:text-green-400">WhatsApp</span>
                     </button>
                 </div>
-                <button onclick="shareNative()" class="mt-3 w-full flex items-center justify-center gap-2 p-3 rounded-2xl bg-blue-50 text-blue-600 font-bold text-[13px] border border-blue-100 active:scale-95 transition">
+                <button onclick="shareNative()" class="mt-3 w-full flex items-center justify-center gap-2 p-3 rounded-2xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-bold text-[13px] border border-blue-100 dark:border-blue-800 active:scale-95 transition">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
                     <span id="shareBtnMore">更多選項</span>
                 </button>
@@ -238,7 +235,7 @@
         </div>
     </div>
 
-    <div id="toastMsg" class="fixed top-14 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white px-4 py-2 rounded-full shadow-lg text-[13px] font-bold z-[70] transition-all duration-300 opacity-0 pointer-events-none translate-y-[-20px]">
+    <div id="toastMsg" class="fixed top-14 left-1/2 transform -translate-x-1/2 bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 px-4 py-2 rounded-full shadow-lg text-[13px] font-bold z-[70] transition-all duration-300 opacity-0 pointer-events-none translate-y-[-20px]">
         ✅ 連結已複製！
     </div>
 
@@ -350,10 +347,8 @@
         currentLang = lang;
         document.documentElement.lang = lang;
         
-        // 1. 安全讀取 uiText (防止未定義導致死機)
         const dict = (typeof uiText !== 'undefined' && uiText[lang]) ? uiText[lang] : {};
 
-        // 2. 更新原本的 UI
         if (document.getElementById('appTitle')) document.getElementById('appTitle').innerText = dict.title || '慳真D';
         document.title = dict.title || '慳真D';
         if (document.getElementById('dataSourceBadge')) document.getElementById('dataSourceBadge').innerText = dict.badge || '政府數據連線';
@@ -382,7 +377,6 @@
             document.getElementById('miniFooterCopy').innerText = dict.miniFooterCopy || '© 2026 慳真D';
         }
 
-        // 3. 首頁動態翻譯機
         const homeUI = {
             'zh-Hant': {
                 title: "想搵咩平嘢？直接話我知",
@@ -403,7 +397,6 @@
                 placeholder: "e.g., Coca Cola, Noodles...",
                 quickTitle: "✨ Quick Search",
                 catTitle: "Or browse by categories",
-                // 🛑 將太長嘅英文字縮短，防止爆格
                 b1: "🔥 Big Price Gap", b2: "🏷️ Latest Deals", b3: "🥤 Cola Deals", b4: "🍞 Breakfast Deals"
             }
         };
@@ -413,7 +406,6 @@
         if(document.getElementById('quickTitle')) document.getElementById('quickTitle').innerText = homeUI[lang].quickTitle;
         if(document.getElementById('catTitle')) document.getElementById('catTitle').innerHTML = `<span class="text-lg">🛒</span> ${homeUI[lang].catTitle}`;
 
-        // 🛑 核心修復 1：確保 Keyword 唔會變 undefined，而且英文版用廣義詞 'cola' 同 'bread'
         let kwCola = '可口可樂';
         let kwBread = '麵包';
         if (lang === 'en') {
@@ -424,25 +416,23 @@
             kwBread = '面包';
         }
 
-        // 🛑 核心修復 2：按鈕加入 `flex-col`, `.replace(' ', '<br>')` 同 `break-words` 解決爆格問題
         if(document.getElementById('quickBtnGroup')) {
             document.getElementById('quickBtnGroup').innerHTML = `
-                <button onclick="triggerHomeQuickAction('bigGap', '${homeUI[lang].b1}')" class="w-full flex flex-col items-center justify-center text-center bg-red-50 text-red-600 border border-red-100 p-2 rounded-xl text-[11px] sm:text-[13px] font-bold active:scale-95 transition shadow-sm hover:bg-red-100 leading-tight min-h-[55px] break-words">
+                <button onclick="triggerHomeQuickAction('bigGap', '${homeUI[lang].b1}')" class="w-full flex flex-col items-center justify-center text-center bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-800 p-2 rounded-xl text-[11px] sm:text-[13px] font-bold active:scale-95 transition shadow-sm dark:shadow-none hover:bg-red-100 dark:hover:bg-red-900/50 leading-tight min-h-[55px] break-words">
                     ${homeUI[lang].b1.replace(' ', '<br>')}
                 </button>
-                <button onclick="triggerHomeQuickAction('discount', '${homeUI[lang].b2}')" class="w-full flex flex-col items-center justify-center text-center bg-blue-50 text-blue-600 border border-blue-100 p-2 rounded-xl text-[11px] sm:text-[13px] font-bold active:scale-95 transition shadow-sm hover:bg-blue-100 leading-tight min-h-[55px] break-words">
+                <button onclick="triggerHomeQuickAction('discount', '${homeUI[lang].b2}')" class="w-full flex flex-col items-center justify-center text-center bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-800 p-2 rounded-xl text-[11px] sm:text-[13px] font-bold active:scale-95 transition shadow-sm dark:shadow-none hover:bg-blue-100 dark:hover:bg-blue-900/50 leading-tight min-h-[55px] break-words">
                     ${homeUI[lang].b2.replace(' ', '<br>')}
                 </button>
-                <button onclick="triggerHomeQuickAction('search', '${homeUI[lang].b3}', '${kwCola}')" class="w-full flex flex-col items-center justify-center text-center bg-slate-100 text-slate-700 border border-slate-200 p-2 rounded-xl text-[11px] sm:text-[13px] font-bold active:scale-95 transition shadow-sm hover:bg-slate-200 leading-tight min-h-[55px] break-words">
+                <button onclick="triggerHomeQuickAction('search', '${homeUI[lang].b3}', '${kwCola}')" class="w-full flex flex-col items-center justify-center text-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 p-2 rounded-xl text-[11px] sm:text-[13px] font-bold active:scale-95 transition shadow-sm dark:shadow-none hover:bg-slate-200 dark:hover:bg-slate-700 leading-tight min-h-[55px] break-words">
                     ${homeUI[lang].b3.replace(' ', '<br>')}
                 </button>
-                <button onclick="triggerHomeQuickAction('search', '${homeUI[lang].b4}', '${kwBread}')" class="w-full flex flex-col items-center justify-center text-center bg-amber-50 text-amber-600 border border-amber-100 p-2 rounded-xl text-[11px] sm:text-[13px] font-bold active:scale-95 transition shadow-sm hover:bg-amber-100 leading-tight min-h-[55px] break-words">
+                <button onclick="triggerHomeQuickAction('search', '${homeUI[lang].b4}', '${kwBread}')" class="w-full flex flex-col items-center justify-center text-center bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-800 p-2 rounded-xl text-[11px] sm:text-[13px] font-bold active:scale-95 transition shadow-sm dark:shadow-none hover:bg-amber-100 dark:hover:bg-amber-900/50 leading-tight min-h-[55px] break-words">
                     ${homeUI[lang].b4.replace(' ', '<br>')}
                 </button>
             `;
         }
 
-        // 4. 更新其餘邏輯
         if (typeof renderQuickActions === 'function') renderQuickActions();
         if (typeof buildStructuredData === 'function') buildStructuredData();
         
@@ -551,21 +541,19 @@
             ];
             container.innerHTML = chips.map(c => 
                 `<button type="button" onclick="handleQuickAction('${c.action}', '${c.text}')" 
-                    class="whitespace-nowrap bg-blue-50 text-blue-700 border border-blue-100 px-3 py-1.5 rounded-full text-[13px] font-bold active:scale-95 transition-transform shadow-sm flex-none">
+                    class="whitespace-nowrap bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-100 dark:border-blue-800 px-3 py-1.5 rounded-full text-[13px] font-bold active:scale-95 transition-transform shadow-sm dark:shadow-none flex-none">
                     ${c.text}
                 </button>`
             ).join('');
         }
 
         function handleQuickAction(action, text) {
-    if (action === 'goHome') { showLevel1(); return; }
-    if (action === 'sayBye') {
-        addUserMessage(text);
-        // 👇 改用我哋新寫嘅 getBotReply
-        setTimeout(() => addBotMessage(getBotReply('replyBye')), 300);
-        return;
-    }
-    // ...
+            if (action === 'goHome') { showLevel1(); return; }
+            if (action === 'sayBye') {
+                addUserMessage(text);
+                setTimeout(() => addBotMessage(getBotReply('replyBye')), 300);
+                return;
+            }
             addUserMessage(text); 
             setTimeout(() => {
                 if (action === 'showAll') {
@@ -724,7 +712,7 @@
             isBigGapMode = false;
             isDiscountMode = false;
             currentKeyword = "";
-            addBotMessage(`${uiText[currentLang].chatWelcome} <strong class="text-blue-600">${style.icon} ${cat1}</strong>。<br>${uiText[currentLang].chatAsk}`);
+            addBotMessage(`${uiText[currentLang].chatWelcome} <strong class="text-blue-600 dark:text-blue-400">${style.icon} ${cat1}</strong>。<br>${uiText[currentLang].chatAsk}`);
         }
 
         function cleanUserInput(q) {
@@ -762,13 +750,12 @@
         }
 
         function getBotReply(key) {
-    if (window.botResponses && window.botResponses[currentLang] && window.botResponses[currentLang][key]) {
-        return window.botResponses[currentLang][key];
-    }
-    console.warn("⚠️ 搵唔到對答 Key:", key);
-    return "🤖 系統連線中..."; 
-}
-
+            if (window.botResponses && window.botResponses[currentLang] && window.botResponses[currentLang][key]) {
+                return window.botResponses[currentLang][key];
+            }
+            console.warn("⚠️ 搵唔到對答 Key:", key);
+            return "🤖 系統連線中..."; 
+        }
 
         function submitChat() {
             const originalQ = chatInput.value.trim(); 
@@ -839,7 +826,7 @@
                 }
                 addBotMessage(noResultMsg);
             } else {
-                let botTip = uiText[currentLang].chatFound; // 預設值
+                let botTip = uiText[currentLang].chatFound;
 
                 if (isBigGapMode) {
                     botTip = (currentKeyword && !isAll) 
@@ -856,15 +843,14 @@
                 }
 
                 addBotMessage(botTip, html);
-                return true; // 記得 Keep 住呢個 return true，話俾系統知搵到貨！
-            
+                return true; 
             }
         }
 
         function addBotMessage(text, cardsHTML = null) {
             const wrapper = document.createElement('div');
             wrapper.className = 'flex flex-col items-start w-full';
-            wrapper.innerHTML = `<div class="flex items-end gap-2 max-w-[90%]"><div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-lg shadow-sm border border-blue-200 shrink-0">🤖</div><div class="bg-white border border-slate-200 text-slate-800 px-4 py-3 rounded-2xl rounded-bl-sm shadow-sm text-[15px]">${text}</div></div>${cardsHTML ? `<div class="w-full mt-4 space-y-5">${cardsHTML}</div>` : ''}`;
+            wrapper.innerHTML = `<div class="flex items-end gap-2 max-w-[90%]"><div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-slate-700 flex items-center justify-center text-lg shadow-sm border border-blue-200 dark:border-slate-600 shrink-0">🤖</div><div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 px-4 py-3 rounded-2xl rounded-bl-sm shadow-sm dark:shadow-none text-[15px] transition-colors">${text}</div></div>${cardsHTML ? `<div class="w-full mt-4 space-y-5">${cardsHTML}</div>` : ''}`;
             chatMessages.appendChild(wrapper);
             chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
         }
@@ -872,7 +858,7 @@
         function addUserMessage(text) {
             const wrapper = document.createElement('div');
             wrapper.className = 'flex flex-col items-end w-full';
-            wrapper.innerHTML = `<div class="bg-blue-600 text-white px-4 py-3 rounded-2xl rounded-br-sm shadow-md max-w-[85%] text-[15px]">${text}</div>`;
+            wrapper.innerHTML = `<div class="bg-blue-600 dark:bg-blue-500 text-white px-4 py-3 rounded-2xl rounded-br-sm shadow-md dark:shadow-none max-w-[85%] text-[15px] transition-colors">${text}</div>`;
             chatMessages.appendChild(wrapper);
             chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
         }
@@ -912,25 +898,25 @@
             let gapBadgeHtml = '';
             if (gapInfo.isBigGap) {
                 let badgeText = currentLang === 'en' ? `🔥 Save ${gapInfo.percentage}%` : `🔥 差價 ${gapInfo.percentage}%`;
-                gapBadgeHtml = `<span class="ml-2 px-1.5 py-0.5 bg-red-100 text-red-600 font-bold text-[11px] rounded-md shadow-sm border border-red-200 inline-flex items-center" style="white-space: nowrap; transform: translateY(-1px);">${badgeText}</span>`;
+                gapBadgeHtml = `<span class="ml-2 px-1.5 py-0.5 bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 font-bold text-[11px] rounded-md shadow-sm border border-red-200 dark:border-red-800 inline-flex items-center" style="white-space: nowrap; transform: translateY(-1px);">${badgeText}</span>`;
             }
 
             const priceList = info.prices.map(p => {
                 let parsed = parseFloat(p.price);
                 let isLowestBase = (!isNaN(parsed) && parsed === minBasePrice && info.prices.length > 1 && !allSameBasePrice);
                 
-                let cls = 'border-slate-100 bg-slate-50/50'; 
-                let textCls = 'text-slate-600';
+                let cls = 'border-slate-100 bg-slate-50/50 dark:border-slate-700 dark:bg-slate-700/30'; 
+                let textCls = 'text-slate-600 dark:text-slate-300';
                 let displayName = p.supermarket;
                 let code = (p.rawCode || '').toUpperCase();
 
-                if (code === 'WELLCOME' || code === 'LUNGFUNG') { cls = 'border-red-200 bg-red-50/30'; textCls = 'text-red-700'; }
-                else if (code === 'PARKNSHOP') { cls = 'border-blue-200 bg-blue-50/30'; textCls = 'text-blue-700'; }
-                else if (code === 'WATSONS') { cls = 'border-teal-200 bg-teal-50/30'; textCls = 'text-teal-700'; }
-                else if (code === 'HKTVMALL') { cls = 'border-green-200 bg-green-50/30'; textCls = 'text-green-700'; }
-                else if (code === 'JASONS') { cls = 'border-emerald-300 bg-emerald-100/40'; textCls = 'text-emerald-800'; if (!displayName.includes('Market Place')) displayName += ' (Market Place)'; }
-                else if (code === 'MANNINGS') { cls = 'border-orange-200 bg-orange-50/30'; textCls = 'text-orange-600'; }
-                else if (code === 'AEON') { cls = 'border-fuchsia-200 bg-fuchsia-50/30'; textCls = 'text-fuchsia-700'; }
+                if (code === 'WELLCOME' || code === 'LUNGFUNG') { cls = 'border-red-200 bg-red-50/30 dark:border-red-900/50 dark:bg-red-900/20'; textCls = 'text-red-700 dark:text-red-400'; }
+                else if (code === 'PARKNSHOP') { cls = 'border-blue-200 bg-blue-50/30 dark:border-blue-900/50 dark:bg-blue-900/20'; textCls = 'text-blue-700 dark:text-blue-400'; }
+                else if (code === 'WATSONS') { cls = 'border-teal-200 bg-teal-50/30 dark:border-teal-900/50 dark:bg-teal-900/20'; textCls = 'text-teal-700 dark:text-teal-400'; }
+                else if (code === 'HKTVMALL') { cls = 'border-green-200 bg-green-50/30 dark:border-green-900/50 dark:bg-green-900/20'; textCls = 'text-green-700 dark:text-green-400'; }
+                else if (code === 'JASONS') { cls = 'border-emerald-300 bg-emerald-100/40 dark:border-emerald-900/50 dark:bg-emerald-900/20'; textCls = 'text-emerald-800 dark:text-emerald-400'; if (!displayName.includes('Market Place')) displayName += ' (Market Place)'; }
+                else if (code === 'MANNINGS') { cls = 'border-orange-200 bg-orange-50/30 dark:border-orange-900/50 dark:bg-orange-900/20'; textCls = 'text-orange-600 dark:text-orange-400'; }
+                else if (code === 'AEON') { cls = 'border-fuchsia-200 bg-fuchsia-50/30 dark:border-fuchsia-900/50 dark:bg-fuchsia-900/20'; textCls = 'text-fuchsia-700 dark:text-fuchsia-400'; }
 
                 let avgLabel = '';
                 if (typeof calculateAvgPrice === 'function') {
@@ -942,20 +928,20 @@
                     }
                 }
                 
-                return `<div class="flex flex-col p-3 rounded-2xl border ${cls} ${isLowestBase ? 'ring-2 ring-green-400 bg-white scale-[1.01] shadow-md z-10' : ''} transition-all"><div class="flex justify-between items-center w-full"><span class="font-black text-[13px] ${textCls} flex items-center gap-1">${displayName}</span><span class="text-[17px] font-black text-slate-800">$${isNaN(parsed) ? p.price : parsed.toFixed(1)}${isLowestBase ? ' 👍' : ''}</span></div>${p.promoDisplay ? `<div class="mt-2 flex flex-wrap sm:flex-nowrap items-center justify-between gap-1 w-full"><span class="text-[11px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-md border border-red-100 break-words w-full sm:w-auto">🏷️ ${p.promoDisplay}</span>${avgLabel}</div>` : ''}</div>`;
+                return `<div class="flex flex-col p-3 rounded-2xl border ${cls} ${isLowestBase ? 'ring-2 ring-green-400 dark:ring-green-500 bg-white dark:bg-slate-800 scale-[1.01] shadow-md z-10' : ''} transition-all"><div class="flex justify-between items-center w-full"><span class="font-black text-[13px] ${textCls} flex items-center gap-1">${displayName}</span><span class="text-[17px] font-black text-slate-800 dark:text-slate-100">$${isNaN(parsed) ? p.price : parsed.toFixed(1)}${isLowestBase ? ' 👍' : ''}</span></div>${p.promoDisplay ? `<div class="mt-2 flex flex-wrap sm:flex-nowrap items-center justify-between gap-1 w-full"><span class="text-[11px] font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 px-2 py-0.5 rounded-md border border-red-100 dark:border-red-800 break-words w-full sm:w-auto">🏷️ ${p.promoDisplay}</span>${avgLabel}</div>` : ''}</div>`;
             }).join('');
             
-            return `<div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-200 flex flex-col gap-3 relative overflow-hidden">
+            return `<div class="bg-white dark:bg-slate-800 p-4 rounded-3xl shadow-sm dark:shadow-none border border-slate-200 dark:border-slate-700 flex flex-col gap-3 relative overflow-hidden transition-colors">
                 <div class="flex justify-between items-start gap-3">
                     <div class="flex-1 min-w-0">
-                        <div class="text-[12px] text-blue-500 font-black tracking-widest uppercase mb-1">${info.brand || '綜合品牌'}</div>
-                        <h3 class="font-bold text-slate-800 text-[16px] leading-tight flex items-center flex-wrap gap-y-1"><span>${pName}</span>${gapBadgeHtml}</h3>
+                        <div class="text-[12px] text-blue-500 dark:text-blue-400 font-black tracking-widest uppercase mb-1">${info.brand || '綜合品牌'}</div>
+                        <h3 class="font-bold text-slate-800 dark:text-slate-100 text-[16px] leading-tight flex items-center flex-wrap gap-y-1"><span>${pName}</span>${gapBadgeHtml}</h3>
                     </div>
                     <div class="flex items-center gap-2 shrink-0">
-                        <button onclick="openAlertModal('${pName}', '${minBasePrice}')" class="w-8 h-8 flex items-center justify-center rounded-full bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-500 active:scale-90 transition-all shadow-sm" title="設定到價提醒">
+                        <button onclick="openAlertModal('${pName}', '${minBasePrice}')" class="w-8 h-8 flex items-center justify-center rounded-full bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50 border border-amber-200 dark:border-amber-800 text-amber-500 dark:text-amber-400 active:scale-90 transition-all shadow-sm" title="設定到價提醒">
                             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
                         </button>
-                        <button onclick="shareProduct('${pName}', '${info.brand}', '${minBasePrice}')" class="w-8 h-8 flex items-center justify-center rounded-full bg-[#1877F2] hover:bg-blue-600 active:scale-90 transition-all shadow-sm">
+                        <button onclick="shareProduct('${pName}', '${info.brand}', '${minBasePrice}')" class="w-8 h-8 flex items-center justify-center rounded-full bg-[#1877F2] dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-500 active:scale-90 transition-all shadow-sm">
                             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
                         </button>
                     </div>
@@ -1002,21 +988,16 @@
         }
         
         function toggleTheme() {
-    // 切換 html 標籤上的 'dark' class
-    document.documentElement.classList.toggle('dark');
-    
-    // 獲取按鈕元素
-    const themeBtn = document.getElementById('themeBtn');
-    
-    // 根據是否為深色模式，切換太陽/月亮圖示
-    if (document.documentElement.classList.contains('dark')) {
-        themeBtn.textContent = '🌙';
-    } else {
-        themeBtn.textContent = '☀️';
-    }
-}
+            document.documentElement.classList.toggle('dark');
+            const themeBtn = document.getElementById('themeBtn');
+            if (document.documentElement.classList.contains('dark')) {
+                themeBtn.textContent = '🌙';
+            } else {
+                themeBtn.textContent = '☀️';
+            }
+        }
 
         init();
     </script>
 </body>
-</htmlz>
+</html>
