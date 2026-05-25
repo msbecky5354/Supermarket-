@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <title>CDN 終極測試</title>
+</head>
+<body>
+    <h1>香港格價網 CDN 測試</h1>
+    <h3 id="update-time" style="color: blue;">時間載入中...</h3>
+    <div id="data-container">數據載入中...</div>
+
+    <script>
+        // 1. 宣告全域變數
+        let rawApiData = null;
+        let lastUpdatedTime = null;
+
+        // 2. 定義載入數據嘅主函數
+        async function init() {
+            try {
+                // --- 攞時間 ---
+                const timeRes = await fetch('https://cdn.jsdelivr.net/gh/msbecky5354/HK_PriceWatch-@main/data/update_log.txt');
+                if (timeRes.ok) {
+                    const timeText = await timeRes.text();
+                    lastUpdatedTime = new Date(timeText.trim());
+                    document.getElementById('update-time').innerText = "最後更新：" + lastUpdatedTime.toLocaleString("zh-HK");
+                }
+
+                // --- 攞報價 ---
+                const dataRes = await fetch('https://cdn.jsdelivr.net/gh/msbecky5354/HK_PriceWatch-@main/data/pricewatch.json');
+                if (dataRes.ok) {
+                    rawApiData = await dataRes.json();
+                    // 成功攞到，將第一件貨品嘅名印出嚟測試
+                    if(rawApiData && rawApiData.length > 0) {
+                         document.getElementById('data-container').innerText = "✅ 成功載入！第一件貨係：" + rawApiData[0].name.en;
+                    }
+                } else {
+                    document.getElementById('data-container').innerText = "❌ 報價載入失敗";
+                }
+            } catch (err) {
+                console.error("系統出錯:", err);
+            }
+        }
+
+        // 3. 執行函數 (極重要！)
+        init();
+    </script>
+</body>
+</html>
