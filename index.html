@@ -321,6 +321,17 @@
                 
                 changeLanguage('zh-Hant');
                 
+                // 🚀 新增：檢查網址有無帶住分享字眼 (例如 ?q=可樂)
+                const urlParams = new URLSearchParams(window.location.search);
+                const sharedQuery = urlParams.get('q');
+                if (sharedQuery) {
+                    // 如果有，就自動填入搜尋框，兼自動開波搵嘢！
+                    document.getElementById('globalSearchInput').value = sharedQuery;
+                    setTimeout(() => {
+                        triggerGlobalSearch();
+                    }, 300); // 畀 0.3 秒等個畫面準備好
+                }
+                
                 if (typeof updateAlertBadge === 'function') updateAlertBadge();
             } catch (e) {
                 level1Container.innerHTML = `<p class="text-red-500 text-center col-span-2">${uiText[currentLang].error}</p>`;
@@ -328,10 +339,14 @@
         }
 
         async function shareProduct(name, brand, minPrice) {
+            // 🌐 新增：自製專屬貨品連結，加上 ?q=貨品名稱
+            const baseUrl = window.location.origin + window.location.pathname;
+            const productUrl = `${baseUrl}?q=${encodeURIComponent(name)}`;
+
             const shareData = {
                 title: '慳真D🔎推介',
                 text: `【慳錢情報】${brand} - ${name}，最低價見 $${minPrice}！快啲去慳真D🔎睇吓啦！🛒`,
-                url: window.location.href
+                url: productUrl // 呢度轉用專屬連結！
             };
             try {
                 if (navigator.share) { await navigator.share(shareData); }
