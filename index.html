@@ -291,71 +291,54 @@
             const min = String(date.getMinutes()).padStart(2, '0');
             return `${y}-${m}-${d} ${h}:${min}`;
         }
-        
-        let rawApiData = null;       // 預先準備個吉盒裝報價
-        let lastUpdatedTime = null;  // 預先準備個吉盒裝時間
 
         async function init() {
-    try {
-        // --- 第一步：從 CDN 獲取最後更新時間 ---
-        try {
-            const timeUrl = 'https://cdn.jsdelivr.net/gh/msbecky5354/HK_PriceWatch-@main/data/update_log.txt';
-            const timeRes = await fetch(timeUrl);
-            
-            if (timeRes.ok) {
-                const timeText = await timeRes.text();
-                lastUpdatedTime = new Date(timeText.trim()); 
-            } else {
-                lastUpdatedTime = null; 
+            try {
+                try {
+                    const timeRes = await fetch('update_log.txt?t=' + new Date().getTime());
+                    if (timeRes.ok) {
+                        const timeText = await timeRes.text();
+                        lastUpdatedTime = new Date(timeText.trim()); 
+                    } else {
+                        lastUpdatedTime = null; 
+                    }
+                } catch (timeErr) {
+                    console.log("無法獲取時間記錄檔", timeErr);
+                    lastUpdatedTime = null;
+                }
+
+                let data = null;
+                const localResponse = await fetch('pricewatch.json?t=' + new Date().getTime());
+                
+                if (localResponse.ok) {
+                    data = await localResponse.json();
+                } else {
+                    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent('https://online-price-watch.consumer.org.hk/opw/opendata/pricewatch.json')}`;
+                    const res = await fetch(proxyUrl);
+                    data = await res.json();
+                }
+                rawApiData = data;
+                
+                changeLanguage('zh-Hant');
+                
+                // 🚀 新增：檢查網址有無帶住分享字眼 (例如 ?q=可樂)
+                const urlParams = new URLSearchParams(window.location.search);
+                const sharedQuery = urlParams.get('q');
+                if (sharedQuery) {
+                    // 如果有，就自動填入搜尋框，兼自動開波搵嘢！
+                    document.getElementById('globalSearchInput').value = sharedQuery;
+                    setTimeout(() => {
+                        triggerGlobalSearch();
+                    }, 300); // 畀 0.3 秒等個畫面準備好
+                }
+                
+                if (typeof updateAlertBadge === 'function') updateAlertBadge();
+            } catch (e) {
+                level1Container.innerHTML = `<p class="text-red-500 text-center col-span-2">${uiText[currentLang].error}</p>`;
             }
-        } catch (timeErr) {
-            console.log("❌ 無法獲取時間記錄檔", timeErr);
-            lastUpdatedTime = null;
         }
 
-        // --- 第二步：從 CDN 獲取報價 JSON ---
-        let data = null;
-        const dataUrl = 'https://cdn.jsdelivr.net/gh/msbecky5354/HK_PriceWatch-@main/data/pricewatch.json';
-        const response = await fetch(dataUrl);
-        
-        if (response.ok) {
-            data = await response.json();
-            console.log("✅ 成功從 jsDelivr CDN 取得最新報價！");
-        } else {
-            console.error("❌ 無法獲取報價數據，HTTP 狀態碼:", response.status);
-            throw new Error("Fetch failed"); // 如果呢度失敗，直接跳去最底個 catch 處理畫面報錯
-        }
-        
-        // 將 CDN 攞到嘅數據正式交畀你個 App
-        rawApiData = data;
-        
-        // --- 第三步：開始執行你原本嘅 UI 渲染同邏輯 ---
-        
-        changeLanguage('zh-Hant');
-        
-        // 🚀 新增：檢查網址有無帶住分享字眼 (例如 ?q=可樂)
-        const urlParams = new URLSearchParams(window.location.search);
-        const sharedQuery = urlParams.get('q');
-        if (sharedQuery) {
-            // 如果有，就自動填入搜尋框，兼自動開波搵嘢！
-            document.getElementById('globalSearchInput').value = sharedQuery;
-            setTimeout(() => {
-                triggerGlobalSearch();
-            }, 300); // 畀 0.3 秒等個畫面準備好
-        }
-        
-        if (typeof updateAlertBadge === 'function') updateAlertBadge();
-        
-    } catch (e) {
-        // --- 終極錯誤處理：如果成個過程任何一步出大錯，就顯示 Error 畫面 ---
-        console.error("❌ 系統初始化失敗:", e);
-        if (level1Container && uiText[currentLang]) {
-             level1Container.innerHTML = `<p class="text-red-500 text-center col-span-2">${uiText[currentLang].error}</p>`;
-        }
-    }
-}
-
-        async function shareProduct(name, brand, minPrice) {
+       async function shareProduct(name, brand, minPrice) {
             const baseUrl = window.location.origin + window.location.pathname;
             const productUrl = `${baseUrl}?q=${encodeURIComponent(name)}`;
 
@@ -1000,13 +983,6 @@
                 return `<div class="flex flex-col p-3 rounded-2xl border ${cls} ${isLowestBase ? 'ring-2 ring-green-400 dark:ring-green-500 bg-white dark:bg-slate-800 scale-[1.01] shadow-md z-10' : ''} transition-all"><div class="flex justify-between items-center w-full"><span class="font-black text-[13px] ${textCls} flex items-center gap-1">${displayName}</span><span class="text-[17px] font-black text-slate-800 dark:text-slate-100">$${isNaN(parsed) ? p.price : parsed.toFixed(1)}${isLowestBase ? ' 👍' : ''}</span></div>${p.promoDisplay ? `<div class="mt-2 flex flex-wrap sm:flex-nowrap items-center justify-between gap-1 w-full"><span class="text-[11px] font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 px-2 py-0.5 rounded-md border border-red-100 dark:border-red-800 break-words w-full sm:w-auto">🏷️ ${p.promoDisplay}</span>${avgLabel}</div>` : ''}</div>`;
             }).join('');
             
-            // 🌐 新增：到價提醒 Tooltip 嘅多語言支援
-            let alertTitle = "設定到價提醒";
-            if (typeof currentLang !== 'undefined') {
-                if (currentLang === 'zh-Hans') alertTitle = "设定到价提醒";
-                if (currentLang === 'en') alertTitle = "Set Price Alert";
-            }
-
             return `<div class="bg-white dark:bg-slate-800 p-4 rounded-3xl shadow-sm dark:shadow-none border border-slate-200 dark:border-slate-700 flex flex-col gap-3 relative overflow-hidden transition-colors">
                 <div class="flex justify-between items-start gap-3">
                     <div class="flex-1 min-w-0">
@@ -1014,10 +990,8 @@
                         <h3 class="font-bold text-slate-800 dark:text-slate-100 text-[16px] leading-tight flex items-center flex-wrap gap-y-1"><span>${pName}</span>${gapBadgeHtml}</h3>
                     </div>
                     <div class="flex items-center gap-2 shrink-0">
-                       
-                        <button onclick="openAlertModal('${pName}', '${minBasePrice}')" class="w-8 h-8 flex items-center justify-center rounded-full bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50 border border-amber-200 dark:border-amber-800 text-amber-500 dark:text-amber-400 active:scale-90 transition-all shadow-sm" title="${alertTitle}">
+                        <button onclick="openAlertModal('${pName}', '${minBasePrice}')" class="w-8 h-8 flex items-center justify-center rounded-full bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50 border border-amber-200 dark:border-amber-800 text-amber-500 dark:text-amber-400 active:scale-90 transition-all shadow-sm" title="設定到價提醒">
                             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-                    
                         </button>
                         <button onclick="shareProduct('${pName}', '${info.brand}', '${minBasePrice}')" class="w-8 h-8 flex items-center justify-center rounded-full bg-[#1877F2] dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-500 active:scale-90 transition-all shadow-sm">
                             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
