@@ -291,6 +291,9 @@
             const min = String(date.getMinutes()).padStart(2, '0');
             return `${y}-${m}-${d} ${h}:${min}`;
         }
+        
+        let rawApiData = null;       // 預先準備個吉盒裝報價
+        let lastUpdatedTime = null;  // 預先準備個吉盒裝時間
 
         async function init() {
     try {
