@@ -1005,18 +1005,30 @@
             setTimeout(() => { executeProductSearch(); }, 300);
         }
         
-        function toggleTheme() {
-    // 切換 html 標籤上的 'dark' class
-    document.documentElement.classList.toggle('dark');
+        // 1. 初始化：檢查用戶上次揀咗咩模式，或者手機系統本身係咪深色
+if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    document.documentElement.classList.add('dark');
+    document.getElementById('themeToggle').innerText = '☀️';
+} else {
+    document.documentElement.classList.remove('dark');
+    document.getElementById('themeToggle').innerText = '🌙';
+}
+
+// 2. 切換功能：㩒掣觸發
+function toggleTheme() {
+    const html = document.documentElement;
+    const btn = document.getElementById('themeToggle');
     
-    // 獲取按鈕元素
-    const themeBtn = document.getElementById('themeBtn');
-    
-    // 根據是否為深色模式，切換太陽/月亮圖示
-    if (document.documentElement.classList.contains('dark')) {
-        themeBtn.textContent = '🌙';
+    if (html.classList.contains('dark')) {
+        // 轉返去 Light Mode
+        html.classList.remove('dark');
+        localStorage.theme = 'light';
+        btn.innerText = '🌙';
     } else {
-        themeBtn.textContent = '☀️';
+        // 轉去 Dark Mode
+        html.classList.add('dark');
+        localStorage.theme = 'dark';
+        btn.innerText = '☀️';
     }
 }
 
