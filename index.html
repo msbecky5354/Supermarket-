@@ -300,12 +300,10 @@
         // --- 第一步：從 CDN 獲取最後更新時間 ---
         try {
             const timeUrl = 'https://cdn.jsdelivr.net/gh/msbecky5354/HK_PriceWatch-@main/data/update_log.txt';
-            // CDN 已經自帶緩存管理，唔使再加 ?t= 去打破 Cache
             const timeRes = await fetch(timeUrl);
             
             if (timeRes.ok) {
                 const timeText = await timeRes.text();
-                // 你頭先設定嘅 ISO 8601 格式，JavaScript new Date() 可以完美且精準咁解析
                 lastUpdatedTime = new Date(timeText.trim()); 
             } else {
                 lastUpdatedTime = null; 
@@ -324,37 +322,38 @@
             data = await response.json();
             console.log("✅ 成功從 jsDelivr CDN 取得最新報價！");
         } else {
-            // 既然用咗 CDN，就唔會再有 CORS 問題，如果失敗通常係網絡問題，直接報錯就得
             console.error("❌ 無法獲取報價數據，HTTP 狀態碼:", response.status);
+            throw new Error("Fetch failed"); // 如果呢度失敗，直接跳去最底個 catch 處理畫面報錯
         }
         
+        // 將 CDN 攞到嘅數據正式交畀你個 App
         rawApiData = data;
         
-        // ... (下面繼續你原本用嚟渲染畫面或者處理數據嘅 Code) ...
-
-    } catch (err) {
-        console.error("❌ 系統初始化失敗:", err);
+        // --- 第三步：開始執行你原本嘅 UI 渲染同邏輯 ---
+        
+        changeLanguage('zh-Hant');
+        
+        // 🚀 新增：檢查網址有無帶住分享字眼 (例如 ?q=可樂)
+        const urlParams = new URLSearchParams(window.location.search);
+        const sharedQuery = urlParams.get('q');
+        if (sharedQuery) {
+            // 如果有，就自動填入搜尋框，兼自動開波搵嘢！
+            document.getElementById('globalSearchInput').value = sharedQuery;
+            setTimeout(() => {
+                triggerGlobalSearch();
+            }, 300); // 畀 0.3 秒等個畫面準備好
+        }
+        
+        if (typeof updateAlertBadge === 'function') updateAlertBadge();
+        
+    } catch (e) {
+        // --- 終極錯誤處理：如果成個過程任何一步出大錯，就顯示 Error 畫面 ---
+        console.error("❌ 系統初始化失敗:", e);
+        if (level1Container && uiText[currentLang]) {
+             level1Container.innerHTML = `<p class="text-red-500 text-center col-span-2">${uiText[currentLang].error}</p>`;
+        }
     }
 }
-                
-                changeLanguage('zh-Hant');
-                
-                // 🚀 新增：檢查網址有無帶住分享字眼 (例如 ?q=可樂)
-                const urlParams = new URLSearchParams(window.location.search);
-                const sharedQuery = urlParams.get('q');
-                if (sharedQuery) {
-                    // 如果有，就自動填入搜尋框，兼自動開波搵嘢！
-                    document.getElementById('globalSearchInput').value = sharedQuery;
-                    setTimeout(() => {
-                        triggerGlobalSearch();
-                    }, 300); // 畀 0.3 秒等個畫面準備好
-                }
-                
-                if (typeof updateAlertBadge === 'function') updateAlertBadge();
-            } catch (e) {
-                level1Container.innerHTML = `<p class="text-red-500 text-center col-span-2">${uiText[currentLang].error}</p>`;
-            }
-        }
 
         async function shareProduct(name, brand, minPrice) {
             const baseUrl = window.location.origin + window.location.pathname;
