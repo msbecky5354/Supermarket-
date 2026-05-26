@@ -95,36 +95,15 @@ const GROCERY_WHITELIST = new Set([
     '香港', '製造', '進口', '新鮮', '急凍', 'mannings'
 ]);
 
-// 檢查一個詞係咪超市相關 (嚴格把關邏輯 2.0)
+// 檢查一個詞係咪超市相關 (解除字數限制版)
 function isGroceryRelated(word) {
     if (!word) return false;
-    // 直接命中白名單
-    if (GROCERY_WHITELIST.has(word)) return true;
     
-    // 如果單字，檢查係咪複合詞嘅一部分
-    if (word.length === 1) {
-        for (let item of GROCERY_WHITELIST) {
-            if (item.length > 1 && item.includes(word)) return true;
-        }
+    // 只要個詞入面包含白名單嘅任何一隻字 (例如 "可樂")，即刻放行！
+    for (let item of GROCERY_WHITELIST) {
+        if (word.includes(item) || item.includes(word)) return true;
     }
-
-    // 對於短詞 (2-3字)，殺死垃圾字
-    // ⚠️ 終極把關：呢個詞一定要包含資料庫入面嘅中文字元
-    if (word.length >= 2 && word.length <= 3) {
-        // ... (原來的 stricter logic 可以保留)
-        const chars = word.split('');
-        for (let char of chars) {
-            let charFound = false;
-            for (let item of GROCERY_WHITELIST) {
-                if (item.includes(char)) {
-                    charFound = true;
-                    break;
-                }
-            }
-            if (!charFound) return false; // 如果有一個字無白名單基因，直接殺死
-        }
-        return true; 
-    }
+    
     return false;
 }
 
@@ -134,13 +113,16 @@ function isGroceryRelated(word) {
 function smartExtractKeyword(rawText) {
     if (!rawText) return null;
 
-    // 1. 神級必殺技：資料庫反向比對 (Reverse Lookup)
+    // 1. 神級必殺技：資料庫反向比對 (修復連線 Bug)
     try {
-        if (typeof window !== 'undefined' && window.rawApiData && window.rawApiData.length > 0) {
+        // 確保成功讀取 index.html 入面嘅 rawApiData
+        let dbData = typeof rawApiData !== 'undefined' ? rawApiData : (window.rawApiData || []);
+        
+        if (dbData && dbData.length > 0) {
             let lowerRaw = rawText.toLowerCase().replace(/\s+/g, '');
             let bestBrand = "";
 
-            for (let item of window.rawApiData) {
+            for (let item of dbData) {
                 let brandObj = item.brand || item.brandName;
                 let brand = (typeof brandObj === 'object') ? (brandObj['zh-Hant'] || brandObj['zh-Hans'] || brandObj['en'] || '') : (brandObj || '');
                 
@@ -148,7 +130,7 @@ function smartExtractKeyword(rawText) {
                     let cleanBrand = brand.toLowerCase().replace(/\s+/g, '');
                     if (lowerRaw.includes(cleanBrand)) {
                         if (brand.length > bestBrand.length) {
-                            bestBrand = brand; // 搵出最長、最精準嗰個牌子
+                            bestBrand = brand; 
                         }
                     }
                 }
@@ -162,12 +144,12 @@ function smartExtractKeyword(rawText) {
         console.warn("資料庫反向比對發生錯誤，跳過。", e);
     }
 
-    // 2. 如果資料庫無命中，先用返基礎過濾器
+    // 2. 基礎過濾器
     let clean = rawText.replace(/[\r\n]+/g, ' ');
     const junkWords = [
         '成分', '淨重', '重量', '此日期前最佳', 'best before', 'ingredients', 
         '營養資料', 'nutrition', 'kcal', '千卡', '蛋白質', '脂肪', '糖', '鈉', 
-        '克', '毫升', 'g', 'ml', '產地', '香港', '製造', '包裝', '請存放於', '注意事項',
+        '克', '毫升', 'g', 'ml', '產地', '製造', '包裝', '請存放於', '注意事項',
         '容量', '使用方法', 'www.', '.com', '.hk', 'mannings' 
     ];
     
@@ -179,22 +161,20 @@ function smartExtractKeyword(rawText) {
     clean = clean.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, ' ');
 
     let words = clean.trim().split(/\s+/).filter(w => {
-        // 殺死 1-3 個字母嘅無謂英文 (通常係條碼、Ply 等廢字)
         if (/^[a-zA-Z]{1,3}$/.test(w)) return false;
         return w.length > 1;
     });
 
     if (words.length === 0) return null;
 
-    // 🌟 超市語境防呆 2.0 把關
+    // 🌟 超市語境防呆 2.0 把關 (用咗新版 isGroceryRelated)
     let validWords = words.filter(w => isGroceryRelated(w));
     if (validWords.length === 0) {
-        console.log("🚫 所有候選詞都唔似係超市相關，回傳 null 觸發 explicit 錯誤提示");
-        return null; // 殺死垃圾，回傳 null！
+        console.log("🚫 所有候選詞都唔似係超市相關，回傳 null");
+        return null; 
     }
     words = validWords;
     
-    // 優先抽取「中文字」
     let chineseWords = words.filter(w => /[\u4e00-\u9fa5]/.test(w));
     if (chineseWords.length > 0) {
         return chineseWords.slice(0, 2).join(' ');
@@ -203,10 +183,6 @@ function smartExtractKeyword(rawText) {
         return words.slice(0, 2).join(' ');
     }
 }
-
-/**
- * 控制 OCR 專屬 Loading 畫面
- */
 function showOcrLoading(isShow, initialMsg = "處理中...") {
     let loader = document.getElementById('ocrLoaderOverlay');
     
