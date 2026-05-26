@@ -99,13 +99,13 @@ function smartExtractKeyword(rawText) {
         }
     }
 
-    // 2. 如果資料庫無命中，先用返基礎過濾器
+        // 2. 如果資料庫無命中，先用返基礎過濾器
     let clean = rawText.replace(/[\r\n]+/g, ' ');
     const junkWords = [
         '成分', '淨重', '重量', '此日期前最佳', 'best before', 'ingredients', 
         '營養資料', 'nutrition', 'kcal', '千卡', '蛋白質', '脂肪', '糖', '鈉', 
         '克', '毫升', 'g', 'ml', '產地', '香港', '製造', '包裝', '請存放於', '注意事項',
-        '容量', '使用方法', 'www.', '.com', '.hk'
+        '容量', '使用方法', 'www.', '.com', '.hk', 'mannings' // 加埋萬寧做廢字，避免干擾牌子
     ];
     
     junkWords.forEach(word => {
@@ -116,15 +116,22 @@ function smartExtractKeyword(rawText) {
     clean = clean.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, ' ');
 
     let words = clean.trim().split(/\s+/).filter(w => {
-        // 殺死 "es", "we" 呢啲 1-2 個字母嘅無謂英文 (通常係條碼或者陰影雜訊)
-        if (/^[a-zA-Z]{1,2}$/.test(w)) return false;
+        // 🛑 終極殺手：殺死 1-3 個字母嘅無謂英文 (通常係條碼、陰影雜訊，或者 ply, es 等廢字)
+        if (/^[a-zA-Z]{1,3}$/.test(w)) return false;
         return w.length > 1;
     });
 
     if (words.length === 0) return null;
     
-    // 將結果縮短到最多 2 個詞語，減低帶入過多垃圾字嘅風險
-    return words.slice(0, 2).join(' ');
+    // 🌟 優先抽取「中文字」，因為香港超市貨品搜中文最準
+    let chineseWords = words.filter(w => /[\u4e00-\u9fa5]/.test(w));
+    if (chineseWords.length > 0) {
+        return chineseWords.slice(0, 2).join(' ');
+    } else {
+        // 如果真係無中文，就攞最長嘅英文字
+        words.sort((a, b) => b.length - a.length);
+        return words.slice(0, 2).join(' ');
+    }
 }
 
 /**
