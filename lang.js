@@ -4,6 +4,7 @@ const uiText = {
     'zh-Hant': { 
         title: "慳真D",
         ogTitle: '慳真D | 香港貨品格價神器',
+        ogDesc: '香港超市格價神器，秒速幫你搵出最平貨品！',
         badge: "政府數據連線", 
         subLabel: "正在讀取更新時間...", 
         lastUpdated: "更新於: ",
@@ -35,27 +36,19 @@ const uiText = {
         alertListTarget: "心水價:",
         alertListClose: "關閉",
         
-        
-        // 喺 lang.js 入面嘅 zh-Hant 區塊加呢行：
-        ogDesc: '香港超市格價神器，秒速幫你搵出最平貨品！',
+        // --- 新功能回覆 ---
+        r_no_product: "「慳真D」主要監察約 3,000 款民生必需品。極冷門或單一超市獨家發售的貨品未必涵蓋，建議用簡單的關鍵字搜尋！",
+        r_privacy: "即係系統 100% 純前端離線運作，免登入、免註冊，絕不收集或儲存你的電話、Email 或任何隱私資料！",
+        r_alert: "喺產品卡片撳一下【橙色鐘仔 🔔】，輸入心水價即可追蹤。每日開 App 系統會自動對獎，到價時頂部紅點會閃爍提示！",
+        r_gap: "點擊底部的【🔥 超大差價】快捷鍵，系統會瞬間幫你篩選出商戶之間價格相差超過 10% 的暴利或激抵貨品！",
+        r_home: "iOS 用戶請用 Safari 開啟並點擊「分享 ➔ 加入主畫面」；Android 用戶請用 Chrome 點擊「⋮ ➔ 加至主畫面」。",
 
-
-        
-        
-
-// --- 新功能回覆 ---
-r_no_product: "「慳真D」主要監察約 3,000 款民生必需品。極冷門或單一超市獨家發售的貨品未必涵蓋，建議用簡單的關鍵字搜尋！",
-r_privacy: "即係系統 100% 純前端離線運作，免登入、免註冊，絕不收集或儲存你的電話、Email 或任何隱私資料！",
-r_alert: "喺產品卡片撳一下【橙色鐘仔 🔔】，輸入心水價即可追蹤。每日開 App 系統會自動對獎，到價時頂部紅點會閃爍提示！",
-r_gap: "點擊底部的【🔥 超大差價】快捷鍵，系統會瞬間幫你篩選出商戶之間價格相差超過 10% 的暴利或激抵貨品！",
-r_home: "iOS 用戶請用 Safari 開啟並點擊「分享 ➔ 加入主畫面」；Android 用戶請用 Chrome 點擊「⋮ ➔ 加至主畫面」。",
-
-// --- 關鍵字變數 (回復你原本的 String 格式) ---
-kwNoProduct: "搵唔到",
-kwPrivacy: "個資",
-kwAlert: "提示",
-kwGap: "差價",
-kwHome: "畫面",
+        // --- 關鍵字變數 ---
+        kwNoProduct: "搵唔到",
+        kwPrivacy: "個資",
+        kwAlert: "提示",
+        kwGap: "差價",
+        kwHome: "畫面",
 
         quickAll: "📦 睇晒全部",
         quickDiscount: "🏷️ 淨係睇有優惠",
@@ -66,20 +59,16 @@ kwHome: "畫面",
         miniFooterCopy: "© 2026 慳真D",
         disclaimerTitle: "免責聲明及服務條款",
         
-        // 2. 免責聲明 (加入咗第2點「數據涵蓋範圍」)：
+        // 免責聲明
         disclaimerText: `
 <strong>1. 資料來源及知識產權：</strong><br>
 本應用程式之貨品價格及優惠數據取自政府資料一線通 (data.gov.hk) 的「網上價格一覽通」資料集。相關資料之知識產權擁有人為<strong>消費者委員會</strong>及相關商戶。<br><br>
-
 <strong>2. 數據涵蓋範圍：</strong><br>
 系統數據主要涵蓋消委會挑選之數千款熱門「民生必需品」，並未包含實體超市之所有存貨（如部分獨家或冷門貨品）。<br><br>
-
 <strong>3. 自動運算提示：</strong><br>
 系統顯示之<strong>「折合價」為程式自動運算之結果</strong>，所有資訊均以政府發佈之最新數據及實體超市最終標價為準。資訊僅供參考，強烈建議用戶購買前自行核實。<br><br>
-
 <strong>4. 網站技術及廣告聲明：</strong><br>
 本站使用 Google Analytics 進行流量分析，並透過 Google AdSense 顯示相關廣告。這些服務可能會透過 Cookie 收集匿名使用者數據。繼續使用本站即表示您同意我們使用 Cookie。<br><br>
-
 <strong>5. 責任限制：</strong><br>
 本程式以「現況」形式提供，用戶須自行承擔風險。對於任何因使用、依賴本程式資訊，或因數據延遲、價格差異而引致之任何損失或損害，本應用程式及開發者概不承擔任何法律責任。`,
 
@@ -91,7 +80,6 @@ kwHome: "畫面",
         footerTerms: "服務條款",
         footerDevTeam: "開發團隊: ",
         footerDevName: "懶人工具駅",
-        
         
         aboutTitle: "關於 「慳真D🔎」",
         aboutContent: "「慳真D🔎」旨在為香港市民提供一個便捷的價格比較平台。<br><br>大家從此無需再下載及篩選繁複的政府 Excel 數據表，只需透過這個內置 AI 搜尋引擎的應用程式，即可輕鬆格價、秒速找出全港超市的最抵優惠與最低價格！",
@@ -110,9 +98,6 @@ kwHome: "畫面",
         shareBtnMore: "更多選項",
         copiedToast: "✅ 連結已複製！",
         shareMessage: "推薦你用「慳真D🔎」！秒速格價，幫你慳到盡！🛒\n",
-        // 🛒 分享單一貨品 (Product Share)
-        shareProductTitle: "慳真D🔎推介",
-        shareProductTemplate: "【慳錢情報】{brand} - {name}，最低價見 ${price}！快啲去慳真D🔎睇吓啦！🛒",
         
         // 🛒 分享單一貨品 (Product Share)
         shareProductTitle: "慳真D🔎推介",
@@ -128,13 +113,12 @@ kwHome: "畫面",
         foundDiscountKw: '為你搜尋到「{keyword}」中精選優惠貨品結果：',
         foundDiscountCat: '為你搜羅到該分類下精選優惠貨品結果：',
         foundKw: '為你搜尋到「{keyword}」嘅最抵結果：'
-
-
     },
     
     'zh-Hans': { 
         title: "悭真D", 
         ogTitle: '悭真D | 香港超市比价神器',
+        ogDesc: '香港超市比价神器，秒速帮你找出最平商品！',
         badge: "政府数据连线", 
         subLabel: "正在读取更新时间...", 
         lastUpdated: "更新于: ",
@@ -166,12 +150,6 @@ kwHome: "畫面",
         alertListTarget: "心水价:",
         alertListClose: "关闭",
         
-        // 喺 zh-Hans 區塊加呢行：
-        ogDesc: '香港超市比价神器，秒速帮你找出最平商品！',
-
-
-        
-        
         quickAll: "📦 查看全部",
         quickDiscount: "🏷️ 只看有优惠",
         quickHome: "🏠 回主目录",
@@ -181,7 +159,7 @@ kwHome: "畫面",
         miniFooterCopy: "© 2026 悭真D",
         disclaimerTitle: "免责声明及服务条款",
         
-        // 2. 免責聲明：
+        // 免責聲明：
         disclaimerText: `<strong>1. 资料来源及知识产权：</strong><br>本应用程式之货品价格及优惠数据取自政府资料一线通 (data.gov.hk) 的「网上价格一览通」数据集。相关资料之知识产权所有人为<strong>消费者委员会</strong>及相关商户。<br><br>
         <strong>2. 数据涵盖范围：</strong><br>系统数据主要涵盖消委会挑选之数千款热门「民生必需品」，并未包含实体超市之所有存货（如部分独家或冷门货品）。<br><br>
         <strong>3. 自动运算提示：</strong><br>系统显示之<strong>「折合价」为程序自动运算之结果</strong>，所有资讯均以政府发布之最新数据及实体超市最终标价为准。资讯仅供参考，强烈建议用户购买前自行核实。<br><br>
@@ -227,13 +205,12 @@ kwHome: "畫面",
         foundDiscountKw: '为您搜寻到「{keyword}」中精选优惠货品结果：',
         foundDiscountCat: '为您搜罗到该分类下精选优惠货品结果：',
         foundKw: '为您搜寻到「{keyword}」的最抵结果：'
-
-
     },
     
     'en': { 
         title: "HK Smart Price", 
         ogTitle: 'HK Smart Price | HK Gov Price Watch',
+        ogDesc: 'HK Smart Price Watch. Find the best deals instantly!',
         badge: "Live Gov Data", 
         subLabel: "Fetching update time...", 
         lastUpdated: "Updated: ",
@@ -265,11 +242,6 @@ kwHome: "畫面",
         alertListTarget: "Target:",
         alertListClose: "Close",
         
-        // 喺 en 區塊加呢行：
-        ogDesc: 'HK Smart Price Watch. Find the best deals instantly!',
-        
-        
-        
         quickAll: "📦 Show All",
         quickDiscount: "🏷️ Discounted Only",
         quickHome: "🏠 Main Menu",
@@ -279,7 +251,7 @@ kwHome: "畫面",
         miniFooterCopy: "© 2026 HK Smart Price",
         disclaimerTitle: "Disclaimer & Terms of Service",
         
-        // 2. 免責聲明：
+        // 免責聲明：
         disclaimerText: `<strong>1. Data Source & IP Rights:</strong><br>Price and promotional data in this app are sourced from the "Online Price Watch" dataset on Data.gov.hk. All intellectual property rights belong to the <strong>Consumer Council</strong> and respective merchants.<br><br>
         <strong>2. Data Coverage:</strong><br>The dataset mainly covers thousands of popular daily essentials selected by the Consumer Council and does not include all supermarket inventory (such as exclusive or niche items).<br><br>
         <strong>3. Automated Calculation:</strong><br>The calculated average prices displayed are <strong>automatically generated by the system</strong>. All information is based on the latest live data released by the government and final tags in physical stores. For reference only; users are advised to verify prices before purchasing.<br><br>
@@ -325,16 +297,7 @@ kwHome: "畫面",
         foundDiscountKw: 'Here are the discounted products for "{keyword}":',
         foundDiscountCat: 'Here are the discounted products in this category:',
         foundKw: 'Here are the best results for "{keyword}":'
-      
-
-   
     }
-        
-
-
-
-
-
 };
     
 const supermarketDict = {
@@ -377,10 +340,4 @@ const supermarketDict = {
         'DCHFOOD': 'DCH Food',
         'SASA': 'Sasa'
     }
-
-
-
-
-
-
 };
