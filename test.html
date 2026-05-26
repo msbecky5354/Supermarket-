@@ -2,47 +2,107 @@
 <html lang="zh-HK">
 <head>
     <meta charset="UTF-8">
-    <title>CDN 終極測試</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCR 原始辨識測試工具</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; }
+        .box { border: 1px solid #ccc; padding: 15px; margin-bottom: 15px; border-radius: 8px; }
+        img { max-width: 100%; height: auto; margin-top: 10px; border-radius: 4px; }
+        textarea { width: 100%; padding: 10px; font-family: monospace; font-size: 14px; box-sizing: border-box; background: #f9f9f9; }
+        button { background: #0070f3; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        button:disabled { background: #ccc; }
+    </style>
 </head>
 <body>
-    <h1>香港格價網 CDN 測試</h1>
-    <h3 id="update-time" style="color: blue;">時間載入中...</h3>
-    <div id="data-container">數據載入中...</div>
+
+    <h2>🔍 OCR 照妖鏡 (獨立測試版)</h2>
+
+    <div class="box">
+        <h3>1. 選擇圖片</h3>
+        <input type="file" id="imageInput" accept="image/*">
+        <img id="imagePreview" style="display: none;" />
+    </div>
+
+    <div class="box">
+        <h3>2. 執行 OCR</h3>
+        <button id="runBtn" disabled>開始辨識</button>
+        <span id="status" style="margin-left: 10px; color: #666;"></span>
+    </div>
+
+    <div class="box">
+        <h3>3. 原始辨識結果 (Raw Output)</h3>
+        <textarea id="resultOutput" rows="15" placeholder="結果會顯示喺度..."></textarea>
+    </div>
 
     <script>
-        // 1. 宣告全域變數
-        let rawApiData = null;
-        let lastUpdatedTime = null;
+        const imageInput = document.getElementById('imageInput');
+        const imagePreview = document.getElementById('imagePreview');
+        const runBtn = document.getElementById('runBtn');
+        const resultOutput = document.getElementById('resultOutput');
+        const status = document.getElementById('status');
 
-        // 2. 定義載入數據嘅主函數
-        async function init() {
-            try {
-                // --- 攞時間 ---
-                const timeRes = await fetch('https://cdn.jsdelivr.net/gh/msbecky5354/HK_PriceWatch-@main/data/update_log.txt');
-                if (timeRes.ok) {
-                    const timeText = await timeRes.text();
-                    lastUpdatedTime = new Date(timeText.trim());
-                    document.getElementById('update-time').innerText = "最後更新：" + lastUpdatedTime.toLocaleString("zh-HK");
-                }
+        let selectedFile = null;
 
-                // --- 攞報價 ---
-                const dataRes = await fetch('https://cdn.jsdelivr.net/gh/msbecky5354/HK_PriceWatch-@main/data/pricewatch.json');
-                if (dataRes.ok) {
-                    rawApiData = await dataRes.json();
-                    // 成功攞到，將第一件貨品嘅名印出嚟測試
-                    if(rawApiData && rawApiData.length > 0) {
-                         document.getElementById('data-container').innerText = "✅ 成功載入！第一件貨係：" + rawApiData[0].name.en;
-                    }
-                } else {
-                    document.getElementById('data-container').innerText = "❌ 報價載入失敗";
+        // 圖片預覽邏輯
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                selectedFile = file;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                    runBtn.disabled = false;
+                    resultOutput.value = '';
+                    status.innerText = '準備好可以測試！';
                 }
-            } catch (err) {
-                console.error("系統出錯:", err);
+                reader.readAsDataURL(file);
             }
-        }
+        });
 
-        // 3. 執行函數 (極重要！)
-        init();
+        // 撳掣執行測試
+        runBtn.addEventListener('click', async function() {
+            if (!selectedFile) return;
+
+            status.innerText = '⏳ 辨識中，請稍候...';
+            runBtn.disabled = true;
+            resultOutput.value = 'Loading...';
+
+            try {
+                // ==========================================
+                // ⚠️ 呢度替換成你呼叫 OCRSerarch.js 嘅方法 ⚠️
+                // ==========================================
+                
+                /* * 情境 A：如果 OCR 係一條 Backend API (Next.js API route)
+                 * 你可以直接將圖片轉做 FormData 打過去
+                 */
+                const formData = new FormData();
+                formData.append('file', selectedFile);
+                
+                const response = await fetch('/api/OCRSerarch', { // 換成你實際嘅 API 路徑
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const rawData = await response.text(); // 用 text() 接住，確保睇到最 Raw 嘅字串或 JSON
+                resultOutput.value = rawData;
+
+                /* * 情境 B：如果 OCRSerarch.js 係一個 Client-side Function
+                 * 你可以 uncomment 上面個 <script src="...">，然後直接 Call 佢：
+                 * * const rawData = await yourOcrFunction(selectedFile);
+                 * resultOutput.value = typeof rawData === 'object' ? JSON.stringify(rawData, null, 2) : rawData;
+                 */
+
+                status.innerText = '✅ 辨識完成！';
+
+            } catch (error) {
+                console.error(error);
+                resultOutput.value = `❌ 發生錯誤:\n${error.message}`;
+                status.innerText = '❌ 辨識失敗';
+            } finally {
+                runBtn.disabled = false;
+            }
+        });
     </script>
 </body>
 </html>
