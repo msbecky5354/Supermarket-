@@ -1,4 +1,4 @@
-// ocrEngine.js - 慳真D🔎 圖片辨識引擎 (神級反向比對版 + 超市語境防呆 + 強效提示)
+// ocrEngine.js - 慳真D🔎 圖片辨識引擎 (神級反向比對版 + 超市防呆把關 2.0)
 
 async function handleOcrUpload(event) {
     const file = event.target.files[0];
@@ -16,7 +16,7 @@ async function handleOcrUpload(event) {
                         const progress = (m.progress * 100).toFixed(0);
                         updateOcrProgress(`正在辨識包裝文字... ${progress}%`);
                     } else if (m.status === 'loading tesseract core' || m.status.includes('loading language')) {
-                        updateOcrProgress(`正在載入 AI 語言庫...`);
+                        updateOcrProgress(`正在載入 AI 語言庫... 請稍候`);
                     }
                 }
             }
@@ -25,19 +25,19 @@ async function handleOcrUpload(event) {
         const rawText = result.data.text;
         console.log("📦 AI 原始讀取文字:\n", rawText);
 
-        // 🧠 進入智能過濾大腦
+        // 🧠 智能過濾大腦把關
         const cleanedText = smartExtractKeyword(rawText);
         console.log("✨ 智能過濾後最終關鍵字:", cleanedText);
 
         if (cleanedText) {
-            // 決定將字放落邊個 Input Box (主頁 or Chat 頁)
+            // 將字擺入對應嘅 Input Box (半自動模式)
             const chatInput = document.getElementById('chatInput');
             const globalInput = document.getElementById('globalSearchInput');
             const chatSection = document.getElementById('chatSection');
 
             let targetInput = globalInput;
             if (chatSection && !chatSection.classList.contains('hidden')) {
-                targetInput = chatInput; // 如果喺 Chat 畫面，就塞入 Chat Input
+                targetInput = chatInput; 
             }
 
             if (targetInput) {
@@ -45,41 +45,35 @@ async function handleOcrUpload(event) {
                 targetInput.focus(); // 自動 Focus 等用家可以即刻改字
             }
 
-            // ⚠️ 半自動模式提示
-            const successMsg = (typeof uiText !== 'undefined' && uiText[currentLang]?.ocrSuccess) 
-                               ? uiText[currentLang].ocrSuccess 
-                               : "✅ 辨識完成！請確認字眼後再按下搜尋。";
+            // ⚠️ 抽起自動搜尋，改為半自動！
+            // 💡 針對不同語言嘅提示信息 (可以直接問 lang.js 大管家搵字，依家暫時寫死先)
+            let successMsg = "✅ 辨識完成！請確認字眼後再按下搜尋掣。";
+            if (typeof currentLang !== 'undefined' && typeof uiText !== 'undefined' && uiText[currentLang]) {
+                successMsg = uiText[currentLang].ocrSuccess || successMsg;
+            } else if (currentLang === 'en') {
+                successMsg = "✅ Recognition complete! Please confirm the keyword and press search.";
+            } else if (currentLang === 'zh-Hans') {
+                successMsg = "✅ 辨识完成！请确认字眼后再按下搜索。";
+            }
             alert(successMsg);
 
         } else {
-            // 💡 強效防呆提示：話俾用戶聽發生咩事！
-            let errorMsg = "⚠️ 畫面太模糊，完全認唔到字，請嘗試影得清楚啲！";
-            
-            // 如果 AI 其實有掃到字，只係俾「超市白名單」過濾走咗
-            if (rawText && rawText.trim().length > 0) {
-                if (currentLang === 'en') {
-                    errorMsg = "⚠️ Cannot find any grocery-related keywords. Please aim at the brand name or main label!";
-                } else if (currentLang === 'zh-Hans') {
-                    errorMsg = "⚠️ AI 认不到与超市相关的货品名。请对准包装上的「大字牌子」或「中文字」再拍一次！";
-                } else {
-                    errorMsg = "⚠️ AI 認唔到同超市相關嘅貨品名。請對準包裝上嘅「大字牌子」或「中文字」再影過！";
-                }
+            // 💡 認唔到字或過濾後無結果嘅防呆提示
+            let errorMsg = "⚠️ AI 認唔到同超市相關嘅貨品名，請對準包裝上嘅「大字牌子」或「中文字」再影多一次！影背面可能更準。";
+            if (currentLang === 'en') {
+                errorMsg = "⚠️ AI cannot recognize grocery-related keywords. Please aim at the brand name or main label! Scanning the back might be better.";
+            } else if (currentLang === 'zh-Hans') {
+                errorMsg = "⚠️ AI 认不到与超市相关的货品名，请对准包装上的「大字牌子」或「中文字」再拍一次！拍背面可能更准。";
             }
-
             alert(errorMsg);
         }
 
     } catch (error) {
         console.error("OCR 錯誤:", error);
-        // 💡 針對無網絡 / 下載唔到 AI 語言包嘅錯誤提示
-        const netErrorMsg = (currentLang === 'en') 
-            ? "⚠️ AI engine failed to start! Please check your network connection." 
-            : "⚠️ 圖片辨識引擎啟動失敗！請檢查網絡連線，或者等一陣再試。";
-        alert(netErrorMsg);
-        
+        alert("圖片辨識引擎啟動失敗！請檢查網絡連線或等一陣再試。");
     } finally {
         showOcrLoading(false);
-        event.target.value = ''; // 清空 file input，等用家可以再影同一件貨
+        event.target.value = ''; // 清空 input 等佢可以再影同一件貨
     }
 }
 
@@ -97,36 +91,50 @@ const GROCERY_WHITELIST = new Set([
     '紙巾', '廁紙', '洗潔精', '洗衣液', '沐浴露', '洗頭水', '牙膏', '牙刷',
     // 常見包裝字眼
     '有機', '無添加', '低脂', '全脂', '脫脂', '高鈣', '無糖', '原味',
-    // 其他你可能需要嘅字
-    '香港', '製造', '進口', '新鮮', '急凍'
+    // 其他
+    '香港', '製造', '進口', '新鮮', '急凍', 'mannings'
 ]);
 
-// 檢查一個詞係咪同超市/食品有關聯
+// 檢查一個詞係咪超市相關 (嚴格把關邏輯 2.0)
 function isGroceryRelated(word) {
     if (!word) return false;
+    // 直接命中白名單
     if (GROCERY_WHITELIST.has(word)) return true;
+    
+    // 如果單字，檢查係咪複合詞嘅一部分
     if (word.length === 1) {
         for (let item of GROCERY_WHITELIST) {
-            if (item.includes(word)) return true;
+            if (item.length > 1 && item.includes(word)) return true;
         }
     }
+
+    // 對於短詞 (2-3字)，殺死垃圾字
+    // ⚠️ 終極把關：呢個詞一定要包含資料庫入面嘅中文字元
     if (word.length >= 2 && word.length <= 3) {
+        // ... (原來的 stricter logic 可以保留)
         const chars = word.split('');
         for (let char of chars) {
+            let charFound = false;
             for (let item of GROCERY_WHITELIST) {
-                if (item.includes(char)) return true;
+                if (item.includes(char)) {
+                    charFound = true;
+                    break;
+                }
             }
+            if (!charFound) return false; // 如果有一個字無白名單基因，直接殺死
         }
+        return true; 
     }
     return false;
 }
 
 /**
- * 智能過濾器：反向對比資料庫 + 清洗垃圾字 + 超市語境把關
+ * 智能過濾器：反向對比資料庫 + 清洗垃圾字 + 把關
  */
 function smartExtractKeyword(rawText) {
     if (!rawText) return null;
 
+    // 1. 神級必殺技：資料庫反向比對 (Reverse Lookup)
     try {
         if (typeof window !== 'undefined' && window.rawApiData && window.rawApiData.length > 0) {
             let lowerRaw = rawText.toLowerCase().replace(/\s+/g, '');
@@ -140,7 +148,7 @@ function smartExtractKeyword(rawText) {
                     let cleanBrand = brand.toLowerCase().replace(/\s+/g, '');
                     if (lowerRaw.includes(cleanBrand)) {
                         if (brand.length > bestBrand.length) {
-                            bestBrand = brand; 
+                            bestBrand = brand; // 搵出最長、最精準嗰個牌子
                         }
                     }
                 }
@@ -154,6 +162,7 @@ function smartExtractKeyword(rawText) {
         console.warn("資料庫反向比對發生錯誤，跳過。", e);
     }
 
+    // 2. 如果資料庫無命中，先用返基礎過濾器
     let clean = rawText.replace(/[\r\n]+/g, ' ');
     const junkWords = [
         '成分', '淨重', '重量', '此日期前最佳', 'best before', 'ingredients', 
@@ -170,20 +179,22 @@ function smartExtractKeyword(rawText) {
     clean = clean.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, ' ');
 
     let words = clean.trim().split(/\s+/).filter(w => {
+        // 殺死 1-3 個字母嘅無謂英文 (通常係條碼、Ply 等廢字)
         if (/^[a-zA-Z]{1,3}$/.test(w)) return false;
         return w.length > 1;
     });
 
     if (words.length === 0) return null;
 
+    // 🌟 超市語境防呆 2.0 把關
     let validWords = words.filter(w => isGroceryRelated(w));
     if (validWords.length === 0) {
-        console.log("🚫 所有候選詞都唔似係超市相關，OCR 可能誤認，回傳 null");
-        return null; 
+        console.log("🚫 所有候選詞都唔似係超市相關，回傳 null 觸發 explicit 錯誤提示");
+        return null; // 殺死垃圾，回傳 null！
     }
-
     words = validWords;
     
+    // 優先抽取「中文字」
     let chineseWords = words.filter(w => /[\u4e00-\u9fa5]/.test(w));
     if (chineseWords.length > 0) {
         return chineseWords.slice(0, 2).join(' ');
