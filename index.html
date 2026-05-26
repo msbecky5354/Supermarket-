@@ -302,36 +302,33 @@
     try {
         let commitSha = '';
         
-        // --- 第一步：獲取最新的 Commit SHA (這是關鍵) ---
+        // --- 第一步：獲取最新的 Commit SHA (確保數據 100% 最新) ---
         try {
-            // 注意：這裡改用 /commits/main 接口，這才能拿到真正的提交記錄 ID
             const apiRes = await fetch('https://api.github.com/repos/msbecky5354/HK_PriceWatch-/commits/main');
             if (apiRes.ok) {
                 const commitData = await apiRes.json();
-                commitSha = commitData.sha; // 拿到最新的 Commit SHA
+                commitSha = commitData.sha; 
                 console.log("🔍 發現最新提交記錄:", commitSha);
             }
         } catch (e) {
             console.warn("GitHub API 限制，將啟用保險方案");
         }
 
-        // --- 第二步：構建網址 (兩手準備) ---
+        // --- 第二步：構建網址 (使用字串相加，避開符號解析問題) ---
         let dataUrl, logUrl;
 
         if (commitSha) {
-            // 第一手準備：如果有 Commit SHA，直接用 jsDelivr 的「絕對路徑」
-            // 這種格式 jsDelivr 無法快取舊版，保證 100% 最新
-            dataUrl = `https://cdn.jsdelivr.net/gh/msbecky5354/HK_PriceWatch-@<LaTex>${commitSha}/data/pricewatch.json`;
-            logUrl = `https://cdn.jsdelivr.net/gh/msbecky5354/HK_PriceWatch-@$</LaTex>{commitSha}/data/update_log.txt`;
+            // 第一手準備：使用 Commit SHA 網址 (CDN 加速 + 絕對即時)
+            dataUrl = "https://cdn.jsdelivr.net/gh/msbecky5354/HK_PriceWatch-@" + commitSha + "/data/pricewatch.json";
+            logUrl = "https://cdn.jsdelivr.net/gh/msbecky5354/HK_PriceWatch-@" + commitSha + "/data/update_log.txt";
         } else {
-            // 第二手準備：如果 GitHub API 爆了，直接用 GitHub 的原始連結 (Raw)
-            // 這是唯一能保證「不被 CDN 快取」且「不報錯」的最後防線
+            // 第二手準備：GitHub API 爆了時的保險方案 (GitHub Raw)
             console.log("⚠️ 正在使用 GitHub Raw 作為保險方案");
-            dataUrl = `https://raw.githubusercontent.com/msbecky5354/HK_PriceWatch-/main/data/pricewatch.json`;
-            logUrl = `https://raw.githubusercontent.com/msbecky5354/HK_PriceWatch-/main/data/update_log.txt`;
+            dataUrl = "https://raw.githubusercontent.com/msbecky5354/HK_PriceWatch-/main/data/pricewatch.json";
+            logUrl = "https://raw.githubusercontent.com/msbecky5354/HK_PriceWatch-/main/data/update_log.txt";
         }
 
-        // --- 第三步：執行下載 ---
+        // --- 第三步：同時下載數據與日誌 ---
         const [timeRes, dataRes] = await Promise.all([
             fetch(logUrl),
             fetch(dataUrl)
@@ -344,26 +341,31 @@
 
         if (dataRes.ok) {
             rawApiData = await dataRes.json();
-            console.log("✅ 數據載入成功，來源:", commitSha ? "jsDelivr (SHA)" : "GitHub Raw");
+            console.log("✅ 數據載入成功！來源: " + (commitSha ? "jsDelivr" : "GitHub Raw"));
         }
 
-        // --- 第四步：後續 UI 邏輯 (保持不變) ---
+        // --- 第四步：UI 初始化邏輯 ---
         changeLanguage('zh-Hant');
+        
         const urlParams = new URLSearchParams(window.location.search);
         const sharedQuery = urlParams.get('q');
         if (sharedQuery) {
             const input = document.getElementById('globalSearchInput');
             if (input) {
                 input.value = sharedQuery;
-                setTimeout(() => { if (typeof triggerGlobalSearch === 'function') triggerGlobalSearch(); }, 300);
+                setTimeout(() => { 
+                    if (typeof triggerGlobalSearch === 'function') triggerGlobalSearch(); 
+                }, 300);
             }
         }
+        
         if (typeof updateAlertBadge === 'function') updateAlertBadge();
 
     } catch (e) {
         console.error("系統初始化錯誤:", e);
     }
 }
+
 
 
 
