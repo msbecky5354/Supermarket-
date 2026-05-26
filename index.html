@@ -110,7 +110,7 @@
                 <div class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center text-3xl shadow-[0_4px_15px_-3px_rgba(59,130,246,0.2)] dark:shadow-none border border-blue-200 dark:border-slate-600 mb-4 transform hover:scale-105 transition-transform">🤖</div>
                 <h2 id="homeTitle" class="text-[18px] sm:text-[20px] font-black text-slate-800 dark:text-slate-100 mb-6 tracking-tight transition-colors">想搵咩平嘢？直接話我知</h2>
                 
-                <input type="file" id="ocrFileInput" accept="image/*" capture="environment" class="hidden" onchange="handleOcrUpload(event)">
+            <input type="file" id="ocrFileInput" accept="image/*" class="hidden" onchange="handleOcrUpload(event)">
                 
                 <form onsubmit="event.preventDefault(); triggerGlobalSearch();" class="w-full relative shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5)] rounded-[2rem]">
                     <input type="text" id="globalSearchInput" placeholder="例如: 可口可樂、出前一丁..." class="w-full pl-6 pr-[110px] py-4 sm:py-4.5 bg-white dark:bg-slate-800 border-2 border-transparent focus:border-blue-500 dark:focus:border-blue-400 rounded-[2rem] outline-none transition-all text-[15px] sm:text-[16px] font-medium text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500">
