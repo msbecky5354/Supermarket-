@@ -39,6 +39,36 @@ const uiText = {
         // 📷 圖片辨識 (OCR)
         ocrSuccess: "✅ 辨識完成！請確認字眼後再按下搜尋。",
         ocrError: "⚠️ 認唔到包裝上嘅字，請嘗試影得清楚啲！",
+
+        ocrSuccessGemini: "🎯 Gemini 完美辨識完成！請確認字眼後按下搜尋。",
+        ocrSuccessBasic: "✅ 辨識完成！請確認字眼後再按下搜尋掣。",
+        ocrFailGemini: "⚠️ Gemini 認唔到相關嘅貨品名，請對準包裝再影多一次！",
+        ocrFailBasic: "⚠️ AI 認唔到相關嘅貨品名，請對準包裝上嘅「大字牌子」或「中文字」再影多一次！",
+        ocrErrorGemini: "Gemini 連線失敗，請檢查 API Key 是否正確！系統將暫時退回基礎模式。",
+        ocrErrorBasic: "圖片辨識引擎啟動失敗！請檢查網絡連線或等一陣再試。",
+
+        ocrModalTitle: "📷 AI 視覺辨識中",
+        ocrLoadingGemini: "召喚 Gemini AI 視覺大腦...",
+        ocrLoadingBasic: "準備啟動基礎 AI 引擎...",
+        ocrProgress: "正在辨識包裝文字...",
+        ocrLoadingLang: "正在載入 AI 語言庫...",
+
+        // 📸 相機與 API 設定選單
+        cameraModalTitle: "📸 AI 視覺辨識",
+        cameraBtn: "📷 拍照 或 選擇圖片",
+        advSettings: "進階設定",
+        geminiTitle: "⚙️ 連接 Gemini 專業大腦",
+        geminiDesc: "預設使用離線基礎辨識。輸入 Google Gemini API Key 可大幅提升花巧包裝嘅認字準確率。(僅安全儲存於本機)",
+        geminiPlaceholder: "API Key (AIzaSy...)",
+        saveBtn: "儲存",
+        clearBtn: "清除",
+        statusConnected: "✅ 已連接 Gemini Pro 引擎",
+        statusOffline: "🐢 目前使用基礎離線引擎",
+        alertKeySaved: "✅ 鎖匙已安全儲存！",
+        alertKeyCleared: "🗑️ 鎖匙已清除，回復基礎模式。",
+        cameraTooltip: "AI 視覺辨識設定",
+        geminiGuide: "👉 按此前往 Google 免費領取 API Key",
+        geminiDesc: "預設使用離線辨識。輸入 API Key 可解鎖高精度模式。",
         
         // --- 新功能回覆 ---
         r_no_product: "「慳真D」主要監察約 3,000 款民生必需品。極冷門或單一超市獨家發售的貨品未必涵蓋，建議用簡單的關鍵字搜尋！",
@@ -157,6 +187,36 @@ const uiText = {
         // 📷 图片辨识 (OCR)
         ocrSuccess: "✅ 辨识完成！请确认字眼后再按下搜索。",
         ocrError: "⚠️ 认不到包装上的字，请尝试拍得清楚点！",
+
+        ocrSuccessGemini: "🎯 Gemini 完美识别完成！请确认字眼后按下搜索。",
+        ocrSuccessBasic: "✅ 识别完成！请确认字眼后再按下搜索。",
+        ocrFailGemini: "⚠️ Gemini 认不到相关的货品名，请对准包装再拍一次！",
+        ocrFailBasic: "⚠️ AI 认不到相关的货品名，请对准包装上的「大字牌子」或「中文字」再拍一次！",
+        ocrErrorGemini: "Gemini 连接失败，请检查 API Key 是否正确！系统将暂时退回基础模式。",
+        ocrErrorBasic: "图片识别引擎启动失败！请检查网络连接或稍后再试。",
+
+        ocrModalTitle: "📷 AI 视觉辨识中",
+        ocrLoadingGemini: "召唤 Gemini AI 视觉大脑...",
+        ocrLoadingBasic: "准备启动基础 AI 引擎...",
+        ocrProgress: "正在识别包装文字...",
+        ocrLoadingLang: "正在载入 AI 语言库...",
+
+        // 📸 相機與 API 設定選單
+        cameraModalTitle: "📸 AI 视觉辨识",
+        cameraBtn: "📷 拍照 或 选择图片",
+        advSettings: "进阶设定",
+        geminiTitle: "⚙️ 连接 Gemini 专业大脑",
+        geminiDesc: "默认使用离线基础辨识。输入 Google Gemini API Key 可大幅提升复杂包装的识别准确率。(仅安全储存于本机)",
+        geminiPlaceholder: "API Key (AIzaSy...)",
+        saveBtn: "保存",
+        clearBtn: "清除",
+        statusConnected: "✅ 已连接 Gemini Pro 引擎",
+        statusOffline: "🐢 目前使用基础离线引擎",
+        alertKeySaved: "✅ 密钥已安全保存！",
+        alertKeyCleared: "🗑️ 密钥已清除，回复基础模式。",
+        cameraTooltip: "AI 视觉辨识设定",
+        geminiGuide: "👉 点击此处前往 Google 免费领取 API Key",
+        geminiDesc: "默认使用离线识别。输入 API Key 可解锁高精度模式。",
         
         quickAll: "📦 查看全部",
         quickDiscount: "🏷️ 只看有优惠",
@@ -253,7 +313,37 @@ const uiText = {
         // 📷 OCR (Image Recognition)
         ocrSuccess: "✅ Recognition complete! Please confirm the keyword before searching.",
         ocrError: "⚠️ Cannot recognize the text. Please try taking a clearer picture!",
-        
+
+        ocrSuccessGemini: "🎯 Gemini recognition complete! Please verify the keyword and search.",
+        ocrSuccessBasic: "✅ Recognition complete! Please verify the keyword and search.",
+        ocrFailGemini: "⚠️ Gemini couldn't recognize the product. Please aim at the packaging and try again!",
+        ocrFailBasic: "⚠️ AI couldn't recognize the product. Please aim at the brand name and try again!",
+        ocrErrorGemini: "Gemini connection failed. Check your API Key! Falling back to basic mode.",
+        ocrErrorBasic: "OCR engine failed to start! Please check your network or try again later.",
+
+        ocrModalTitle: "📷 AI Visual Recognition",
+        ocrLoadingGemini: "Summoning Gemini AI Vision...",
+        ocrLoadingBasic: "Starting basic AI engine...",
+        ocrProgress: "Recognizing packaging text...",
+        ocrLoadingLang: "Loading AI language data...",
+
+        // 📸 相機與 API 設定選單
+        cameraModalTitle: "📸 AI Visual Recognition",
+        cameraBtn: "📷 Take Photo or Choose Image",
+        advSettings: "Advanced Settings",
+        geminiTitle: "⚙️ Connect Gemini Pro",
+        geminiDesc: "Default uses basic offline recognition. Enter a Google Gemini API Key to significantly improve accuracy for complex packaging. (Safely stored locally)",
+        geminiPlaceholder: "API Key (AIzaSy...)",
+        saveBtn: "Save",
+        clearBtn: "Clear",
+        statusConnected: "✅ Connected to Gemini Pro",
+        statusOffline: "🐢 Using basic offline engine",
+        alertKeySaved: "✅ Key saved securely!",
+        alertKeyCleared: "🗑️ Key cleared. Returning to basic mode.",
+        cameraTooltip: "AI Vision Settings",
+        geminiGuide: "👉 Click here to get your free Google API Key",
+        geminiDesc: "Default uses basic offline recognition. Enter API Key to unlock high-precision mode.",
+
         quickAll: "📦 Show All",
         quickDiscount: "🏷️ Discounted Only",
         quickHome: "🏠 Main Menu",
