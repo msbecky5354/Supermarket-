@@ -35,6 +35,10 @@ const uiText = {
         alertListCurrent: "現價:",
         alertListTarget: "心水價:",
         alertListClose: "關閉",
+               
+        // 📷 圖片辨識 (OCR)
+        ocrSuccess: "✅ 辨識成功！自動為你搜尋。",
+        ocrError: "⚠️ 認唔到包裝上嘅字，請嘗試影得清楚啲！",
         
         // --- 新功能回覆 ---
         r_no_product: "「慳真D」主要監察約 3,000 款民生必需品。極冷門或單一超市獨家發售的貨品未必涵蓋，建議用簡單的關鍵字搜尋！",
@@ -150,6 +154,10 @@ const uiText = {
         alertListTarget: "心水价:",
         alertListClose: "关闭",
         
+        // 📷 图片辨识 (OCR)
+        ocrSuccess: "✅ 辨识成功！自动为你搜索。",
+        ocrError: "⚠️ 认不到包装上的字，请尝试拍得清楚点！",
+        
         quickAll: "📦 查看全部",
         quickDiscount: "🏷️ 只看有优惠",
         quickHome: "🏠 回主目录",
@@ -241,6 +249,10 @@ const uiText = {
         alertListCurrent: "Current:",
         alertListTarget: "Target:",
         alertListClose: "Close",
+        
+        // 📷 OCR (Image Recognition)
+        ocrSuccess: "✅ Recognition successful! Searching automatically.",
+        ocrError: "⚠️ Cannot recognize the text. Please try taking a clearer picture!",
         
         quickAll: "📦 Show All",
         quickDiscount: "🏷️ Discounted Only",
