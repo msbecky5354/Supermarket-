@@ -110,8 +110,15 @@
                 <div class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center text-3xl shadow-[0_4px_15px_-3px_rgba(59,130,246,0.2)] dark:shadow-none border border-blue-200 dark:border-slate-600 mb-4 transform hover:scale-105 transition-transform">🤖</div>
                 <h2 id="homeTitle" class="text-[18px] sm:text-[20px] font-black text-slate-800 dark:text-slate-100 mb-6 tracking-tight transition-colors">想搵咩平嘢？直接話我知</h2>
                 
+                <input type="file" id="ocrFileInput" accept="image/*" capture="environment" class="hidden" onchange="handleOcrUpload(event)">
+                
                 <form onsubmit="event.preventDefault(); triggerGlobalSearch();" class="w-full relative shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5)] rounded-[2rem]">
-                    <input type="text" id="globalSearchInput" placeholder="例如: 可口可樂、出前一丁..." class="w-full pl-6 pr-16 py-4 sm:py-4.5 bg-white dark:bg-slate-800 border-2 border-transparent focus:border-blue-500 dark:focus:border-blue-400 rounded-[2rem] outline-none transition-all text-[15px] sm:text-[16px] font-medium text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500">
+                    <input type="text" id="globalSearchInput" placeholder="例如: 可口可樂、出前一丁..." class="w-full pl-6 pr-[110px] py-4 sm:py-4.5 bg-white dark:bg-slate-800 border-2 border-transparent focus:border-blue-500 dark:focus:border-blue-400 rounded-[2rem] outline-none transition-all text-[15px] sm:text-[16px] font-medium text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500">
+                    
+                    <button type="button" onclick="document.getElementById('ocrFileInput').click()" class="absolute right-[65px] top-1/2 -translate-y-1/2 p-2.5 text-slate-400 dark:text-slate-500 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-90 transition-all rounded-full" title="影相格價">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path><circle cx="12" cy="13" r="3"></circle></svg>
+                    </button>
+
                     <button type="submit" class="absolute right-2 top-2 bottom-2 w-[52px] bg-blue-600 dark:bg-blue-500 text-white rounded-full flex items-center justify-center shadow-sm active:scale-95 transition-transform hover:bg-blue-700 dark:hover:bg-blue-600">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
                     </button>
@@ -248,8 +255,10 @@
         ✅ 連結已複製！
     </div>
 
-   <script>
-       
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="ocrEngine.js"></script>
+
+    <script>
         window.normalizeStr = window.normalizeStr || function(str) {
             return str ? str.toLowerCase().replace(/[^\w\s\u4e00-\u9fa5]/gi, '') : '';
         };
@@ -302,86 +311,74 @@
         }
 
         async function init() {
-    try {
-        let commitSha = '';
-        
-        // --- 第一步：獲取最新的 Commit SHA (確保數據 100% 最新) ---
-        try {
-            const apiRes = await fetch('https://api.github.com/repos/msbecky5354/HK_PriceWatch-/commits/main');
-            if (apiRes.ok) {
-                const commitData = await apiRes.json();
-                commitSha = commitData.sha; 
-                console.log("🔍 發現最新提交記錄:", commitSha);
+            try {
+                let commitSha = '';
+                
+                try {
+                    const apiRes = await fetch('https://api.github.com/repos/msbecky5354/HK_PriceWatch-/commits/main');
+                    if (apiRes.ok) {
+                        const commitData = await apiRes.json();
+                        commitSha = commitData.sha; 
+                        console.log("🔍 發現最新提交記錄:", commitSha);
+                    }
+                } catch (e) {
+                    console.warn("GitHub API 限制，將啟用保險方案");
+                }
+
+                let dataUrl, logUrl;
+
+                if (commitSha) {
+                    dataUrl = "https://cdn.jsdelivr.net/gh/msbecky5354/HK_PriceWatch-@" + commitSha + "/data/pricewatch.json";
+                    logUrl = "https://cdn.jsdelivr.net/gh/msbecky5354/HK_PriceWatch-@" + commitSha + "/data/update_log.txt";
+                } else {
+                    console.log("⚠️ 正在使用 GitHub Raw 作為保險方案");
+                    dataUrl = "https://raw.githubusercontent.com/msbecky5354/HK_PriceWatch-/main/data/pricewatch.json";
+                    logUrl = "https://raw.githubusercontent.com/msbecky5354/HK_PriceWatch-/main/data/update_log.txt";
+                }
+
+                const [timeRes, dataRes] = await Promise.all([
+                    fetch(logUrl),
+                    fetch(dataUrl)
+                ]);
+
+                if (timeRes.ok) {
+                    const timeText = await timeRes.text();
+                    lastUpdatedTime = new Date(timeText.trim());
+                }
+
+                if (dataRes.ok) {
+                    rawApiData = await dataRes.json();
+                    console.log("✅ 數據載入成功！來源: " + (commitSha ? "jsDelivr" : "GitHub Raw"));
+                }
+
+                changeLanguage('zh-Hant');
+                
+                const urlParams = new URLSearchParams(window.location.search);
+                const sharedQuery = urlParams.get('q');
+                if (sharedQuery) {
+                    const input = document.getElementById('globalSearchInput');
+                    if (input) {
+                        input.value = sharedQuery;
+                        setTimeout(() => { 
+                            if (typeof triggerGlobalSearch === 'function') triggerGlobalSearch(); 
+                        }, 300);
+                    }
+                }
+                
+                if (typeof updateAlertBadge === 'function') updateAlertBadge();
+
+            } catch (e) {
+                console.error("系統初始化錯誤:", e);
             }
-        } catch (e) {
-            console.warn("GitHub API 限制，將啟用保險方案");
         }
 
-        // --- 第二步：構建網址 (使用字串相加，避開符號解析問題) ---
-        let dataUrl, logUrl;
-
-        if (commitSha) {
-            // 第一手準備：使用 Commit SHA 網址 (CDN 加速 + 絕對即時)
-            dataUrl = "https://cdn.jsdelivr.net/gh/msbecky5354/HK_PriceWatch-@" + commitSha + "/data/pricewatch.json";
-            logUrl = "https://cdn.jsdelivr.net/gh/msbecky5354/HK_PriceWatch-@" + commitSha + "/data/update_log.txt";
-        } else {
-            // 第二手準備：GitHub API 爆了時的保險方案 (GitHub Raw)
-            console.log("⚠️ 正在使用 GitHub Raw 作為保險方案");
-            dataUrl = "https://raw.githubusercontent.com/msbecky5354/HK_PriceWatch-/main/data/pricewatch.json";
-            logUrl = "https://raw.githubusercontent.com/msbecky5354/HK_PriceWatch-/main/data/update_log.txt";
-        }
-
-        // --- 第三步：同時下載數據與日誌 ---
-        const [timeRes, dataRes] = await Promise.all([
-            fetch(logUrl),
-            fetch(dataUrl)
-        ]);
-
-        if (timeRes.ok) {
-            const timeText = await timeRes.text();
-            lastUpdatedTime = new Date(timeText.trim());
-        }
-
-        if (dataRes.ok) {
-            rawApiData = await dataRes.json();
-            console.log("✅ 數據載入成功！來源: " + (commitSha ? "jsDelivr" : "GitHub Raw"));
-        }
-
-        // --- 第四步：UI 初始化邏輯 ---
-        changeLanguage('zh-Hant');
-        
-        const urlParams = new URLSearchParams(window.location.search);
-        const sharedQuery = urlParams.get('q');
-        if (sharedQuery) {
-            const input = document.getElementById('globalSearchInput');
-            if (input) {
-                input.value = sharedQuery;
-                setTimeout(() => { 
-                    if (typeof triggerGlobalSearch === 'function') triggerGlobalSearch(); 
-                }, 300);
-            }
-        }
-        
-        if (typeof updateAlertBadge === 'function') updateAlertBadge();
-
-    } catch (e) {
-        console.error("系統初始化錯誤:", e);
-    }
-}
-
-
-
-
-
-       async function shareProduct(name, brand, minPrice) {
+        async function shareProduct(name, brand, minPrice) {
             const baseUrl = window.location.origin + window.location.pathname;
             const productUrl = `${baseUrl}?q=${encodeURIComponent(name)}`;
 
-            // 1. 設定預設值 (萬一 lang.js 未 load 切，都最少有繁體字頂住)
             let finalTitle = "慳真D🔎推介";
             let finalTemplate = "【慳錢情報】{brand} - {name}，最低價見 ${price}！快啲去慳真D🔎睇吓啦！🛒";
 
-            // 2. 嘗試去 lang.js 攞對應語言嘅字眼
             if (typeof uiText !== 'undefined' && uiText[currentLang]) {
                 if (uiText[currentLang].shareProductTitle) {
                     finalTitle = uiText[currentLang].shareProductTitle;
@@ -391,21 +388,18 @@
                 }
             }
 
-            // 3. 將模板入面嘅 {brand}, {name}, {price} 換成真正嘅資料
             const safeBrand = brand ? brand : (currentLang === 'en' ? 'General' : '綜合品牌');
             const finalText = finalTemplate
                 .replace('{brand}', safeBrand)
                 .replace('{name}', name)
                 .replace('{price}', minPrice);
 
-            // 4. 將準備好嘅資料塞入 shareData
             const shareData = {
                 title: finalTitle,
                 text: finalText,
                 url: productUrl 
             };
             
-            // 5. 執行分享
             try {
                 if (navigator.share) { await navigator.share(shareData); }
                 else {
@@ -416,118 +410,116 @@
         }
 
        function changeLanguage(lang) {
-    try {
-        currentLang = lang;
-        document.documentElement.lang = lang;
-        
-        const dict = (typeof uiText !== 'undefined' && uiText[lang]) ? uiText[lang] : {};
+            try {
+                currentLang = lang;
+                document.documentElement.lang = lang;
+                
+                const dict = (typeof uiText !== 'undefined' && uiText[lang]) ? uiText[lang] : {};
 
-        if (document.getElementById('appTitle')) document.getElementById('appTitle').innerText = dict.title || '慳真D';
-        document.title = dict.title || '慳真D';
-        
-       // 🌐 動態切換分享標籤 (OG Tags)，直接問 lang.js 大管家 (dict) 攞字！
-        const ogTitle = document.getElementById('ogTitle');
-        const ogDesc = document.getElementById('ogDesc');
-        
-        if (ogTitle) ogTitle.setAttribute("content", dict.title || '慳真D');
-        if (ogDesc) ogDesc.setAttribute("content", dict.ogDesc || '香港超市格價神器，秒速幫你搵出最平貨品！');
-        
-        if (document.getElementById('dataSourceBadge')) document.getElementById('dataSourceBadge').innerText = dict.badge || '政府數據連線';
-        
-        if (lastUpdatedTime) {
-            if (document.getElementById('todayStatusLabel')) document.getElementById('todayStatusLabel').innerText = (dict.lastUpdated || '最後更新: ') + formatDateTime(lastUpdatedTime);
-        } else {
-            if (document.getElementById('todayStatusLabel')) document.getElementById('todayStatusLabel').innerText = dict.subLabel || '載入中...';
-        }
+                if (document.getElementById('appTitle')) document.getElementById('appTitle').innerText = dict.title || '慳真D';
+                document.title = dict.title || '慳真D';
+                
+                const ogTitle = document.getElementById('ogTitle');
+                const ogDesc = document.getElementById('ogDesc');
+                
+                if (ogTitle) ogTitle.setAttribute("content", dict.title || '慳真D');
+                if (ogDesc) ogDesc.setAttribute("content", dict.ogDesc || '香港超市格價神器，秒速幫你搵出最平貨品！');
+                
+                if (document.getElementById('dataSourceBadge')) document.getElementById('dataSourceBadge').innerText = dict.badge || '政府數據連線';
+                
+                if (lastUpdatedTime) {
+                    if (document.getElementById('todayStatusLabel')) document.getElementById('todayStatusLabel').innerText = (dict.lastUpdated || '最後更新: ') + formatDateTime(lastUpdatedTime);
+                } else {
+                    if (document.getElementById('todayStatusLabel')) document.getElementById('todayStatusLabel').innerText = dict.subLabel || '載入中...';
+                }
 
-        if (document.getElementById('mainCatLabel')) document.getElementById('mainCatLabel').innerText = dict.mainCat || '主分類';
-        if (document.getElementById('sortTip')) document.getElementById('sortTip').innerText = dict.sortTip || '分類';
-        if (document.getElementById('backBtnText')) document.getElementById('backBtnText').innerText = dict.back || '返回';
-        if (document.getElementById('sendBtnText')) document.getElementById('sendBtnText').innerText = dict.send || '搜尋';
-        if (document.getElementById('chatInput')) document.getElementById('chatInput').placeholder = dict.placeholder || '搜尋...';
+                if (document.getElementById('mainCatLabel')) document.getElementById('mainCatLabel').innerText = dict.mainCat || '主分類';
+                if (document.getElementById('sortTip')) document.getElementById('sortTip').innerText = dict.sortTip || '分類';
+                if (document.getElementById('backBtnText')) document.getElementById('backBtnText').innerText = dict.back || '返回';
+                if (document.getElementById('sendBtnText')) document.getElementById('sendBtnText').innerText = dict.send || '搜尋';
+                if (document.getElementById('chatInput')) document.getElementById('chatInput').placeholder = dict.placeholder || '搜尋...';
 
-        if (document.getElementById('shareAppTitle')) document.getElementById('shareAppTitle').innerText = dict.shareAppTitle || '分享';
-        if (document.getElementById('shareAppDesc')) document.getElementById('shareAppDesc').innerText = dict.shareAppDesc || '分享給朋友';
-        if (document.getElementById('shareBtnCopy')) document.getElementById('shareBtnCopy').innerText = dict.shareBtnCopy || '複製';
-        if (document.getElementById('shareBtnWhatsApp')) document.getElementById('shareBtnWhatsApp').innerText = dict.shareBtnWhatsApp || 'WhatsApp';
-        if (document.getElementById('shareBtnMore')) document.getElementById('shareBtnMore').innerText = dict.shareBtnMore || '更多';
-        if (document.getElementById('toastMsg')) document.getElementById('toastMsg').innerText = dict.copiedToast || '已複製';
+                if (document.getElementById('shareAppTitle')) document.getElementById('shareAppTitle').innerText = dict.shareAppTitle || '分享';
+                if (document.getElementById('shareAppDesc')) document.getElementById('shareAppDesc').innerText = dict.shareAppDesc || '分享給朋友';
+                if (document.getElementById('shareBtnCopy')) document.getElementById('shareBtnCopy').innerText = dict.shareBtnCopy || '複製';
+                if (document.getElementById('shareBtnWhatsApp')) document.getElementById('shareBtnWhatsApp').innerText = dict.shareBtnWhatsApp || 'WhatsApp';
+                if (document.getElementById('shareBtnMore')) document.getElementById('shareBtnMore').innerText = dict.shareBtnMore || '更多';
+                if (document.getElementById('toastMsg')) document.getElementById('toastMsg').innerText = dict.copiedToast || '已複製';
 
-        if (document.getElementById('miniFooterLinks')) {
-            document.getElementById('miniFooterLinks').innerText = dict.miniFooterLinks || '關於我們、條款及免責聲明';
-            document.getElementById('miniFooterCopy').innerText = dict.miniFooterCopy || '© 2026 慳真D';
-        }
+                if (document.getElementById('miniFooterLinks')) {
+                    document.getElementById('miniFooterLinks').innerText = dict.miniFooterLinks || '關於我們、條款及免責聲明';
+                    document.getElementById('miniFooterCopy').innerText = dict.miniFooterCopy || '© 2026 慳真D';
+                }
 
-        const homeUI = {
-            'zh-Hant': {
-                title: "想搵咩平嘢？直接話我知",
-                placeholder: "例如: 可口可樂、出前一丁...",
-                quickTitle: "✨ 快捷尋寶",
-                catTitle: "或者按主分類慢慢行",
-                b1: "🔥 今日超大差價", b2: "🏷️ 最新劈價精選", b3: "🥤 網民熱搜可樂", b4: "🍞 早餐平價推介"
-            },
-            'zh-Hans': {
-                title: "想找什么便宜货？直接告诉我",
-                placeholder: "例如: 可口可乐、出前一丁...",
-                quickTitle: "✨ 快捷寻宝",
-                catTitle: "或者按主分类慢慢逛",
-                b1: "🔥 今日超大差价", b2: "🏷️ 最新降价精选", b3: "🥤 网友热搜可乐", b4: "🍞 早餐平价推荐"
-            },
-            'en': {
-                title: "What are you looking for? Tell me!",
-                placeholder: "e.g., Coca Cola, Noodles...",
-                quickTitle: "✨ Quick Search",
-                catTitle: "Or browse by categories",
-                b1: "🔥 Big Price Gap", b2: "🏷️ Latest Deals", b3: "🥤 Cola Deals", b4: "🍞 Breakfast Deals"
+                const homeUI = {
+                    'zh-Hant': {
+                        title: "想搵咩平嘢？直接話我知",
+                        placeholder: "例如: 可口可樂、出前一丁...",
+                        quickTitle: "✨ 快捷尋寶",
+                        catTitle: "或者按主分類慢慢行",
+                        b1: "🔥 今日超大差價", b2: "🏷️ 最新劈價精選", b3: "🥤 網民熱搜可樂", b4: "🍞 早餐平價推介"
+                    },
+                    'zh-Hans': {
+                        title: "想找什么便宜货？直接告诉我",
+                        placeholder: "例如: 可口可乐、出前一丁...",
+                        quickTitle: "✨ 快捷寻宝",
+                        catTitle: "或者按主分类慢慢逛",
+                        b1: "🔥 今日超大差价", b2: "🏷️ 最新降价精选", b3: "🥤 网友热搜可乐", b4: "🍞 早餐平价推荐"
+                    },
+                    'en': {
+                        title: "What are you looking for? Tell me!",
+                        placeholder: "e.g., Coca Cola, Noodles...",
+                        quickTitle: "✨ Quick Search",
+                        catTitle: "Or browse by categories",
+                        b1: "🔥 Big Price Gap", b2: "🏷️ Latest Deals", b3: "🥤 Cola Deals", b4: "🍞 Breakfast Deals"
+                    }
+                };
+
+                if(document.getElementById('homeTitle')) document.getElementById('homeTitle').innerText = homeUI[lang].title;
+                if(document.getElementById('globalSearchInput')) document.getElementById('globalSearchInput').placeholder = homeUI[lang].placeholder;
+                if(document.getElementById('quickTitle')) document.getElementById('quickTitle').innerText = homeUI[lang].quickTitle;
+                if(document.getElementById('catTitle')) document.getElementById('catTitle').innerHTML = `<span class="text-lg">🛒</span> ${homeUI[lang].catTitle}`;
+
+                let kwCola = '可口可樂';
+                let kwBread = '麵包';
+                if (lang === 'en') {
+                    kwCola = 'cola'; 
+                    kwBread = 'bread';
+                } else if (lang === 'zh-Hans') {
+                    kwCola = '可乐'; 
+                    kwBread = '面包';
+                }
+
+                if(document.getElementById('quickBtnGroup')) {
+                    document.getElementById('quickBtnGroup').innerHTML = `
+                        <button onclick="triggerHomeQuickAction('bigGap', '${homeUI[lang].b1}')" class="w-full flex flex-col items-center justify-center text-center bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-800 p-2 rounded-xl text-[11px] sm:text-[13px] font-bold active:scale-95 transition shadow-sm dark:shadow-none hover:bg-red-100 dark:hover:bg-red-900/50 leading-tight min-h-[55px] break-words">
+                            ${homeUI[lang].b1.replace(' ', '<br>')}
+                        </button>
+                        <button onclick="triggerHomeQuickAction('discount', '${homeUI[lang].b2}')" class="w-full flex flex-col items-center justify-center text-center bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-800 p-2 rounded-xl text-[11px] sm:text-[13px] font-bold active:scale-95 transition shadow-sm dark:shadow-none hover:bg-blue-100 dark:hover:bg-blue-900/50 leading-tight min-h-[55px] break-words">
+                            ${homeUI[lang].b2.replace(' ', '<br>')}
+                        </button>
+                        <button onclick="triggerHomeQuickAction('search', '${homeUI[lang].b3}', '${kwCola}')" class="w-full flex flex-col items-center justify-center text-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 p-2 rounded-xl text-[11px] sm:text-[13px] font-bold active:scale-95 transition shadow-sm dark:shadow-none hover:bg-slate-200 dark:hover:bg-slate-700 leading-tight min-h-[55px] break-words">
+                            ${homeUI[lang].b3.replace(' ', '<br>')}
+                        </button>
+                        <button onclick="triggerHomeQuickAction('search', '${homeUI[lang].b4}', '${kwBread}')" class="w-full flex flex-col items-center justify-center text-center bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-800 p-2 rounded-xl text-[11px] sm:text-[13px] font-bold active:scale-95 transition shadow-sm dark:shadow-none hover:bg-amber-100 dark:hover:bg-amber-900/50 leading-tight min-h-[55px] break-words">
+                            ${homeUI[lang].b4.replace(' ', '<br>')}
+                        </button>
+                    `;
+                }
+
+                if (typeof renderQuickActions === 'function') renderQuickActions();
+                if (typeof buildStructuredData === 'function') buildStructuredData();
+                
+                const chatSection = document.getElementById('chatSection');
+                if (chatSection && !chatSection.classList.contains('hidden')) {
+                    if (typeof showLevel1 === 'function') showLevel1();
+                } else {
+                    if (typeof renderLevel1 === 'function') renderLevel1();
+                }
+            } catch (err) {
+                console.error("⚠️ changeLanguage 發生錯誤，但已成功攔截，不影響載入資料:", err);
             }
-        };
-
-        if(document.getElementById('homeTitle')) document.getElementById('homeTitle').innerText = homeUI[lang].title;
-        if(document.getElementById('globalSearchInput')) document.getElementById('globalSearchInput').placeholder = homeUI[lang].placeholder;
-        if(document.getElementById('quickTitle')) document.getElementById('quickTitle').innerText = homeUI[lang].quickTitle;
-        if(document.getElementById('catTitle')) document.getElementById('catTitle').innerHTML = `<span class="text-lg">🛒</span> ${homeUI[lang].catTitle}`;
-
-        let kwCola = '可口可樂';
-        let kwBread = '麵包';
-        if (lang === 'en') {
-            kwCola = 'cola'; 
-            kwBread = 'bread';
-        } else if (lang === 'zh-Hans') {
-            kwCola = '可乐'; 
-            kwBread = '面包';
         }
-
-        if(document.getElementById('quickBtnGroup')) {
-            document.getElementById('quickBtnGroup').innerHTML = `
-                <button onclick="triggerHomeQuickAction('bigGap', '${homeUI[lang].b1}')" class="w-full flex flex-col items-center justify-center text-center bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-800 p-2 rounded-xl text-[11px] sm:text-[13px] font-bold active:scale-95 transition shadow-sm dark:shadow-none hover:bg-red-100 dark:hover:bg-red-900/50 leading-tight min-h-[55px] break-words">
-                    ${homeUI[lang].b1.replace(' ', '<br>')}
-                </button>
-                <button onclick="triggerHomeQuickAction('discount', '${homeUI[lang].b2}')" class="w-full flex flex-col items-center justify-center text-center bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-800 p-2 rounded-xl text-[11px] sm:text-[13px] font-bold active:scale-95 transition shadow-sm dark:shadow-none hover:bg-blue-100 dark:hover:bg-blue-900/50 leading-tight min-h-[55px] break-words">
-                    ${homeUI[lang].b2.replace(' ', '<br>')}
-                </button>
-                <button onclick="triggerHomeQuickAction('search', '${homeUI[lang].b3}', '${kwCola}')" class="w-full flex flex-col items-center justify-center text-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 p-2 rounded-xl text-[11px] sm:text-[13px] font-bold active:scale-95 transition shadow-sm dark:shadow-none hover:bg-slate-200 dark:hover:bg-slate-700 leading-tight min-h-[55px] break-words">
-                    ${homeUI[lang].b3.replace(' ', '<br>')}
-                </button>
-                <button onclick="triggerHomeQuickAction('search', '${homeUI[lang].b4}', '${kwBread}')" class="w-full flex flex-col items-center justify-center text-center bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-800 p-2 rounded-xl text-[11px] sm:text-[13px] font-bold active:scale-95 transition shadow-sm dark:shadow-none hover:bg-amber-100 dark:hover:bg-amber-900/50 leading-tight min-h-[55px] break-words">
-                    ${homeUI[lang].b4.replace(' ', '<br>')}
-                </button>
-            `;
-        }
-
-        if (typeof renderQuickActions === 'function') renderQuickActions();
-        if (typeof buildStructuredData === 'function') buildStructuredData();
-        
-        const chatSection = document.getElementById('chatSection');
-        if (chatSection && !chatSection.classList.contains('hidden')) {
-            if (typeof showLevel1 === 'function') showLevel1();
-        } else {
-            if (typeof renderLevel1 === 'function') renderLevel1();
-        }
-    } catch (err) {
-        console.error("⚠️ changeLanguage 發生錯誤，但已成功攔截，不影響載入資料:", err);
-    }
-
-}
         
         function openManual() {
             if (currentLang === 'zh-Hans') {
@@ -590,21 +582,16 @@
 
         function shareToWhatsApp() {
             const currentUrl = window.location.origin + window.location.pathname;
-            
-            // 讀取 lang.js 入面嘅 shareMessage，如果無就用預設繁體
             const defaultMsg = "推薦你用「慳真D🔎」！秒速格價，幫你慳到盡！🛒\n";
             const msgText = (typeof uiText !== 'undefined' && uiText[currentLang] && uiText[currentLang].shareMessage) 
                             ? uiText[currentLang].shareMessage 
                             : defaultMsg;
-                            
             const msg = encodeURIComponent(msgText + currentUrl);
             window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
         }
 
         function shareNative() {
             const currentUrl = window.location.origin + window.location.pathname;
-            
-            // 讀取 lang.js 入面嘅 shareMessage
             const defaultMsg = "推薦你用「慳真D🔎」！秒速格價，幫你慳到盡！🛒\n";
             const msgText = (typeof uiText !== 'undefined' && uiText[currentLang] && uiText[currentLang].shareMessage) 
                             ? uiText[currentLang].shareMessage 
@@ -951,7 +938,6 @@
         }
 
         function userMessage(text) {
-            // 保留原本可能被其他地方呼叫嘅函數名
             addUserMessage(text);
         }
 
@@ -1031,6 +1017,13 @@
                 return `<div class="flex flex-col p-3 rounded-2xl border ${cls} ${isLowestBase ? 'ring-2 ring-green-400 dark:ring-green-500 bg-white dark:bg-slate-800 scale-[1.01] shadow-md z-10' : ''} transition-all"><div class="flex justify-between items-center w-full"><span class="font-black text-[13px] ${textCls} flex items-center gap-1">${displayName}</span><span class="text-[17px] font-black text-slate-800 dark:text-slate-100">$${isNaN(parsed) ? p.price : parsed.toFixed(1)}${isLowestBase ? ' 👍' : ''}</span></div>${p.promoDisplay ? `<div class="mt-2 flex flex-wrap sm:flex-nowrap items-center justify-between gap-1 w-full"><span class="text-[11px] font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 px-2 py-0.5 rounded-md border border-red-100 dark:border-red-800 break-words w-full sm:w-auto">🏷️ ${p.promoDisplay}</span>${avgLabel}</div>` : ''}</div>`;
             }).join('');
             
+            // 🌐 新增：到價提醒 Tooltip 嘅多語言支援
+            let alertTitle = "設定到價提醒";
+            if (typeof currentLang !== 'undefined') {
+                if (currentLang === 'zh-Hans') alertTitle = "设定到价提醒";
+                if (currentLang === 'en') alertTitle = "Set Price Alert";
+            }
+
             return `<div class="bg-white dark:bg-slate-800 p-4 rounded-3xl shadow-sm dark:shadow-none border border-slate-200 dark:border-slate-700 flex flex-col gap-3 relative overflow-hidden transition-colors">
                 <div class="flex justify-between items-start gap-3">
                     <div class="flex-1 min-w-0">
@@ -1038,7 +1031,7 @@
                         <h3 class="font-bold text-slate-800 dark:text-slate-100 text-[16px] leading-tight flex items-center flex-wrap gap-y-1"><span>${pName}</span>${gapBadgeHtml}</h3>
                     </div>
                     <div class="flex items-center gap-2 shrink-0">
-                        <button onclick="openAlertModal('${pName}', '${minBasePrice}')" class="w-8 h-8 flex items-center justify-center rounded-full bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50 border border-amber-200 dark:border-amber-800 text-amber-500 dark:text-amber-400 active:scale-90 transition-all shadow-sm" title="設定到價提醒">
+                        <button onclick="openAlertModal('${pName}', '${minBasePrice}')" class="w-8 h-8 flex items-center justify-center rounded-full bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50 border border-amber-200 dark:border-amber-800 text-amber-500 dark:text-amber-400 active:scale-90 transition-all shadow-sm" title="${alertTitle}">
                             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
                         </button>
                         <button onclick="shareProduct('${pName}', '${info.brand}', '${minBasePrice}')" class="w-8 h-8 flex items-center justify-center rounded-full bg-[#1877F2] dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-500 active:scale-90 transition-all shadow-sm">
@@ -1055,19 +1048,6 @@
             document.getElementById('disclaimerBody').innerHTML = uiText[currentLang].disclaimerText;
             document.getElementById('modalCloseBtn').innerText = uiText[currentLang].modalBtn;
             document.getElementById('disclaimerModal').classList.remove('hidden');
-        }
-
-        function toggleCategories() {
-            const container = document.getElementById('collapsibleCatContainer');
-            const icon = document.getElementById('catToggleIcon');
-            if (container.classList.contains('hidden')) {
-                container.classList.remove('hidden');
-                icon.style.transform = 'rotate(180deg)';
-                setTimeout(() => level1Section.scrollTo({ top: level1Section.scrollHeight, behavior: 'smooth' }), 100);
-            } else {
-                container.classList.add('hidden');
-                icon.style.transform = 'rotate(0deg)';
-            }
         }
 
         function toggleCategories() {
