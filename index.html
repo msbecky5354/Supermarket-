@@ -110,19 +110,19 @@
                 <div class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center text-3xl shadow-[0_4px_15px_-3px_rgba(59,130,246,0.2)] dark:shadow-none border border-blue-200 dark:border-slate-600 mb-4 transform hover:scale-105 transition-transform">🤖</div>
                 <h2 id="homeTitle" class="text-[18px] sm:text-[20px] font-black text-slate-800 dark:text-slate-100 mb-6 tracking-tight transition-colors">想搵咩平嘢？直接話我知</h2>
                 
-            <input type="file" id="ocrFileInput" accept="image/*" class="hidden" onchange="handleOcrUpload(event)">
+            <input type="file" id="ocrFileInput" accept="image/*" class="hidden" onchange="handleOcrUpload(event); closeCameraMenu();">
                 
-                <form onsubmit="event.preventDefault(); triggerGlobalSearch();" class="w-full relative shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5)] rounded-[2rem]">
-                    <input type="text" id="globalSearchInput" placeholder="例如: 可口可樂、出前一丁..." class="w-full pl-6 pr-[110px] py-4 sm:py-4.5 bg-white dark:bg-slate-800 border-2 border-transparent focus:border-blue-500 dark:focus:border-blue-400 rounded-[2rem] outline-none transition-all text-[15px] sm:text-[16px] font-medium text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500">
-                    
-                    <button type="button" onclick="document.getElementById('ocrFileInput').click()" class="absolute right-[65px] top-1/2 -translate-y-1/2 p-2.5 text-slate-400 dark:text-slate-500 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-90 transition-all rounded-full" title="影相格價">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path><circle cx="12" cy="13" r="3"></circle></svg>
-                    </button>
+<form onsubmit="event.preventDefault(); triggerGlobalSearch();" class="w-full relative shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.5)] rounded-[2rem]">
+    <input type="text" id="globalSearchInput" placeholder="例如: 可口可樂、出前一丁..." class="w-full pl-6 pr-[110px] py-4 sm:py-4.5 bg-white dark:bg-slate-800 border-2 border-transparent focus:border-blue-500 dark:focus:border-blue-400 rounded-[2rem] outline-none transition-all text-[15px] sm:text-[16px] font-medium text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500">
+    
+    <button type="button" onclick="openCameraMenu()" class="absolute right-[65px] top-1/2 -translate-y-1/2 p-2.5 text-slate-400 dark:text-slate-500 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-90 transition-all rounded-full" title="AI 視覺辨識設定">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path><circle cx="12" cy="13" r="3"></circle></svg>
+    </button>
 
-                    <button type="submit" class="absolute right-2 top-2 bottom-2 w-[52px] bg-blue-600 dark:bg-blue-500 text-white rounded-full flex items-center justify-center shadow-sm active:scale-95 transition-transform hover:bg-blue-700 dark:hover:bg-blue-600">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-                    </button>
-                </form>
+    <button type="submit" class="absolute right-2 top-2 bottom-2 w-[52px] bg-blue-600 dark:bg-blue-500 text-white rounded-full flex items-center justify-center shadow-sm active:scale-95 transition-transform hover:bg-blue-700 dark:hover:bg-blue-600">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+    </button>
+</form>
             </div>
 
             <div class="w-full mb-auto pb-4">
@@ -132,6 +132,50 @@
                 <div id="quickBtnGroup" class="grid grid-cols-2 gap-2.5 pb-2">
                     </div>
             </div>
+
+            <div id="cameraMenuModal" class="fixed inset-0 bg-slate-900/60 z-[200] hidden flex-col justify-end sm:justify-center items-center p-4 backdrop-blur-sm transition-opacity">
+    <div class="bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden transform transition-transform pb-safe">
+        
+        <div class="flex justify-between items-center p-4 border-b border-slate-100 dark:border-slate-700">
+            <h3 class="font-bold text-lg text-slate-800 dark:text-white">📸 AI 視覺辨識</h3>
+            <button onclick="closeCameraMenu()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 text-2xl font-bold leading-none">&times;</button>
+        </div>
+
+        <div class="p-4 space-y-4">
+            <button onclick="document.getElementById('ocrFileInput').click()" class="w-full py-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 text-lg shadow-md">
+                📷 拍照 或 選擇圖片
+            </button>
+
+            <div class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="text-sm font-bold text-amber-600 dark:text-amber-500">⚙️ 連接 Gemini 專業大腦</span>
+                </div>
+                
+                <div class="text-[12px] text-slate-500 mb-4 leading-relaxed space-y-2">
+                    <p class="flex items-start gap-1">
+                        <span class="shrink-0">🛡️</span>
+                        <span>API Key 僅儲存於您手機的瀏覽器中 (LocalStorage)，不會上傳至我們的伺服器，直接與 Google 通訊。</span>
+                    </p>
+                    <div class="mt-2 p-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                        <p class="font-bold text-slate-700 dark:text-slate-300 mb-1">如何領取 API Key？</p>
+                        <ol class="list-decimal ml-4 space-y-1">
+                            <li>前往 <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-600 dark:text-blue-400 underline font-bold">Google AI Studio</a></li>
+                            <li>登入後點擊 <strong>"Create API key"</strong></li>
+                            <li>複製代碼並貼在下方即可</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="flex gap-2">
+                    <input type="password" id="geminiKeyInput" placeholder="API Key (AIzaSy...)" class="flex-1 px-3 py-2 text-sm border rounded-lg bg-white dark:bg-slate-800 dark:border-slate-600 outline-none focus:border-amber-400">
+                    <button id="saveKeyBtn" class="px-3 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold rounded-lg transition-colors">儲存</button>
+                    <button id="clearKeyBtn" class="px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-sm font-bold rounded-lg dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-300 transition-colors">清除</button>
+                </div>
+                <p id="keyStatus" class="text-xs font-bold mt-2 text-slate-500">🐢 目前使用基礎離線引擎</p>
+            </div>
+        </div>
+    </div>
+</div>
 
             <div class="w-full mt-6 bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden flex-none transition-colors duration-300">
                 <button onclick="toggleCategories()" class="w-full px-5 py-4.5 flex items-center justify-between bg-white dark:bg-slate-800 active:bg-slate-50 dark:active:bg-slate-700 transition outline-none">
@@ -278,7 +322,7 @@
         const qrCodeImg = document.getElementById('qrCodeImg');
         const toastMsg = document.getElementById('toastMsg');
 
-        let rawApiData = [];     
+        let rawApiData = [];    
         window.structuredData = {}; 
         let currentLang = 'zh-Hant';
         let selectedCat1 = null; 
@@ -450,6 +494,39 @@
                     document.getElementById('miniFooterLinks').innerText = dict.miniFooterLinks || '關於我們、條款及免責聲明';
                     document.getElementById('miniFooterCopy').innerText = dict.miniFooterCopy || '© 2026 慳真D';
                 }
+
+                // ==========================================
+                // 📸 新增：相機選單與 API 設定多語言切換
+                // ==========================================
+                const cameraModalTitle = document.querySelector('#cameraMenuModal h3');
+                const cameraBtn = document.querySelector('#cameraMenuModal button[onclick*="ocrFileInput"]');
+                const advSettingsTitle = document.querySelector('#cameraMenuModal .text-slate-400.text-xs.font-bold');
+                const geminiTitle = document.querySelector('#cameraMenuModal .text-amber-700.font-bold, #cameraMenuModal .text-amber-500.font-bold');
+                const geminiDesc = document.querySelector('#cameraMenuModal p.text-slate-500.leading-relaxed');
+                const geminiKeyInput = document.getElementById('geminiKeyInput');
+                const saveKeyBtn = document.getElementById('saveKeyBtn');
+                const clearKeyBtn = document.getElementById('clearKeyBtn');
+                const cameraIconBtn = document.querySelector('button[onclick="openCameraMenu()"]');
+
+                if (cameraModalTitle) cameraModalTitle.innerText = dict.cameraModalTitle || "📸 AI 視覺辨識";
+                if (cameraBtn) cameraBtn.innerHTML = dict.cameraBtn || "📷 拍照 或 選擇圖片";
+                if (advSettingsTitle) advSettingsTitle.innerText = dict.advSettings || "進階設定";
+                if (geminiTitle) geminiTitle.innerText = dict.geminiTitle || "⚙️ 連接 Gemini 專業大腦";
+                if (geminiDesc) {
+                    geminiDesc.innerHTML = `${dict.geminiDesc || "預設使用離線基礎辨識。輸入 Google Gemini API Key 可大幅提升辨識準確率。"}<br>
+                    <span class="text-slate-400">${dict.guideLabel || "新手引導："}</span>
+                    <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-600 dark:text-blue-400 font-bold underline hover:text-blue-700">
+                        ${dict.geminiGuide || "👉 按此前往 Google 免費領取 API Key"}
+                    </a>`;
+                }
+                if (geminiKeyInput) geminiKeyInput.placeholder = dict.geminiPlaceholder || "API Key (AIzaSy...)";
+                if (saveKeyBtn) saveKeyBtn.innerText = dict.saveBtn || "儲存";
+                if (clearKeyBtn) clearKeyBtn.innerText = dict.clearBtn || "清除";
+                if (cameraIconBtn) cameraIconBtn.title = dict.cameraTooltip || "AI 視覺辨識設定";
+                
+                // 重新檢查一次鎖匙狀態，以更新狀態字眼嘅語言
+                if (typeof window.checkGeminiKey === 'function') window.checkGeminiKey();
+                // ==========================================
 
                 const homeUI = {
                     'zh-Hant': {
@@ -1089,6 +1166,56 @@
                 themeBtn.textContent = '☀️';
             }
         }
+        
+        // 📸 相機選單控制
+        function openCameraMenu() {
+            const modal = document.getElementById('cameraMenuModal');
+            if (modal) { modal.classList.remove('hidden'); modal.classList.add('flex'); }
+        }
+        function closeCameraMenu() {
+            const modal = document.getElementById('cameraMenuModal');
+            if (modal) { modal.classList.add('hidden'); modal.classList.remove('flex'); }
+        }
+
+        // Gemini API Key 全域處理
+        window.checkGeminiKey = function() {
+            const keyInput = document.getElementById('geminiKeyInput');
+            const keyStatus = document.getElementById('keyStatus');
+            if (!keyInput || !keyStatus) return; 
+            
+            const savedKey = localStorage.getItem('gemini_api_key');
+            const dict = (typeof uiText !== 'undefined' && typeof currentLang !== 'undefined' && uiText[currentLang]) ? uiText[currentLang] : {};
+
+            if (savedKey) {
+                keyInput.value = '********'; 
+                keyStatus.innerText = dict.statusConnected || '✅ 已連接 Gemini Pro 引擎';
+                keyStatus.className = 'text-xs font-bold mt-2 text-emerald-600 dark:text-emerald-400';
+            } else {
+                keyInput.value = '';
+                keyStatus.innerText = dict.statusOffline || '🐢 目前使用基礎離線引擎';
+                keyStatus.className = 'text-xs font-bold mt-2 text-slate-500 dark:text-slate-400';
+            }
+        };
+
+        // 綁定儲存/清除
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('saveKeyBtn')?.addEventListener('click', () => {
+                const key = document.getElementById('geminiKeyInput').value.trim();
+                if(key && key !== '********') { 
+                    localStorage.setItem('gemini_api_key', key); 
+                    const dict = (typeof uiText !== 'undefined' && typeof currentLang !== 'undefined' && uiText[currentLang]) ? uiText[currentLang] : {};
+                    alert(dict.alertKeySaved || '✅ 鎖匙已安全儲存！'); 
+                    window.checkGeminiKey(); 
+                }
+            });
+            document.getElementById('clearKeyBtn')?.addEventListener('click', () => {
+                localStorage.removeItem('gemini_api_key'); 
+                const dict = (typeof uiText !== 'undefined' && typeof currentLang !== 'undefined' && uiText[currentLang]) ? uiText[currentLang] : {};
+                alert(dict.alertKeyCleared || '🗑️ 鎖匙已清除，回復基礎模式。'); 
+                window.checkGeminiKey(); 
+            });
+            window.checkGeminiKey();
+        });
 
         init();
     </script>
