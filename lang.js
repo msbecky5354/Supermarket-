@@ -37,7 +37,7 @@ const uiText = {
         alertListClose: "關閉",
                
         // 📷 圖片辨識 (OCR)
-        ocrSuccess: "✅ 辨識成功！自動為你搜尋。",
+        ocrSuccess: "✅ 辨識完成！請確認字眼後再按下搜尋。",
         ocrError: "⚠️ 認唔到包裝上嘅字，請嘗試影得清楚啲！",
         
         // --- 新功能回覆 ---
@@ -155,7 +155,7 @@ const uiText = {
         alertListClose: "关闭",
         
         // 📷 图片辨识 (OCR)
-        ocrSuccess: "✅ 辨识成功！自动为你搜索。",
+        ocrSuccess: "✅ 辨识完成！请确认字眼后再按下搜索。",
         ocrError: "⚠️ 认不到包装上的字，请尝试拍得清楚点！",
         
         quickAll: "📦 查看全部",
@@ -251,7 +251,7 @@ const uiText = {
         alertListClose: "Close",
         
         // 📷 OCR (Image Recognition)
-        ocrSuccess: "✅ Recognition successful! Searching automatically.",
+        ocrSuccess: "✅ Recognition complete! Please confirm the keyword before searching.",
         ocrError: "⚠️ Cannot recognize the text. Please try taking a clearer picture!",
         
         quickAll: "📦 Show All",
