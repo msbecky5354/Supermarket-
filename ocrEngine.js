@@ -12,9 +12,9 @@ async function handleOcrUpload(event) {
 
     try {
         // 2. 呼叫 Tesseract.js 進行辨識 (同時加載 繁體中文 + 英文)
-        const result = await Tesseract.recognize(
+            const result = await Tesseract.recognize(
             file,
-            'chi_tra+eng',
+            'chi_tra+chi_sim+eng', // 👈 加咗 chi_sim，繁簡英三修！
             {
                 logger: m => {
                     // 監聽進度並更新 UI
