@@ -1,58 +1,57 @@
-// ocrEngine.js - 慳真D🔎 圖片辨識引擎 (Tesseract.js)
+// ocrEngine.js - 慳真D🔎 圖片辨識引擎 (神級反向比對版)
 
-/**
- * 處理用戶上載 / 拍攝的圖片
- */
 async function handleOcrUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
 
-    // 1. 顯示 AI 辨識中嘅 Loading 畫面
     showOcrLoading(true, "準備啟動 AI 引擎...");
 
     try {
-        // 2. 呼叫 Tesseract.js 進行辨識 (同時加載 繁體中文 + 英文)
-            const result = await Tesseract.recognize(
+        const result = await Tesseract.recognize(
             file,
-            'chi_tra+chi_sim+eng', // 👈 加咗 chi_sim，繁簡英三修！
+            'chi_tra+chi_sim+eng',
             {
                 logger: m => {
-                    // 監聽進度並更新 UI
                     if (m.status === 'recognizing text') {
                         const progress = (m.progress * 100).toFixed(0);
                         updateOcrProgress(`正在辨識包裝文字... ${progress}%`);
                     } else if (m.status === 'loading tesseract core' || m.status.includes('loading language')) {
-                        updateOcrProgress(`正在載入 AI 語言庫... 請稍候`);
+                        updateOcrProgress(`正在載入 AI 語言庫...`);
                     }
                 }
             }
         );
 
         const rawText = result.data.text;
-        console.log("📦 AI 原始讀取文字:", rawText);
+        console.log("📦 AI 原始讀取文字:\n", rawText);
 
-        // 3. 經過大腦過濾器，抽走無謂字眼
-        const cleanedText = filterOcrText(rawText);
-        console.log("✨ 過濾後搜尋關鍵字:", cleanedText);
+        // 🧠 進入智能過濾大腦
+        const cleanedText = smartExtractKeyword(rawText);
+        console.log("✨ 智能過濾後最終關鍵字:", cleanedText);
 
         if (cleanedText) {
-            // 4. 將抽到嘅字自動填入 Search Bar，然後觸發搜尋
-            document.getElementById('globalSearchInput').value = cleanedText;
-            
-            if (typeof triggerGlobalSearch === 'function') {
-                triggerGlobalSearch();
+            // 決定將字放落邊個 Input Box (主頁 or Chat 頁)
+            const chatInput = document.getElementById('chatInput');
+            const globalInput = document.getElementById('globalSearchInput');
+            const chatSection = document.getElementById('chatSection');
+
+            let targetInput = globalInput;
+            if (chatSection && !chatSection.classList.contains('hidden')) {
+                targetInput = chatInput; // 如果喺 Chat 畫面，就塞入 Chat Input
             }
 
-            // 顯示成功 Toast
+            if (targetInput) {
+                targetInput.value = cleanedText;
+                targetInput.focus(); // 自動 Focus 等用家可以即刻改字
+            }
+
+            // ⚠️ 抽起自動搜尋，改為半自動！
             const successMsg = (typeof uiText !== 'undefined' && uiText[currentLang]?.ocrSuccess) 
                                ? uiText[currentLang].ocrSuccess 
-                               : "✅ 辨識成功！自動為你搜尋。";
-            if (typeof showToast === 'function') {
-                // 如果你有自訂 toast 嘅功能，可以傳入 message，或者直接 showToast()
-                alert(successMsg); // 暫時用 alert，你可以換返做你個靚靚 Toast
-            }
+                               : "✅ 辨識完成！請確認字眼後再按下搜尋。";
+            alert(successMsg);
+
         } else {
-            // 認唔到字
             const errorMsg = (typeof uiText !== 'undefined' && uiText[currentLang]?.ocrError) 
                              ? uiText[currentLang].ocrError 
                              : "⚠️ 認唔到包裝上嘅字，請嘗試影得清楚啲！";
@@ -63,22 +62,45 @@ async function handleOcrUpload(event) {
         console.error("OCR 錯誤:", error);
         alert("圖片辨識發生錯誤，請重試！");
     } finally {
-        // 5. 關閉 Loading 畫面，並清空 input 等佢可以再影同一件貨
         showOcrLoading(false);
         event.target.value = '';
     }
 }
 
 /**
- * 智能過濾器：清走包裝上的廢字，提取可能係牌子/貨品名的字
+ * 智能過濾器：反向對比資料庫 + 清洗垃圾字
  */
-function filterOcrText(text) {
-    if (!text) return null;
+function smartExtractKeyword(rawText) {
+    if (!rawText) return null;
 
-    // 1. 移除多餘符號同換行，變做單行字串
-    let clean = text.replace(/[\r\n]+/g, ' ');
+    // 1. 神級必殺技：資料庫反向比對 (Reverse Lookup)
+    // 直接攞張相啲字，同我哋手頭上嘅「政府超市數據庫」對比！
+    if (window.rawApiData && window.rawApiData.length > 0) {
+        let lowerRaw = rawText.toLowerCase().replace(/\s+/g, '');
+        let bestBrand = "";
 
-    // 2. 建立包裝常見嘅「廢字字典」
+        for (let item of window.rawApiData) {
+            let brandObj = item.brand || item.brandName;
+            let brand = (typeof brandObj === 'object') ? (brandObj['zh-Hant'] || brandObj['zh-Hans'] || brandObj['en'] || '') : (brandObj || '');
+            
+            if (brand && brand.length > 1) {
+                let cleanBrand = brand.toLowerCase().replace(/\s+/g, '');
+                // 如果 AI 掃到嘅一大堆垃圾字入面，竟然包含咗資料庫入面嘅某個牌子名！
+                if (lowerRaw.includes(cleanBrand)) {
+                    if (brand.length > bestBrand.length) {
+                        bestBrand = brand; // 搵出最長、最精準嗰個牌子
+                    }
+                }
+            }
+        }
+        if (bestBrand) {
+            console.log("🎯 資料庫完美命中牌子:", bestBrand);
+            return bestBrand; // 直接回傳命中嘅牌子，無視其他垃圾字！
+        }
+    }
+
+    // 2. 如果資料庫無命中，先用返基礎過濾器
+    let clean = rawText.replace(/[\r\n]+/g, ' ');
     const junkWords = [
         '成分', '淨重', '重量', '此日期前最佳', 'best before', 'ingredients', 
         '營養資料', 'nutrition', 'kcal', '千卡', '蛋白質', '脂肪', '糖', '鈉', 
@@ -86,25 +108,23 @@ function filterOcrText(text) {
         '容量', '使用方法', 'www.', '.com', '.hk'
     ];
     
-    // 將廢字過濾走
     junkWords.forEach(word => {
         const regex = new RegExp(word, 'gi');
         clean = clean.replace(regex, ' ');
     });
 
-    // 3. 只保留 中文字、英文字母 同 數字，其他奇怪符號通通清走
     clean = clean.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, ' ');
 
-    // 4. 將字串拆分為字詞陣列 (去除單個英文字母或單個中文字，因為通常無意義)
-    let words = clean.trim().split(/\s+/).filter(w => w.length > 1);
+    let words = clean.trim().split(/\s+/).filter(w => {
+        // 殺死 "es", "we" 呢啲 1-2 個字母嘅無謂英文 (通常係條碼或者陰影雜訊)
+        if (/^[a-zA-Z]{1,2}$/.test(w)) return false;
+        return w.length > 1;
+    });
 
     if (words.length === 0) return null;
     
-    // 5. 攞最前面 2-3 個詞語組合 (通常貨品名/大字牌子會喺包裝最頂或者最明顯)
-    // 攞太多字反而會令搜尋引擎搵唔到嘢
-    let finalQuery = words.slice(0, 3).join(' ');
-    
-    return finalQuery;
+    // 將結果縮短到最多 2 個詞語，減低帶入過多垃圾字嘅風險
+    return words.slice(0, 2).join(' ');
 }
 
 /**
@@ -113,7 +133,6 @@ function filterOcrText(text) {
 function showOcrLoading(isShow, initialMsg = "處理中...") {
     let loader = document.getElementById('ocrLoaderOverlay');
     
-    // 如果未有呢個 UI，就動態創造一個
     if (!loader) {
         loader = document.createElement('div');
         loader.id = 'ocrLoaderOverlay';
