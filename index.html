@@ -300,76 +300,71 @@
 
         async function init() {
     try {
-        // --- 第一步：獲取版本標識 (使用 SHA 或 時間戳) ---
-        let versionTag = Date.now(); // 預設使用當前時間戳作為版本號
+        let commitSha = '';
+        
+        // --- 第一步：獲取最新的 Commit SHA (這是關鍵) ---
         try {
-            // 嘗試從 GitHub API 獲取檔案的 SHA 作為更精準的版本標識
-            const apiRes = await fetch('https://api.github.com/repos/msbecky5354/HK_PriceWatch-/contents/data/pricewatch.json');
+            // 注意：這裡改用 /commits/main 接口，這才能拿到真正的提交記錄 ID
+            const apiRes = await fetch('https://api.github.com/repos/msbecky5354/HK_PriceWatch-/commits/main');
             if (apiRes.ok) {
-                const fileInfo = await apiRes.json();
-                versionTag = fileInfo.sha; 
-                console.log("🔍 成功獲取數據版本號:", versionTag);
+                const commitData = await apiRes.json();
+                commitSha = commitData.sha; // 拿到最新的 Commit SHA
+                console.log("🔍 發現最新提交記錄:", commitSha);
             }
         } catch (e) {
-            console.warn("GitHub API 限制，將使用時間戳模式");
+            console.warn("GitHub API 限制，將啟用保險方案");
         }
 
-        // --- 第二步：構建 jsDelivr 網址 (加入 v 參數繞過快取) ---
-        // 使用 @main 避開儲存庫名稱結尾橫線的解析 Bug
-        const dataUrl = `https://cdn.jsdelivr.net/gh/msbecky5354/HK_PriceWatch-@main/data/pricewatch.json?v=<LaTex>${versionTag}`;
-        const logUrl = `https://cdn.jsdelivr.net/gh/msbecky5354/HK_PriceWatch-@main/data/update_log.txt?v=$</LaTex>{versionTag}`;
+        // --- 第二步：構建網址 (兩手準備) ---
+        let dataUrl, logUrl;
 
-        // --- 第三步：從 CDN 獲取最後更新時間 ---
-        try {
-            const timeRes = await fetch(logUrl);
-            if (timeRes.ok) {
-                const timeText = await timeRes.text();
-                lastUpdatedTime = new Date(timeText.trim()); 
-            } else {
-                lastUpdatedTime = null; 
-            }
-        } catch (timeErr) {
-            console.log("無法獲取時間記錄檔", timeErr);
-            lastUpdatedTime = null;
-        }
-
-        // --- 第四步：從 CDN 獲取報價 JSON ---
-        let data = null;
-        const response = await fetch(dataUrl);
-        
-        if (response.ok) {
-            data = await response.json();
-            console.log("✅ 成功從 jsDelivr 取得最新報價！");
+        if (commitSha) {
+            // 第一手準備：如果有 Commit SHA，直接用 jsDelivr 的「絕對路徑」
+            // 這種格式 jsDelivr 無法快取舊版，保證 100% 最新
+            dataUrl = `https://cdn.jsdelivr.net/gh/msbecky5354/HK_PriceWatch-@<LaTex>${commitSha}/data/pricewatch.json`;
+            logUrl = `https://cdn.jsdelivr.net/gh/msbecky5354/HK_PriceWatch-@$</LaTex>{commitSha}/data/update_log.txt`;
         } else {
-            console.error("❌ 無法獲取報價數據，HTTP 狀態碼:", response.status);
+            // 第二手準備：如果 GitHub API 爆了，直接用 GitHub 的原始連結 (Raw)
+            // 這是唯一能保證「不被 CDN 快取」且「不報錯」的最後防線
+            console.log("⚠️ 正在使用 GitHub Raw 作為保險方案");
+            dataUrl = `https://raw.githubusercontent.com/msbecky5354/HK_PriceWatch-/main/data/pricewatch.json`;
+            logUrl = `https://raw.githubusercontent.com/msbecky5354/HK_PriceWatch-/main/data/update_log.txt`;
         }
-        rawApiData = data;
-        
-        // --- 第五步：執行 UI 初始化邏輯 ---
+
+        // --- 第三步：執行下載 ---
+        const [timeRes, dataRes] = await Promise.all([
+            fetch(logUrl),
+            fetch(dataUrl)
+        ]);
+
+        if (timeRes.ok) {
+            const timeText = await timeRes.text();
+            lastUpdatedTime = new Date(timeText.trim());
+        }
+
+        if (dataRes.ok) {
+            rawApiData = await dataRes.json();
+            console.log("✅ 數據載入成功，來源:", commitSha ? "jsDelivr (SHA)" : "GitHub Raw");
+        }
+
+        // --- 第四步：後續 UI 邏輯 (保持不變) ---
         changeLanguage('zh-Hant');
-        
-        // 檢查網址有無帶搜尋參數 (例如 ?q=可樂)
         const urlParams = new URLSearchParams(window.location.search);
         const sharedQuery = urlParams.get('q');
         if (sharedQuery) {
-            const searchInput = document.getElementById('globalSearchInput');
-            if (searchInput) {
-                searchInput.value = sharedQuery;
-                setTimeout(() => {
-                    if (typeof triggerGlobalSearch === 'function') triggerGlobalSearch();
-                }, 300);
+            const input = document.getElementById('globalSearchInput');
+            if (input) {
+                input.value = sharedQuery;
+                setTimeout(() => { if (typeof triggerGlobalSearch === 'function') triggerGlobalSearch(); }, 300);
             }
         }
-        
         if (typeof updateAlertBadge === 'function') updateAlertBadge();
+
     } catch (e) {
-        console.error("系統初始化發生錯誤:", e);
-        const container = document.getElementById('level1Container'); // 假設這是您的容器 ID
-        if (container && typeof uiText !== 'undefined' && uiText[currentLang]) {
-            container.innerHTML = `<p class="text-red-500 text-center col-span-2">${uiText[currentLang].error}</p>`;
-        }
+        console.error("系統初始化錯誤:", e);
     }
 }
+
 
 
 
