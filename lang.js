@@ -2,7 +2,8 @@
 
 const uiText = {
     'zh-Hant': { 
-        title: "慳真D", 
+        title: "慳真D",
+        ogTitle: '慳真D | 香港貨品格價神器',
         badge: "政府數據連線", 
         subLabel: "正在讀取更新時間...", 
         lastUpdated: "更新於: ",
@@ -133,6 +134,7 @@ kwHome: "畫面",
     
     'zh-Hans': { 
         title: "悭真D", 
+        ogTitle: '悭真D | 香港超市比价神器',
         badge: "政府数据连线", 
         subLabel: "正在读取更新时间...", 
         lastUpdated: "更新于: ",
@@ -231,6 +233,7 @@ kwHome: "畫面",
     
     'en': { 
         title: "HK Smart Price", 
+        ogTitle: 'HK Smart Price | HK Gov Price Watch',
         badge: "Live Gov Data", 
         subLabel: "Fetching update time...", 
         lastUpdated: "Updated: ",
