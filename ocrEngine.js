@@ -1,4 +1,4 @@
-// ocrEngine.js - 慳真D🔎 圖片辨識引擎 (神級反向比對版)
+// ocrEngine.js - 慳真D🔎 圖片辨識引擎 (神級反向比對版 + 超市語境防呆)
 
 async function handleOcrUpload(event) {
     const file = event.target.files[0];
@@ -67,39 +67,86 @@ async function handleOcrUpload(event) {
     }
 }
 
+// 🛒 超市常見商品關鍵詞白名單（可持續擴充）
+// 用嚟過濾 OCR 誤認出嘅荒謬詞語（例如「夫婦」）
+const GROCERY_WHITELIST = new Set([
+    // 食品大類
+    '肉', '肉類', '豬肉', '牛肉', '雞肉', '羊肉', '魚', '海鮮', '蝦', '蟹',
+    '菜', '蔬菜', '生果', '水果', '蛋', '奶', '鮮奶', '豆漿', '豆腐',
+    '米', '飯', '麵', '麵包', '麥片', '餅乾', '零食', '糖果', '朱古力',
+    '油', '鹽', '糖', '豉油', '醬油', '醋', '蠔油', '調味料', '罐頭',
+    '湯', '即食麵', '杯麵', '叮叮飯', '急凍', '冷藏', '雪糕', '乳酪',
+    // 飲品
+    '水', '汽水', '可樂', '果汁', '茶', '咖啡', '啤酒', '紅酒', '白酒',
+    // 日用品
+    '紙巾', '廁紙', '洗潔精', '洗衣液', '沐浴露', '洗頭水', '牙膏', '牙刷',
+    // 常見包裝字眼（有時 OCR 會單獨認到）
+    '有機', '無添加', '低脂', '全脂', '脫脂', '高鈣', '無糖', '原味',
+    // 其他你可能需要嘅字
+    '香港', '製造', '進口', '新鮮', '急凍'
+]);
+
+// 檢查一個詞係咪同超市/食品有關聯
+function isGroceryRelated(word) {
+    if (!word) return false;
+    // 直接命中白名單
+    if (GROCERY_WHITELIST.has(word)) return true;
+    // 如果係單字，檢查係咪存在於白名單入面嘅任何複合詞中
+    if (word.length === 1) {
+        for (let item of GROCERY_WHITELIST) {
+            if (item.includes(word)) return true;
+        }
+    }
+    // 進一步放寬：對於2-3字詞，如果其中任何一個字喺白名單嘅詞入面出現，都當係相關
+    // (避免「夫婦」呢類完全無超市關聯嘅詞通過)
+    if (word.length >= 2 && word.length <= 3) {
+        const chars = word.split('');
+        for (let char of chars) {
+            for (let item of GROCERY_WHITELIST) {
+                if (item.includes(char)) return true;
+            }
+        }
+    }
+    return false;
+}
+
 /**
- * 智能過濾器：反向對比資料庫 + 清洗垃圾字
+ * 智能過濾器：反向對比資料庫 + 清洗垃圾字 + 超市語境把關
  */
 function smartExtractKeyword(rawText) {
     if (!rawText) return null;
 
     // 1. 神級必殺技：資料庫反向比對 (Reverse Lookup)
     // 直接攞張相啲字，同我哋手頭上嘅「政府超市數據庫」對比！
-    if (window.rawApiData && window.rawApiData.length > 0) {
-        let lowerRaw = rawText.toLowerCase().replace(/\s+/g, '');
-        let bestBrand = "";
+    try {
+        if (typeof window !== 'undefined' && window.rawApiData && window.rawApiData.length > 0) {
+            let lowerRaw = rawText.toLowerCase().replace(/\s+/g, '');
+            let bestBrand = "";
 
-        for (let item of window.rawApiData) {
-            let brandObj = item.brand || item.brandName;
-            let brand = (typeof brandObj === 'object') ? (brandObj['zh-Hant'] || brandObj['zh-Hans'] || brandObj['en'] || '') : (brandObj || '');
-            
-            if (brand && brand.length > 1) {
-                let cleanBrand = brand.toLowerCase().replace(/\s+/g, '');
-                // 如果 AI 掃到嘅一大堆垃圾字入面，竟然包含咗資料庫入面嘅某個牌子名！
-                if (lowerRaw.includes(cleanBrand)) {
-                    if (brand.length > bestBrand.length) {
-                        bestBrand = brand; // 搵出最長、最精準嗰個牌子
+            for (let item of window.rawApiData) {
+                let brandObj = item.brand || item.brandName;
+                let brand = (typeof brandObj === 'object') ? (brandObj['zh-Hant'] || brandObj['zh-Hans'] || brandObj['en'] || '') : (brandObj || '');
+                
+                if (brand && brand.length > 1) {
+                    let cleanBrand = brand.toLowerCase().replace(/\s+/g, '');
+                    // 如果 AI 掃到嘅一大堆垃圾字入面，竟然包含咗資料庫入面嘅某個牌子名！
+                    if (lowerRaw.includes(cleanBrand)) {
+                        if (brand.length > bestBrand.length) {
+                            bestBrand = brand; // 搵出最長、最精準嗰個牌子
+                        }
                     }
                 }
             }
+            if (bestBrand) {
+                console.log("🎯 資料庫完美命中牌子:", bestBrand);
+                return bestBrand; // 直接回傳命中嘅牌子，無視其他垃圾字！
+            }
         }
-        if (bestBrand) {
-            console.log("🎯 資料庫完美命中牌子:", bestBrand);
-            return bestBrand; // 直接回傳命中嘅牌子，無視其他垃圾字！
-        }
+    } catch (e) {
+        console.warn("資料庫反向比對發生錯誤，跳過。", e);
     }
 
-        // 2. 如果資料庫無命中，先用返基礎過濾器
+    // 2. 如果資料庫無命中，先用返基礎過濾器
     let clean = rawText.replace(/[\r\n]+/g, ' ');
     const junkWords = [
         '成分', '淨重', '重量', '此日期前最佳', 'best before', 'ingredients', 
@@ -122,8 +169,17 @@ function smartExtractKeyword(rawText) {
     });
 
     if (words.length === 0) return null;
+
+    // 🌟 新加入：超市語境過濾，踢走 OCR 亂認嘅詞（例如「夫婦」）
+    let validWords = words.filter(w => isGroceryRelated(w));
+    if (validWords.length === 0) {
+        console.log("🚫 所有候選詞都唔似係超市相關，OCR 可能誤認，回傳 null");
+        return null; // 寧願話認唔到，都好過出怪字
+    }
+    // 用過濾後嘅詞繼續
+    words = validWords;
     
-    // 🌟 優先抽取「中文字」，因為香港超市貨品搜中文最準
+    // 優先抽取「中文字」，因為香港超市貨品搜中文最準
     let chineseWords = words.filter(w => /[\u4e00-\u9fa5]/.test(w));
     if (chineseWords.length > 0) {
         return chineseWords.slice(0, 2).join(' ');
