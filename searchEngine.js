@@ -138,3 +138,38 @@ function toggleCardLang(btn) {
         btn.innerText = "EN";
     }
 }
+
+function performGoogleSearch(btn) {
+    const card = btn.closest('.bg-white') || btn.closest('div');
+    const nameSpan = card.querySelector('.product-name');
+    const brandDiv = card.querySelector('.product-brand');
+    const query = (brandDiv ? brandDiv.innerText : '') + ' ' + nameSpan.innerText;
+    
+    const modal = document.getElementById('googleSearchModal');
+    const iframe = document.getElementById('googleSearchIframe');
+    
+    // 💡 選項 A: Google (可能會被擋)
+    // iframe.src = 'https://www.google.com/search?tbm=isch&q=' + encodeURIComponent(query);
+    
+    // 💡 選項 B: Bing (保證可以正常嵌入，體驗最好)
+    iframe.src = 'https://www.bing.com/images/search?q=' + encodeURIComponent(query);
+    
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+
+// 確保呢個 Function 喺度
+function closeGoogleSearchModal() {
+    const modal = document.getElementById('googleSearchModal');
+    const iframe = document.getElementById('googleSearchIframe');
+    
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+    
+    // 清空 iframe 停止載入，防止佢喺背景繼續 load 搞到個網慢
+    if (iframe) {
+        iframe.src = ''; 
+    }
+}
