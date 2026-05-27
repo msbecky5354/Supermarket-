@@ -139,7 +139,7 @@ function toggleCardLang(btn) {
     }
 }
 
-function performGoogleSearch(btn) {
+function performBingSearch(btn) {
     const card = btn.closest('.bg-white') || btn.closest('div');
     const nameSpan = card.querySelector('.product-name');
     const brandDiv = card.querySelector('.product-brand');
@@ -148,10 +148,7 @@ function performGoogleSearch(btn) {
     const modal = document.getElementById('googleSearchModal');
     const iframe = document.getElementById('googleSearchIframe');
     
-    // 💡 選項 A: Google (可能會被擋)
-    // iframe.src = 'https://www.google.com/search?tbm=isch&q=' + encodeURIComponent(query);
-    
-    // 💡 選項 B: Bing (保證可以正常嵌入，體驗最好)
+    // 依家明確叫 Bing
     iframe.src = 'https://www.bing.com/images/search?q=' + encodeURIComponent(query);
     
     modal.classList.remove('hidden');
