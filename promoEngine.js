@@ -106,4 +106,32 @@ function calculateAvgPrice(enPromoText, originalPrice) {
         console.error("Promo Engine Error:", e);
         return null; 
     }
+
+    function performGoogleSearch(btn) {
+    const card = btn.closest('.bg-white') || btn.closest('div');
+    const nameSpan = card.querySelector('.product-name');
+    const brandDiv = card.querySelector('.product-brand');
+    
+    // 組合搜尋詞 (Brand + Name)
+    const query = (brandDiv ? brandDiv.innerText : '') + ' ' + nameSpan.innerText;
+    
+    // 設置 iframe URL (tbm=isch 係 Google 圖片搜尋參數)
+    const modal = document.getElementById('googleSearchModal');
+    const iframe = document.getElementById('googleSearchIframe');
+    
+    iframe.src = 'https://www.google.com/search?tbm=isch&q=' + encodeURIComponent(query);
+    
+    // 顯示 Modal
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+
+function closeGoogleSearchModal() {
+    const modal = document.getElementById('googleSearchModal');
+    const iframe = document.getElementById('googleSearchIframe');
+    
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    iframe.src = ''; // 清空 iframe 停止載入，慳資源
+}
 }
