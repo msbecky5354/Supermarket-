@@ -1,26 +1,31 @@
-// searchEngine.js
-     
+// searchEngine.js - 終極全網+分類智能搜尋版 (Ultimate Edition)
+
+// ==========================================
+// 🛠️ 1. 輔助工具 (Helper Functions)
+// ==========================================
+function normalizeStr(str) {
+    return str ? str.toLowerCase().replace(/[^\w\s\u4e00-\u9fa5]/gi, '') : '';
+}
+
 function getExactMatch(q) {
     const trimmedQ = q.trim();
-    // 遍歷所有貨品，檢查名稱或品牌是否「完全等於」用戶輸入
     for (let cat1 in structuredData) {
         for (let cat2 in structuredData[cat1]) {
             for (let pName in structuredData[cat1][cat2]) {
                 const info = structuredData[cat1][cat2][pName];
-                // 這裡改成嚴格相等 (===)
                 if (pName === trimmedQ || (info.brand && info.brand === trimmedQ)) {
-                    return { name: pName, info: info }; // 搵到就 return
+                    return { name: pName, info: info }; 
                 }
             }
         }
     }
-    return null; // 真係搵唔到，先去下一步
+    return null; 
 }
 
-// 🧠 1. 將 Categories 包裝成 Function (完美解決 currentLang 載入順序報錯嘅 Bug！)
-// 呢個版本已經徹底清走晒所有重複字，以及會撞超市貨品嘅危險字根 (bb, app, ai, bot, 平, 貴, 凍)
+// ==========================================
+// 🧠 2. 閒聊與意圖識別大腦 (Small Talk & Intent)
+// ==========================================
 function getCategories() {
-    // 檢查 botResponses 是否存在，並根據 currentLang 攞數據
     const responses = (typeof botResponses !== 'undefined' && botResponses[currentLang]) ? botResponses[currentLang] : {};
     
     return [
@@ -43,39 +48,83 @@ function getCategories() {
     ];
 }
 
-// 🧠 2. 升級版閒聊大腦：支援「精準 (Exact)」與「模糊 (Fuzzy)」雙模式
 function checkSmallTalk(q, exactOnly = false) {
     const low = q.toLowerCase().trim();
-    // 每次執行先呼叫函數，確保攞到正確嘅語言設定，唔會報錯
     const categories = getCategories(); 
 
     for (let cat of categories) {
         if (exactOnly) {
-            // 第一層：必須 100% 完全相同
             if (cat.words.some(kw => low === kw)) return cat.reply;
         } else {
-            // 第三層：只要包含該字眼就中
             if (cat.words.some(kw => low.includes(kw))) return cat.reply;
         }
     }
     return null;
 }
 
-//核心邏輯：統一處理意圖
 function getIntentAndReply(q) {
     const low = q.toLowerCase().trim();
     const categories = getCategories();
-    
-    // 檢查閒聊
     const match = categories.find(c => c.words.some(kw => low.includes(kw)));
     if (match) return { type: 'CHAT', reply: match.reply };
-    
-    // 否則視為搜尋
     return { type: 'SEARCH', query: q };
 }
 
-// 🛒 升級版搜尋引擎：落實 4 層過濾機制 (已清理重複多餘代碼)
+// ==========================================
+// ⚖️ 3. 智能權重計分器 (解決 OCR 冗長字眼)
+// ==========================================
+// ==========================================
+// ⚖️ 3. 智能權重計分器 (中英雙語強化版)
+// ==========================================
+function calculateRelevance(query, pName, brand) {
+    let score = 0;
+    let q = query.toLowerCase();
+    let n = pName.toLowerCase();
+    let b = (brand || '').toLowerCase();
+
+    // 1. 牌子命中 (+50分)
+    if (b && b.length > 1 && q.includes(b)) {
+        score += 50;
+        q = q.replace(b, ''); 
+    }
+
+    // 🌟 判斷係咪純英文搜尋 (包含字母、數字、空格)
+    let isEnglish = /^[a-z0-9\s]+$/.test(q.trim());
+
+    if (isEnglish) {
+        // 🇺🇸 英文專用邏輯：按單字 (Word) 計算
+        let words = q.trim().split(/\s+/); // 用空格切開單字
+        words.forEach(word => {
+            if (word.length >= 2 && n.includes(word)) {
+                score += 20; // 命中一個完整單字 (例: "coca") 加 20 分
+            }
+        });
+    } else {
+        // 🇭🇰 中文專用邏輯：雙字切片 (Bigram)
+        let matchedChunks = 0;
+        for (let i = 0; i < q.length - 1; i++) {
+            let chunk = q.substring(i, i + 2);
+            if (n.includes(chunk)) {
+                score += 15;
+                matchedChunks++;
+            }
+        }
+        // 單字保底
+        if (matchedChunks === 0) {
+            for (let char of q) {
+                if (n.includes(char)) score += 2;
+            }
+        }
+    }
+    return score;
+}
+
+// ==========================================
+// 🛒 4. 終極搜尋引擎 (動態支援：全網搜尋 + 分類搜尋)
+// ==========================================
 function performScopedSearch(query) {
+
+    console.log("🔥 成功啟動新大腦！搜尋字眼：", query);
     const isDiscountOnly = (query === '__DISCOUNT_ONLY__');
     const rawQuery = query.trim().toLowerCase();
     
@@ -86,50 +135,86 @@ function performScopedSearch(query) {
         if (!currentKeyword && rawQuery) currentKeyword = rawQuery;
     }
 
-    // 🛑 判斷是否為「顯示全部」
     const isAll = ['所有', '全部', 'all', 'list','*'].some(kw => currentKeyword === normalizeStr(kw) || currentKeyword === kw) || (!currentKeyword && !isDiscountOnly);
 
-    // ==========================================
-    // 🛡️ 第一層防線：精準命中閒聊 (Exact Match)
-    // ==========================================
+    // 🛡️ 第一層：精準命中閒聊
     if (!isDiscountOnly) {
-        let exactTalk = checkSmallTalk(rawQuery, true); // 傳入 true，啟動精準模式
+        let exactTalk = checkSmallTalk(rawQuery, true); 
         if (exactTalk) {
             addBotMessage(exactTalk);
-            return; // 答完即刻收工，唔去查產品庫！
+            return; 
         }
     }
 
-    // ==========================================
-    // 🛡️ 第二層防線：搜尋產品
-    // ==========================================
+    // 🌟 動態設定搜尋範圍：全網 vs 分類
+    let searchScope = {};
+    if (typeof selectedCat1 !== 'undefined' && selectedCat1 && selectedCat1 !== 'all' && structuredData[selectedCat1]) {
+        // 如果處於特定超市/分類，只搵嗰個分類 (Scoped)
+        searchScope[selectedCat1] = structuredData[selectedCat1];
+    } else {
+        // 如果 selectedCat1 未定義或等於 'all'，自動啟動全網掃描 (Global)
+        searchScope = structuredData;
+    }
+
+    // 🛡️ 第二層：執行硬搜尋 + 計分機制
     let html = '';
-    Object.keys(structuredData[selectedCat1]).forEach(cat2 => {
-        Object.keys(structuredData[selectedCat1][cat2]).forEach(pName => {
-            const info = structuredData[selectedCat1][cat2][pName];
-            const hasDiscount = info.prices.some(p => p.promoDisplay || p.promoCalc);
-            
-            const matchesKeyword = isAll || info.searchKeywords.includes(currentKeyword);
-            const matchesDiscount = !isDiscountOnly || hasDiscount;
-            if (matchesKeyword && matchesDiscount) { html += generateProductCardHTML(pName, info); }
+    let scoredProducts = []; 
+
+    Object.keys(searchScope).forEach(cat1 => {
+        Object.keys(searchScope[cat1]).forEach(cat2 => {
+            Object.keys(searchScope[cat1][cat2]).forEach(pName => {
+                const info = searchScope[cat1][cat2][pName];
+                const hasDiscount = info.prices.some(p => p.promoDisplay || p.promoCalc);
+                
+                const matchesKeyword = isAll || info.searchKeywords.includes(currentKeyword);
+                const matchesDiscount = !isDiscountOnly || hasDiscount;
+                
+                if (matchesDiscount) {
+                    if (matchesKeyword) {
+                        // 100% 完美命中
+                        html += generateProductCardHTML(pName, info); 
+                    } else if (!isAll && currentKeyword.length >= 2) {
+                        // 啟動漏斗式計分
+                        let score = calculateRelevance(currentKeyword, pName, info.brand);
+                        if (score > 20) {
+                            scoredProducts.push({ name: pName, info: info, score: score });
+                        }
+                    }
+                }
+            });
         });
     });
     
     if (!html) {
-        // ==========================================
-        // 🛡️ 第三層防線：模糊命中閒聊 (Fuzzy Match)
-        // ==========================================
+        // 🛡️ 第三層：模糊命中閒聊
         let fuzzyTalk = null;
         if (!isDiscountOnly) {
-            fuzzyTalk = checkSmallTalk(rawQuery, false); // 傳入 false，啟動包含模式
+            fuzzyTalk = checkSmallTalk(rawQuery, false); 
         }
         
         if (fuzzyTalk) {
             addBotMessage(fuzzyTalk);
+        } else if (scoredProducts.length > 0) {
+            // ==========================================
+            // 🚀 智能救場：出最高分貨品 (適用於全網及分類)
+            // ==========================================
+            scoredProducts.sort((a, b) => b.score - a.score);
+            let topMatches = scoredProducts.slice(0, 4); 
+            
+            let rescueHtml = '';
+            topMatches.forEach(match => {
+                rescueHtml += generateProductCardHTML(match.name, match.info);
+            });
+
+            let fallbackMsg = (currentLang === 'en') 
+                ? `Cannot find the exact match for "${rawQuery}", but here are the most relevant products:` 
+                : (currentLang === 'zh-Hans') 
+                ? `找不到「${rawQuery}」的完全匹配，但我为您找到最相关的产品：` 
+                : `搵唔到「${rawQuery}」嘅完全匹配喎，但我幫你搵到最相關嘅產品：`;
+            
+            addBotMessage(fallbackMsg, rescueHtml);
         } else {
-            // ==========================================
-            // 🛡️ 第四層防線：真係咩都搵唔到 (Fallback)
-            // ==========================================
+            // 🛡️ 第四層：真係咩都搵唔到 (Fallback建議)
             let noResultMsg = uiText[currentLang].chatNoResult;
             if (isDiscountOnly) {
                 const langMsgs = {
