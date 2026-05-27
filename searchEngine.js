@@ -170,3 +170,20 @@ function closeGoogleSearchModal() {
         iframe.src = ''; 
     }
 }
+
+// 如果你搵唔到呢啲函數，請加返入去 index.html 的 script 區
+function toggleCategories() {
+    const container = document.getElementById('collapsibleCatContainer');
+    const icon = document.getElementById('catToggleIcon');
+    if (container.classList.contains('hidden')) {
+        container.classList.remove('hidden');
+        icon.style.transform = 'rotate(180deg)';
+    } else {
+        container.classList.add('hidden');
+        icon.style.transform = 'rotate(0deg)';
+    }
+}
+
+function openDisclaimerModal() {
+    document.getElementById('disclaimerModal').classList.remove('hidden');
+}
