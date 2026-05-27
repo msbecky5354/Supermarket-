@@ -186,4 +186,21 @@ function toggleCategories() {
 
 function openDisclaimerModal() {
     document.getElementById('disclaimerModal').classList.remove('hidden');
+
+}
+
+function performGoogleSearch(btnElement) {
+    const container = btnElement.closest('.bg-white') || btnElement.closest('.bg-slate-800');
+    const nameEl = container.querySelector('.product-name');
+    
+    if (nameEl) {
+        const keyword = nameEl.getAttribute('data-zh');
+        
+        // 💡 關鍵就在於加入 &tbm=isch
+        const googleImagesUrl = `https://www.google.com/search?q=${encodeURIComponent(keyword)}&tbm=isch`;
+        
+        window.open(googleImagesUrl, '_blank');
+    } else {
+        console.error("搵唔到產品名稱，請檢查 .product-name class");
+    }
 }
