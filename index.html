@@ -870,21 +870,45 @@
             return "🤖 系統連線中..."; 
         }
 
-        function submitChat() {
-            const originalQ = chatInput.value.trim(); 
-            if (!originalQ) return;
-            addUserMessage(originalQ); 
-            chatInput.value = ''; 
-            chatInput.blur();
-            setTimeout(() => {
-                const talk = checkSmallTalk(originalQ);
-                if (talk) { addBotMessage(talk); return; }
-                const cleanQ = cleanUserInput(originalQ);
-                currentKeyword = normalizeStr(cleanQ).trim();
-                if (!currentKeyword) { addBotMessage(uiText[currentLang].askKeyword || '請問你想搵咩貨品呢？可以試下打「可樂」或者「公仔麵」。'); return; }
-                executeProductSearch(); 
-            }, 300);
+    function submitChat() {
+    const originalQ = chatInput.value.trim();
+    if (!originalQ) return;
+
+    // 💡 關鍵改動：先將用戶輸入洗乾淨 (去標點、去雜音)
+    const cleanText = cleanUserInput(originalQ); 
+
+    // 💡 關鍵改動：定義更多樣化嘅關鍵字 (加入「翻」、「返」等同義詞)
+    const goHomeKeywords = ['主目錄', '主頁', '首頁', '返回', 'home', 'main menu', 'back', '主页', '目錄'];
+
+    // 檢查 cleanText 係咪包含任何一個關鍵字
+    const isGoHome = goHomeKeywords.some(keyword => cleanText.includes(keyword));
+
+    if (isGoHome) {
+        addUserMessage(originalQ); // 顯示用戶輸入
+        chatInput.value = '';
+        chatInput.blur();
+        showLevel1(); // 直接跳走
+        return; // 呢度一定要 return，停止之後所有搜尋邏輯
+    }
+
+    // --- 原本嘅搜尋邏輯 ---
+    addUserMessage(originalQ); 
+    chatInput.value = ''; 
+    chatInput.blur();
+    setTimeout(() => {
+        const talk = checkSmallTalk(originalQ);
+        if (talk) { addBotMessage(talk); return; }
+        
+        // 呢度已經用緊 cleanUserInput，所以搜尋準確度唔會受影響
+        currentKeyword = normalizeStr(cleanText).trim();
+        if (!currentKeyword) { 
+            addBotMessage(uiText[currentLang].askKeyword || '請問你想搵咩貨品呢？'); 
+            return; 
         }
+        executeProductSearch(); 
+    }, 300);
+}
+
 
         function getFilteredProductsHTML(keywordToTest) {
             const isAll = ['所有', '全部', 'all', 'list', '*'].includes(keywordToTest) || !keywordToTest;
@@ -1284,18 +1308,6 @@
     }
 }
 
-// 💡 監聽 #chatMessages 嘅滾動 (重點：唔係 window，係 chatMessages)
-    document.getElementById('chatMessages').addEventListener('scroll', function() {
-    const btn = document.getElementById('backToTopBtn');
-    // 如果碌低過 300px，就顯示按鈕
-    if (this.scrollTop > 300) {
-        btn.classList.remove('opacity-0', 'pointer-events-none');
-        btn.classList.add('opacity-100');
-    } else {
-        btn.classList.add('opacity-0', 'pointer-events-none');
-        btn.classList.remove('opacity-100');
-    }
-});
         
 
 
@@ -1316,11 +1328,7 @@
     </div>
     </div>
 
-    <button id="backToTopBtn" 
-        onclick="scrollToResults()"
-        class="fixed bottom-24 right-6 z-[500] w-12 h-12 bg-blue-600 dark:bg-blue-500 text-white rounded-full shadow-lg flex items-center justify-center transition-all opacity-0 pointer-events-none hover:bg-blue-700 dark:hover:bg-blue-600 active:scale-95">
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
-    </button>
+    
 
 </body>
 </html>
