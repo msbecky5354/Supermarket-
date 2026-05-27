@@ -230,7 +230,8 @@
             <h2 id="chatTitle" class="font-bold text-slate-800 dark:text-slate-100 truncate text-[15px] flex items-center transition-colors"></h2>
         </div>
         
-        <div id="chatMessages" class="flex-1 overflow-y-auto no-scrollbar p-4 space-y-5"></div>
+        <div id="chatMessages" class="flex-1 overflow-y-auto no-scrollbar p-4 space-y-5">
+        <div id="results-top"></div> </div>
         
         <div class="bg-white dark:bg-slate-800 border-t dark:border-slate-700 p-3 pb-[max(16px,env(safe-area-inset-bottom))] flex-none shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] dark:shadow-none z-20 flex flex-col gap-2 transition-colors">
             <div id="quickActionChips" class="flex gap-2 overflow-x-auto no-scrollbar max-w-2xl mx-auto w-full px-1"></div>
@@ -1031,13 +1032,27 @@
             }
         }
 
-        function addBotMessage(text, cardsHTML = null) {
-            const wrapper = document.createElement('div');
-            wrapper.className = 'flex flex-col items-start w-full';
-            wrapper.innerHTML = `<div class="flex items-end gap-2 max-w-[90%]"><div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-slate-700 flex items-center justify-center text-lg shadow-sm border border-blue-200 dark:border-slate-600 shrink-0">🤖</div><div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 px-4 py-3 rounded-2xl rounded-bl-sm shadow-sm dark:shadow-none text-[15px] transition-colors">${text}</div></div>${cardsHTML ? `<div class="w-full mt-4 space-y-5">${cardsHTML}</div>` : ''}`;
-            chatMessages.appendChild(wrapper);
-            chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
-        }
+    function addBotMessage(text, cardsHTML = null) {
+    const wrapper = document.createElement('div');
+    // 加返 bot-response-block 等你之後想做其他嘢方便捉到個位置
+    wrapper.className = 'flex flex-col items-start w-full bot-response-block';
+    
+    wrapper.innerHTML = `
+        <div class="flex items-end gap-2 max-w-[90%]">
+            <div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-slate-700 flex items-center justify-center text-lg shadow-sm border border-blue-200 dark:border-slate-600 shrink-0">🤖</div>
+            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 px-4 py-3 rounded-2xl rounded-bl-sm shadow-sm dark:shadow-none text-[15px] transition-colors">${text}</div>
+        </div>
+        ${cardsHTML ? `<div class="w-full mt-4 space-y-5">${cardsHTML}</div>` : ''}
+    `;
+    
+    chatMessages.appendChild(wrapper);
+
+    // 💡 關鍵改動：唔使撳掣，出完訊息後自動「飛」去嗰格
+    // 等 100ms 係確保 HTML 已經渲染完先至 Scroll
+    setTimeout(() => {
+        wrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+}
 
         function userMessage(text) {
             addUserMessage(text);
@@ -1254,7 +1269,33 @@
             window.checkGeminiKey();
         });
 
+    // 💡 返回頂部嘅 Function
+      function scrollToResults() {
+    const anchor = document.getElementById('latest-search-anchor');
+    const container = document.getElementById('chatMessages');
     
+    if (anchor && container) {
+        // 💡 將錨點滾動到容器嘅頂部
+        const offsetTop = anchor.offsetTop - container.offsetTop;
+        container.scrollTo({ 
+            top: anchor.offsetTop - 20, // 減 20 留返少少空間
+            behavior: 'smooth' 
+        });
+    }
+}
+
+// 💡 監聽 #chatMessages 嘅滾動 (重點：唔係 window，係 chatMessages)
+    document.getElementById('chatMessages').addEventListener('scroll', function() {
+    const btn = document.getElementById('backToTopBtn');
+    // 如果碌低過 300px，就顯示按鈕
+    if (this.scrollTop > 300) {
+        btn.classList.remove('opacity-0', 'pointer-events-none');
+        btn.classList.add('opacity-100');
+    } else {
+        btn.classList.add('opacity-0', 'pointer-events-none');
+        btn.classList.remove('opacity-100');
+    }
+});
         
 
 
@@ -1274,6 +1315,12 @@
         <iframe id="googleSearchIframe" src="" class="w-full flex-1 border-none"></iframe>
     </div>
     </div>
+
+    <button id="backToTopBtn" 
+        onclick="scrollToResults()"
+        class="fixed bottom-24 right-6 z-[500] w-12 h-12 bg-blue-600 dark:bg-blue-500 text-white rounded-full shadow-lg flex items-center justify-center transition-all opacity-0 pointer-events-none hover:bg-blue-700 dark:hover:bg-blue-600 active:scale-95">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+    </button>
 
 </body>
 </html>
