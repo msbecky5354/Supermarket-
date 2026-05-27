@@ -15,6 +15,13 @@ const uiText = {
         error: "載入失敗", 
         send: "搵嘢", 
         placeholder: "輸入貨品、牌子或者關鍵字...", 
+
+        //new smark talk
+        notFound: "搵唔到喎！🤖 不過我喺數據庫幫你搵到啲相關嘅建議：",
+        suggestBrand: "或者試吓呢個牌子：",
+        suggestCategory: "你可能想搵呢類產品：",
+        backToSearch: "重新搜尋",
+        searchAnyway: "強制搜尋：{keyword}",
         
         chatWelcome: "收到！你揀咗", 
         chatAsk: "想搵邊款貨品或者牌子呢？", 
@@ -163,6 +170,11 @@ const uiText = {
         error: "加载失败", 
         send: "搜索", 
         placeholder: "输入商品、品牌或关键词...", 
+        notFound: "找不到哦！🤖 不过我在数据库帮您找到了一些相关建议：",
+        suggestBrand: "或者试试这个品牌：",
+        suggestCategory: "您可能想找这类产品：",
+        backToSearch: "重新搜索",
+        searchAnyway: "强制搜索：{keyword}",
         
         chatWelcome: "收到！您选择了", 
         chatAsk: "请问想找什么商品或品牌呢？", 
@@ -289,6 +301,11 @@ const uiText = {
         error: "Failed to load", 
         send: "Search", 
         placeholder: "Type product, brand or keywords...", 
+        notFound: "Not found! 🤖 But I found some related suggestions for you:",
+        suggestBrand: "Or try this brand:",
+        suggestCategory: "You might be looking for this category:",
+        backToSearch: "Search Again",
+        searchAnyway: "Search anyway: {keyword}",
         
         chatWelcome: "Got it! You've selected", 
         chatAsk: "What product or brand are you looking for?", 
