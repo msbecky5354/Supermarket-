@@ -878,7 +878,7 @@
     const cleanText = cleanUserInput(originalQ); 
 
     // 💡 關鍵改動：定義更多樣化嘅關鍵字 (加入「翻」、「返」等同義詞)
-    const goHomeKeywords = ['主目錄', '主頁', '首頁', '返回', 'home', 'main menu', 'back', '主页', '目錄'];
+    const goHomeKeywords = ['主目錄', '主頁', '首頁', '返轉頭','返回','上一頁', 'home', 'main menu', 'back', '主页', '目錄'];
 
     // 檢查 cleanText 係咪包含任何一個關鍵字
     const isGoHome = goHomeKeywords.some(keyword => cleanText.includes(keyword));
