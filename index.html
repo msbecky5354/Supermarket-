@@ -133,36 +133,31 @@
                     </div>
             </div>
 
-            <div id="cameraMenuModal" class="fixed inset-0 bg-slate-900/60 z-[200] hidden flex-col justify-end sm:justify-center items-center p-4 backdrop-blur-sm transition-opacity">
+<div id="cameraMenuModal" class="fixed inset-0 bg-slate-900/60 z-[200] hidden flex-col justify-end sm:justify-center items-center p-4 backdrop-blur-sm transition-opacity">
     <div class="bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden transform transition-transform pb-safe">
         
         <div class="flex justify-between items-center p-4 border-b border-slate-100 dark:border-slate-700">
-            <h3 class="font-bold text-lg text-slate-800 dark:text-white">📸 AI 視覺辨識</h3>
+            <h3 id="cameraModalTitle" class="font-bold text-lg text-slate-800 dark:text-white">📸 AI 視覺辨識</h3>
             <button onclick="closeCameraMenu()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 text-2xl font-bold leading-none">&times;</button>
         </div>
 
         <div class="p-4 space-y-4">
-            <button onclick="document.getElementById('ocrFileInput').click()" class="w-full py-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 text-lg shadow-md">
+            <button id="cameraBtnText" onclick="document.getElementById('ocrFileInput').click()" class="w-full py-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 text-lg shadow-md">
                 📷 拍照 或 選擇圖片
             </button>
 
             <div class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
                 <div class="flex items-center gap-2 mb-3">
-                    <span class="text-sm font-bold text-amber-600 dark:text-amber-500">⚙️ 連接 Gemini 專業大腦</span>
+                    <span id="geminiTitleText" class="text-sm font-bold text-amber-600 dark:text-amber-500">⚙️ 連接 Gemini 專業大腦</span>
                 </div>
                 
                 <div class="text-[12px] text-slate-500 mb-4 leading-relaxed space-y-2">
                     <p class="flex items-start gap-1">
                         <span class="shrink-0">🛡️</span>
-                        <span>API Key 僅儲存於您手機的瀏覽器中 (LocalStorage)，不會上傳至我們的伺服器，直接與 Google 通訊。</span>
+                        <span id="geminiDescText">預設使用離線基礎辨識。輸入 Google Gemini API Key 可大幅提升辨識準確率。(僅安全儲存於本機)</span>
                     </p>
-                    <div class="mt-2 p-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
-                        <p class="font-bold text-slate-700 dark:text-slate-300 mb-1">如何領取 API Key？</p>
-                        <ol class="list-decimal ml-4 space-y-1">
-                            <li>前往 <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-600 dark:text-blue-400 underline font-bold">Google AI Studio</a></li>
-                            <li>登入後點擊 <strong>"Create API key"</strong></li>
-                            <li>複製代碼並貼在下方即可</li>
-                        </ol>
+                    <div class="mt-2 p-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-center">
+                        <a id="geminiGuideText" href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-600 dark:text-blue-400 underline font-bold inline-block py-1">👉 按此前往 Google 免費領取 API Key</a>
                     </div>
                 </div>
 
@@ -498,31 +493,14 @@
                 // ==========================================
                 // 📸 新增：相機選單與 API 設定多語言切換
                 // ==========================================
-                const cameraModalTitle = document.querySelector('#cameraMenuModal h3');
-                const cameraBtn = document.querySelector('#cameraMenuModal button[onclick*="ocrFileInput"]');
-                const advSettingsTitle = document.querySelector('#cameraMenuModal .text-slate-400.text-xs.font-bold');
-                const geminiTitle = document.querySelector('#cameraMenuModal .text-amber-700.font-bold, #cameraMenuModal .text-amber-500.font-bold');
-                const geminiDesc = document.querySelector('#cameraMenuModal p.text-slate-500.leading-relaxed');
-                const geminiKeyInput = document.getElementById('geminiKeyInput');
-                const saveKeyBtn = document.getElementById('saveKeyBtn');
-                const clearKeyBtn = document.getElementById('clearKeyBtn');
-                const cameraIconBtn = document.querySelector('button[onclick="openCameraMenu()"]');
-
-                if (cameraModalTitle) cameraModalTitle.innerText = dict.cameraModalTitle || "📸 AI 視覺辨識";
-                if (cameraBtn) cameraBtn.innerHTML = dict.cameraBtn || "📷 拍照 或 選擇圖片";
-                if (advSettingsTitle) advSettingsTitle.innerText = dict.advSettings || "進階設定";
-                if (geminiTitle) geminiTitle.innerText = dict.geminiTitle || "⚙️ 連接 Gemini 專業大腦";
-                if (geminiDesc) {
-                    geminiDesc.innerHTML = `${dict.geminiDesc || "預設使用離線基礎辨識。輸入 Google Gemini API Key 可大幅提升辨識準確率。"}<br>
-                    <span class="text-slate-400">${dict.guideLabel || "新手引導："}</span>
-                    <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-600 dark:text-blue-400 font-bold underline hover:text-blue-700">
-                        ${dict.geminiGuide || "👉 按此前往 Google 免費領取 API Key"}
-                    </a>`;
-                }
-                if (geminiKeyInput) geminiKeyInput.placeholder = dict.geminiPlaceholder || "API Key (AIzaSy...)";
-                if (saveKeyBtn) saveKeyBtn.innerText = dict.saveBtn || "儲存";
-                if (clearKeyBtn) clearKeyBtn.innerText = dict.clearBtn || "清除";
-                if (cameraIconBtn) cameraIconBtn.title = dict.cameraTooltip || "AI 視覺辨識設定";
+                if (document.getElementById('cameraModalTitle')) document.getElementById('cameraModalTitle').innerText = dict.cameraModalTitle || "📸 AI 視覺辨識";
+                if (document.getElementById('cameraBtnText')) document.getElementById('cameraBtnText').innerText = dict.cameraBtn || "📷 拍照 或 選擇圖片";
+                if (document.getElementById('geminiTitleText')) document.getElementById('geminiTitleText').innerText = dict.geminiTitle || "⚙️ 連接 Gemini 專業大腦";
+                if (document.getElementById('geminiDescText')) document.getElementById('geminiDescText').innerText = dict.geminiDesc || "預設使用離線基礎辨識...";
+                if (document.getElementById('geminiGuideText')) document.getElementById('geminiGuideText').innerText = dict.geminiGuide || "👉 按此前往 Google 免費領取 API Key";
+                if (document.getElementById('geminiKeyInput')) document.getElementById('geminiKeyInput').placeholder = dict.geminiPlaceholder || "API Key (AIzaSy...)";
+                if (document.getElementById('saveKeyBtn')) document.getElementById('saveKeyBtn').innerText = dict.saveBtn || "儲存";
+                if (document.getElementById('clearKeyBtn')) document.getElementById('clearKeyBtn').innerText = dict.clearBtn || "清除";
                 
                 // 重新檢查一次鎖匙狀態，以更新狀態字眼嘅語言
                 if (typeof window.checkGeminiKey === 'function') window.checkGeminiKey();
@@ -935,6 +913,8 @@
         function getFilteredProductsHTML(keywordToTest) {
             const isAll = ['所有', '全部', 'all', 'list', '*'].includes(keywordToTest) || !keywordToTest;
             let html = '';
+            window.scoredProducts = []; 
+
             const categoriesToSearch = selectedCat1 === 'GLOBAL' ? Object.keys(structuredData) : [selectedCat1];
             categoriesToSearch.forEach(cat1 => {
                 if (!structuredData[cat1]) return;
@@ -945,8 +925,18 @@
                         const hasDiscount = info.prices.some(p => p.promoDisplay || p.promoCalc);
                         const matchesDiscount = !isDiscountMode || hasDiscount;
                         const matchesBigGap = !isBigGapMode || checkPriceGap(info).isBigGap; 
-                        if (matchesKeyword && matchesDiscount && matchesBigGap) { 
-                            html += generateProductCardHTML(pName, info); 
+
+                        if (matchesDiscount && matchesBigGap) { 
+                            if (matchesKeyword) {
+                                html += generateProductCardHTML(pName, info); 
+                            } else if (!isAll && keywordToTest.length >= 2) {
+                                // 🧠 關鍵修改一：傳入 info.searchKeywords 而唔係 pName！
+                                // 咁樣就算 pName 變成英文，大腦都可以用背後嘅中文字典計分！
+                                let score = typeof calculateRelevance === 'function' ? calculateRelevance(keywordToTest, info.searchKeywords, info.brand) : 0;
+                                if (score > 20) {
+                                    window.scoredProducts.push({ name: pName, info: info, score: score });
+                                }
+                            }
                         }
                     });
                 });
@@ -959,6 +949,27 @@
             const isAll = ['所有', '全部', 'all', 'list', '*'].includes(currentKeyword) || !currentKeyword;
 
             if (!html) {
+                // 🚀 第一重救場：出最高分嘅貨品
+                if (window.scoredProducts && window.scoredProducts.length > 0) {
+                    window.scoredProducts.sort((a, b) => b.score - a.score);
+                    let topMatches = window.scoredProducts.slice(0, 4); 
+                    
+                    let rescueHtml = '';
+                    topMatches.forEach(match => {
+                        rescueHtml += generateProductCardHTML(match.name, match.info);
+                    });
+
+                    let fallbackMsg = (currentLang === 'en') 
+                        ? `Cannot find the exact match for "${currentKeyword}", but here are the most relevant products:` 
+                        : (currentLang === 'zh-Hans') 
+                        ? `找不到「${currentKeyword}」的完全匹配，但我为您找到最相关的产品：` 
+                        : `搵唔到「${currentKeyword}」嘅完全匹配喎，但我幫你搵到最相關嘅產品：`;
+                    
+                    addBotMessage(fallbackMsg, rescueHtml);
+                    return true;
+                }
+
+                // 🛡️ 第二重救場：出建議按鈕
                 let noResultMsg = uiText[currentLang].chatNoResult;
                 if (isDiscountMode) {
                     const langMsgs = {
@@ -983,6 +994,45 @@
                     };
                     noResultMsg = langMsgs[currentLang];
                 }
+
+                // 🧠 產生建議按鈕邏輯 (中英雙語通殺版)
+                let suggestions = [];
+                if (currentKeyword && currentKeyword.length >= 2) {
+                     let isEnglish = /^[a-zA-Z0-9\s]+$/.test(currentKeyword);
+                     let searchPrefix = '';
+                     
+                     if (isEnglish) {
+                         searchPrefix = currentKeyword.trim().split(/\s+/)[0];
+                         if (searchPrefix.length < 3 && currentKeyword.length >= 3) {
+                             searchPrefix = currentKeyword.substring(0, 3); 
+                         }
+                     } else {
+                         searchPrefix = currentKeyword.substring(0, 2); 
+                     }
+
+                     const categoriesToSearch = selectedCat1 === 'GLOBAL' ? Object.keys(structuredData) : [selectedCat1];
+                     categoriesToSearch.forEach(cat1 => {
+                         if(!structuredData[cat1]) return;
+                         Object.keys(structuredData[cat1]).forEach(cat2 => {
+                             Object.keys(structuredData[cat1][cat2]).forEach(pName => {
+                                 const info = structuredData[cat1][cat2][pName];
+                                 // 🧠 關鍵修改二：用 info.searchKeywords 去核對，代替原本嘅 pName
+                                 if (suggestions.length < 3 && info.searchKeywords.includes(searchPrefix.toLowerCase())) {
+                                     suggestions.push(pName); // 照樣 Push pName，因為 pName 會自動根據 currentLang 顯示相應語言
+                                 }
+                             });
+                         });
+                     });
+                }
+
+                if (suggestions.length > 0) {
+                     noResultMsg += "<br><br>";
+                     suggestions.forEach(s => {
+                         // 💡 防爆破處理：英文名可能有撇號 (例如 Kellogg's)，要加上 .replace(/'/g, "\\'") 防撞 code
+                         noResultMsg += `<button onclick="this.closest('.flex-col').remove(); currentKeyword='${s.replace(/'/g, "\\'")}'; executeProductSearch();" style="display:inline-block; background-color:#eff6ff; color:#1e40af; border:1px solid #bfdbfe; padding:6px 14px; margin:4px; border-radius:99px; font-size:13px; font-weight:bold; cursor:pointer;">${s}</button> `;
+                     });
+                }
+
                 addBotMessage(noResultMsg);
             } else {
                 let botTip = uiText[currentLang].chatFound;
