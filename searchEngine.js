@@ -1,11 +1,4 @@
-// searchEngine.js - 終極全網+分類智能搜尋版 (Ultimate Edition)
-
-// ==========================================
-// 🛠️ 1. 輔助工具 (Helper Functions)
-// ==========================================
-function normalizeStr(str) {
-    return str ? str.toLowerCase().replace(/[^\w\s\u4e00-\u9fa5]/gi, '') : '';
-}
+// searchEngine.js - 修正版
 
 function getExactMatch(q) {
     const trimmedQ = q.trim();
@@ -14,20 +7,16 @@ function getExactMatch(q) {
             for (let pName in structuredData[cat1][cat2]) {
                 const info = structuredData[cat1][cat2][pName];
                 if (pName === trimmedQ || (info.brand && info.brand === trimmedQ)) {
-                    return { name: pName, info: info }; 
+                    return { name: pName, info: info };
                 }
             }
         }
     }
-    return null; 
+    return null;
 }
 
-// ==========================================
-// 🧠 2. 閒聊與意圖識別大腦 (Small Talk & Intent)
-// ==========================================
 function getCategories() {
     const responses = (typeof botResponses !== 'undefined' && botResponses[currentLang]) ? botResponses[currentLang] : {};
-    
     return [
         { words: ['你好', 'hello', 'hey', '早晨', '嗨', '您好', '喂', '哈囉', '午安', '哈佬', 'good morning', 'good afternoon'], reply: responses.replyGreeting },
         { words: ['多謝', 'thank', '謝謝', '唔該', 'thx', '谢谢', 'tq', 'ty', '感激', '感恩'], reply: responses.replyThanks },
@@ -51,7 +40,6 @@ function getCategories() {
 function checkSmallTalk(q, exactOnly = false) {
     const low = q.toLowerCase().trim();
     const categories = getCategories(); 
-
     for (let cat of categories) {
         if (exactOnly) {
             if (cat.words.some(kw => low === kw)) return cat.reply;
@@ -70,163 +58,83 @@ function getIntentAndReply(q) {
     return { type: 'SEARCH', query: q };
 }
 
-// ==========================================
-// ⚖️ 3. 智能權重計分器 (解決 OCR 冗長字眼)
-// ==========================================
-// ==========================================
-// ⚖️ 3. 智能權重計分器 (中英雙語強化版)
-// ==========================================
 function calculateRelevance(query, pName, brand) {
     let score = 0;
     let q = query.toLowerCase();
     let n = pName.toLowerCase();
     let b = (brand || '').toLowerCase();
-
-    // 1. 牌子命中 (+50分)
-    if (b && b.length > 1 && q.includes(b)) {
-        score += 50;
-        q = q.replace(b, ''); 
+    if (b && b.length > 1 && q.includes(b)) { score += 50; q = q.replace(b, ''); }
+    let matchedChunks = 0;
+    for (let i = 0; i < q.length - 1; i++) {
+        let chunk = q.substring(i, i + 2);
+        if (n.includes(chunk)) { score += 15; matchedChunks++; }
     }
-
-    // 🌟 判斷係咪純英文搜尋 (包含字母、數字、空格)
-    let isEnglish = /^[a-z0-9\s]+$/.test(q.trim());
-
-    if (isEnglish) {
-        // 🇺🇸 英文專用邏輯：按單字 (Word) 計算
-        let words = q.trim().split(/\s+/); // 用空格切開單字
-        words.forEach(word => {
-            if (word.length >= 2 && n.includes(word)) {
-                score += 20; // 命中一個完整單字 (例: "coca") 加 20 分
-            }
-        });
-    } else {
-        // 🇭🇰 中文專用邏輯：雙字切片 (Bigram)
-        let matchedChunks = 0;
-        for (let i = 0; i < q.length - 1; i++) {
-            let chunk = q.substring(i, i + 2);
-            if (n.includes(chunk)) {
-                score += 15;
-                matchedChunks++;
-            }
-        }
-        // 單字保底
-        if (matchedChunks === 0) {
-            for (let char of q) {
-                if (n.includes(char)) score += 2;
-            }
-        }
+    if (matchedChunks === 0) {
+        for (let char of q) { if (n.includes(char)) score += 2; }
     }
     return score;
 }
 
-// ==========================================
-// 🛒 4. 終極搜尋引擎 (動態支援：全網搜尋 + 分類搜尋)
-// ==========================================
 function performScopedSearch(query) {
-
-    console.log("🔥 成功啟動新大腦！搜尋字眼：", query);
     const isDiscountOnly = (query === '__DISCOUNT_ONLY__');
-    const rawQuery = query.trim().toLowerCase();
-    
-    if (isDiscountOnly) {
-        currentKeyword = ''; 
-    } else {
-        currentKeyword = normalizeStr(query).trim();
-        if (!currentKeyword && rawQuery) currentKeyword = rawQuery;
-    }
-
+    const rawQuery = query.trim();
+    currentKeyword = isDiscountOnly ? '' : normalizeStr(rawQuery).trim();
     const isAll = ['所有', '全部', 'all', 'list','*'].some(kw => currentKeyword === normalizeStr(kw) || currentKeyword === kw) || (!currentKeyword && !isDiscountOnly);
 
-    // 🛡️ 第一層：精準命中閒聊
     if (!isDiscountOnly) {
-        let exactTalk = checkSmallTalk(rawQuery, true); 
-        if (exactTalk) {
-            addBotMessage(exactTalk);
-            return; 
-        }
+        let exactTalk = checkSmallTalk(rawQuery, true);
+        if (exactTalk) { addBotMessage(exactTalk); return; }
     }
 
-    // 🌟 動態設定搜尋範圍：全網 vs 分類
-    let searchScope = {};
-    if (typeof selectedCat1 !== 'undefined' && selectedCat1 && selectedCat1 !== 'all' && structuredData[selectedCat1]) {
-        // 如果處於特定超市/分類，只搵嗰個分類 (Scoped)
-        searchScope[selectedCat1] = structuredData[selectedCat1];
-    } else {
-        // 如果 selectedCat1 未定義或等於 'all'，自動啟動全網掃描 (Global)
-        searchScope = structuredData;
-    }
-
-    // 🛡️ 第二層：執行硬搜尋 + 計分機制
     let html = '';
     let scoredProducts = []; 
-
-    Object.keys(searchScope).forEach(cat1 => {
-        Object.keys(searchScope[cat1]).forEach(cat2 => {
-            Object.keys(searchScope[cat1][cat2]).forEach(pName => {
-                const info = searchScope[cat1][cat2][pName];
-                const hasDiscount = info.prices.some(p => p.promoDisplay || p.promoCalc);
-                
-                const matchesKeyword = isAll || info.searchKeywords.includes(currentKeyword);
-                const matchesDiscount = !isDiscountOnly || hasDiscount;
-                
-                if (matchesDiscount) {
-                    if (matchesKeyword) {
-                        // 100% 完美命中
-                        html += generateProductCardHTML(pName, info); 
-                    } else if (!isAll && currentKeyword.length >= 2) {
-                        // 啟動漏斗式計分
-                        let score = calculateRelevance(currentKeyword, pName, info.brand);
-                        if (score > 20) {
-                            scoredProducts.push({ name: pName, info: info, score: score });
-                        }
-                    }
-                }
-            });
+    Object.keys(structuredData[selectedCat1] || {}).forEach(cat2 => {
+        Object.keys(structuredData[selectedCat1][cat2]).forEach(pName => {
+            const info = structuredData[selectedCat1][cat2][pName];
+            const hasDiscount = info.prices.some(p => p.promoDisplay || p.promoCalc);
+            const matchesKeyword = isAll || info.searchKeywords.includes(currentKeyword);
+            const matchesDiscount = !isDiscountOnly || hasDiscount;
+            if (matchesKeyword && matchesDiscount) { html += generateProductCardHTML(pName, info); }
+            else if (!isAll && currentKeyword.length >= 2 && matchesDiscount) {
+                let score = calculateRelevance(currentKeyword, info.searchKeywords, info.brand);
+                if (score > 20) scoredProducts.push({ name: pName, info: info, score: score });
+            }
         });
     });
     
-    if (!html) {
-        // 🛡️ 第三層：模糊命中閒聊
-        let fuzzyTalk = null;
-        if (!isDiscountOnly) {
-            fuzzyTalk = checkSmallTalk(rawQuery, false); 
-        }
-        
-        if (fuzzyTalk) {
-            addBotMessage(fuzzyTalk);
-        } else if (scoredProducts.length > 0) {
-            // ==========================================
-            // 🚀 智能救場：出最高分貨品 (適用於全網及分類)
-            // ==========================================
-            scoredProducts.sort((a, b) => b.score - a.score);
-            let topMatches = scoredProducts.slice(0, 4); 
-            
-            let rescueHtml = '';
-            topMatches.forEach(match => {
-                rescueHtml += generateProductCardHTML(match.name, match.info);
-            });
-
-            let fallbackMsg = (currentLang === 'en') 
-                ? `Cannot find the exact match for "${rawQuery}", but here are the most relevant products:` 
-                : (currentLang === 'zh-Hans') 
-                ? `找不到「${rawQuery}」的完全匹配，但我为您找到最相关的产品：` 
-                : `搵唔到「${rawQuery}」嘅完全匹配喎，但我幫你搵到最相關嘅產品：`;
-            
-            addBotMessage(fallbackMsg, rescueHtml);
-        } else {
-            // 🛡️ 第四層：真係咩都搵唔到 (Fallback建議)
-            let noResultMsg = uiText[currentLang].chatNoResult;
-            if (isDiscountOnly) {
-                const langMsgs = {
-                    'zh-Hant': currentKeyword ? `「${currentKeyword}」暫時未有優惠貨品喎！🤷‍♂️` : "呢個分類暫時未有優惠貨品喎！🤷‍♂️",
-                    'zh-Hans': currentKeyword ? `「${currentKeyword}」暂时没有优惠商品哦！🤷‍♂️` : "该分类下暂时没有优惠商品哦！🤷‍♂️",
-                    'en': currentKeyword ? `No discounts for "${currentKeyword}" found! 🤷‍♂️` : "No discounted products found in this category! 🤷‍♂️"
-                };
-                noResultMsg = langMsgs[currentLang];
-            }
-            addBotMessage(noResultMsg);
-        }
+    if (!html && scoredProducts.length > 0) {
+        scoredProducts.sort((a, b) => b.score - a.score);
+        let rescueHtml = '';
+        scoredProducts.slice(0, 4).forEach(m => { rescueHtml += generateProductCardHTML(m.name, m.info); });
+        addBotMessage("搵唔到完全匹配，但我幫你搵到最相關嘅產品：", rescueHtml);
+    } else if (!html) {
+        addBotMessage(checkSmallTalk(rawQuery, false) || uiText[currentLang].chatNoResult);
     } else {
         addBotMessage(isAll ? uiText[currentLang].chatShowAll : uiText[currentLang].chatFound, html);
+    }
+}
+
+function toggleCardLang(btn) {
+    const card = btn.closest('.bg-white') || btn.closest('div');
+    const nameSpan = card.querySelector('.product-name');
+    const brandDiv = card.querySelector('.product-brand');
+    
+    // 獲取數據
+    const zh = btn.getAttribute('data-zh');
+    const en = btn.getAttribute('data-en');
+    const bZh = btn.getAttribute('data-brand-zh');
+    const bEn = btn.getAttribute('data-brand-en');
+    
+    // 切換邏輯
+    if (nameSpan.innerText === zh) {
+        // 切換做英文
+        nameSpan.innerText = en;
+        if(brandDiv) brandDiv.innerText = bEn; 
+        btn.innerText = "中"; 
+    } else {
+        // 切換做中文
+        nameSpan.innerText = zh;
+        if(brandDiv) brandDiv.innerText = bZh;
+        btn.innerText = "EN";
     }
 }
