@@ -191,19 +191,24 @@
                     </div>
                 </div>
             </div>
-
-           <div class="text-center pt-8 pb-4 flex-none w-full"> 
-                <button id="miniFooterLinks" onclick="openDisclaimerModal()" class="text-[11px] text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 underline decoration-slate-200 dark:decoration-slate-700 transition">
-                    關於我們、條款及免責聲明
-                </button>
-                
-                <div class="text-[10px] text-slate-300 dark:text-slate-600 mt-1.5 mb-8 tracking-wide flex items-center justify-center transition-colors">
-                    <span id="miniFooterCopy">© 2026 慳真D</span> 
-                    <span class="mx-1.5">|</span> 
-                    <span id="footerDevTeam">開發團隊: </span>
-                    <a id="footerDevName" href="https://www.facebook.com/share/18j3qqx64K/?mibextid=wwXIfr" target="_blank" class="hover:text-slate-500 dark:hover:text-slate-400 underline transition cursor-pointer ml-1">懶人工具駅</a>
-                </div>
-            </div>
+<div class="text-center pt-8 pb-4 flex-none w-full"> 
+    <button id="miniFooterLinks" onclick="openDisclaimerModal()" 
+            class="text-[11px] text-blue-500 dark:text-white hover:text-blue-600 dark:hover:text-slate-300 underline decoration-slate-200 dark:decoration-slate-700 transition">
+        關於我們、條款及免責聲明
+    </button>
+    
+    <div class="text-[10px] text-slate-500 dark:text-slate-100 mt-1.5 mb-8 tracking-wide flex items-center justify-center transition-colors">
+        <span id="miniFooterCopy">© 2026 慳真D</span> 
+        <span class="mx-1.5">|</span> 
+        <span id="footerDevTeam">開發團隊: </span>
+        <a id="footerDevName" 
+           href="https://www.facebook.com/share/18j3qqx64K/?mibextid=wwXIfr" 
+           target="_blank" 
+           class="text-yellow-600 dark:text-yellow-400 hover:text-yellow-700 dark:hover:text-yellow-300 underline transition cursor-pointer ml-1">
+           懶人工具駅
+        </a>
+    </div>
+</div>
         </div>
 
         <div id="disclaimerModal" class="hidden fixed inset-0 bg-slate-900/40 dark:bg-slate-900/80 z-[100] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
@@ -769,17 +774,32 @@
                     smName = p.supermarketName[currentLang]; 
                 }
                 
-                // 處理優惠字串
+               // 處理優惠字串 (💡 修正：去返上一層 item 搵對應超市嘅優惠)
                 let promoDisplay = "";
-                let promoCalcEn = ""; 
-                const promoKeys = ['promotions', 'promotion', 'offer', 'promotionDesc', 'promotionName', 'itemOffsetText'];
+                let promoCalcEn = "";
+                const promoKeys = ['offers', 'promotions', 'promotion', 'offer', 'promotionDesc'];
+                
                 for (let key of promoKeys) {
-                    if (p[key]) {
+                    // 情況 1: 新數據格式 (offers 獨立成一個 Array)
+                    if (Array.isArray(item[key])) {
+                        // 搵返同一間超市嘅優惠
+                        let matchingOffer = item[key].find(o => o.supermarketCode === p.supermarketCode || o.supermarket === p.supermarketCode);
+                        if (matchingOffer) {
+                            let extractedDisplay = extractDeepPromoText(matchingOffer, currentLang);
+                            if (extractedDisplay && extractedDisplay !== "[object Object]") {
+                                promoDisplay = extractedDisplay;
+                                promoCalcEn = extractDeepPromoText(matchingOffer, 'en');
+                                break; // 搵到就跳出
+                            }
+                        }
+                    } 
+                    // 情況 2: 舊數據格式 (offer 收埋咗喺 price 裡面)
+                    else if (p[key]) {
                         let extractedDisplay = extractDeepPromoText(p[key], currentLang);
-                        if (extractedDisplay && extractedDisplay !== "[object Object]") { 
-                            promoDisplay = extractedDisplay; 
+                        if (extractedDisplay && extractedDisplay !== "[object Object]") {
+                            promoDisplay = extractedDisplay;
                             promoCalcEn = extractDeepPromoText(p[key], 'en');
-                            break; 
+                            break;
                         }
                     }
                 }
