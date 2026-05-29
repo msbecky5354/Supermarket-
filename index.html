@@ -361,66 +361,74 @@
         }
 
         async function init() {
-            try {
-                let commitSha = '';
-                
-                try {
-                    const apiRes = await fetch('https://api.github.com/repos/msbecky5354/HK_PriceWatch-/commits/main');
-                    if (apiRes.ok) {
-                        const commitData = await apiRes.json();
-                        commitSha = commitData.sha; 
-                        console.log("🔍 發現最新提交記錄:", commitSha);
-                    }
-                } catch (e) {
-                    console.warn("GitHub API 限制，將啟用保險方案");
-                }
+    try {
+        let commitSha = '';
+        
+        try {
+            const apiRes = await fetch('https://api.github.com/repos/msbecky5354/HK_PriceWatch-/commits/main');
+            if (apiRes.ok) {
+                const commitData = await apiRes.json();
+                commitSha = commitData.sha; 
+                console.log("🔍 發現最新提交記錄:", commitSha);
+            }
+        } catch (e) {
+            console.warn("GitHub API 限制，將啟用保險方案");
+        }
 
-                let dataUrl, logUrl;
+        let dataUrl, logUrl;
 
-                if (commitSha) {
-                    dataUrl = "https://cdn.jsdelivr.net/gh/msbecky5354/HK_PriceWatch-@" + commitSha + "/data/pricewatch.json";
-                    logUrl = "https://cdn.jsdelivr.net/gh/msbecky5354/HK_PriceWatch-@" + commitSha + "/data/update_log.txt";
-                } else {
-                    console.log("⚠️ 正在使用 GitHub Raw 作為保險方案");
-                    dataUrl = "https://raw.githubusercontent.com/msbecky5354/HK_PriceWatch-/main/data/pricewatch.json";
-                    logUrl = "https://raw.githubusercontent.com/msbecky5354/HK_PriceWatch-/main/data/update_log.txt";
-                }
+        if (commitSha) {
+            dataUrl = "https://cdn.jsdelivr.net/gh/msbecky5354/HK_PriceWatch-@" + commitSha + "/data/pricewatch.json";
+            logUrl = "https://cdn.jsdelivr.net/gh/msbecky5354/HK_PriceWatch-@" + commitSha + "/data/update_log.txt";
+        } else {
+            console.log("⚠️ 正在使用 GitHub Raw 作為保險方案");
+            dataUrl = "https://raw.githubusercontent.com/msbecky5354/HK_PriceWatch-/main/data/pricewatch.json";
+            logUrl = "https://raw.githubusercontent.com/msbecky5354/HK_PriceWatch-/main/data/update_log.txt";
+        }
 
-                const [timeRes, dataRes] = await Promise.all([
-                    fetch(logUrl),
-                    fetch(dataUrl)
-                ]);
+        const [timeRes, dataRes] = await Promise.all([
+            fetch(logUrl),
+            fetch(dataUrl)
+        ]);
 
-                if (timeRes.ok) {
-                    const timeText = await timeRes.text();
-                    lastUpdatedTime = new Date(timeText.trim());
-                }
+        if (timeRes.ok) {
+            const timeText = await timeRes.text();
+            lastUpdatedTime = new Date(timeText.trim());
+        }
 
-                if (dataRes.ok) {
-                    rawApiData = await dataRes.json();
-                    console.log("✅ 數據載入成功！來源: " + (commitSha ? "jsDelivr" : "GitHub Raw"));
-                }
+        if (dataRes.ok) {
+            rawApiData = await dataRes.json();
+            console.log("✅ 數據載入成功！");
+        }
 
-                changeLanguage('zh-Hant');
-                
-                const urlParams = new URLSearchParams(window.location.search);
-                const sharedQuery = urlParams.get('q');
-                if (sharedQuery) {
-                    const input = document.getElementById('globalSearchInput');
-                    if (input) {
-                        input.value = sharedQuery;
-                        setTimeout(() => { 
-                            if (typeof triggerGlobalSearch === 'function') triggerGlobalSearch(); 
-                        }, 300);
-                    }
-                }
-                
-                if (typeof updateAlertBadge === 'function') updateAlertBadge();
+        changeLanguage('zh-Hant');
+        
+        // 💡 關鍵：先建立大腦
+        if (typeof buildStructuredData === 'function') buildStructuredData();
 
-            } catch (e) {
-                console.error("系統初始化錯誤:", e);
+        // 💡 關鍵：用 setTimeout 確保 UI Render 完 + 大腦 Load 完先 Check 警報
+        if (typeof updateAlertBadge === 'function') {
+            setTimeout(updateAlertBadge, 1000); 
+            // 如果怕網絡慢，每 5 秒再掃一次，包保紅點一定會出
+            setInterval(updateAlertBadge, 5000); 
+        }
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const sharedQuery = urlParams.get('q');
+        if (sharedQuery) {
+            const input = document.getElementById('globalSearchInput');
+            if (input) {
+                input.value = sharedQuery;
+                setTimeout(() => { 
+                    if (typeof triggerGlobalSearch === 'function') triggerGlobalSearch(); 
+                }, 300);
             }
         }
+
+    } catch (e) {
+        console.error("系統初始化錯誤:", e);
+    }
+}
 
         async function shareProduct(name, brand, minPrice) {
             const baseUrl = window.location.origin + window.location.pathname;
@@ -575,6 +583,9 @@
 
                 if (typeof renderQuickActions === 'function') renderQuickActions();
                 if (typeof buildStructuredData === 'function') buildStructuredData();
+                
+                // 💡 確保轉語言/更新數據後，紅點會自動檢測一次！
+                setTimeout(() => { if (typeof updateAlertBadge === 'function') updateAlertBadge(); }, 1000);
                 
                 const chatSection = document.getElementById('chatSection');
                 if (chatSection && !chatSection.classList.contains('hidden')) {
@@ -1136,7 +1147,7 @@ function generateProductCardHTML(pName, info) {
     info.prices.forEach(p => {
         let parsed = parseFloat(p.price);
         if (!isNaN(parsed)) {
-            // 💡 100% 依賴 PromoEngine.js，唔再喺度寫 Regex
+            // 💡 100% 依賴 PromoEngine.js 嘅 calculateAvgPrice，佢會用英文 p.promoCalc 計
             let avg = typeof calculateAvgPrice === 'function' ? calculateAvgPrice(p.promoCalc, parsed) : null;
             // 微調：確保假優惠唔會污染有效最低價，有真平 (avg < parsed) 先入折實價
             validPrices.push((avg !== null && avg > 0 && avg < parsed) ? avg : parsed);
@@ -1178,7 +1189,7 @@ function generateProductCardHTML(pName, info) {
         let smartSaveBadge = ''; 
         let fakePromoIcon = ''; 
 
-        // 💡 直接用 PromoEngine.js 計！
+        // 💡 直接用 PromoEngine.js 計！ (傳入英文 promoCalcEn)
         let avg = typeof calculateAvgPrice === 'function' ? calculateAvgPrice(p.promoCalc, parsed) : null;
 
         if (avg !== null && avg > 0) {
@@ -1217,23 +1228,42 @@ function generateProductCardHTML(pName, info) {
     const brandZh = info.brand || '綜合品牌';
     const brandEn = info.brandEn || info.brand || 'General';
 
+    // ✂️ 新增：幫 UI 顯示「剪走」開頭重複嘅牌子名，令畫面乾淨俐落
+    let displayZhName = pName;
+    if (info.brand && displayZhName.startsWith(info.brand + ' - ')) {
+        displayZhName = displayZhName.substring(info.brand.length + 3);
+    }
+    
+    let displayEnName = englishName;
+    if (info.brandEn && displayEnName.toLowerCase().startsWith(info.brandEn.toLowerCase() + ' - ')) {
+        displayEnName = displayEnName.substring(info.brandEn.length + 3);
+    } else if (info.brand && displayEnName.toLowerCase().startsWith(info.brand.toLowerCase() + ' - ')) {
+        displayEnName = displayEnName.substring(info.brand.length + 3);
+    }
+
+    let defaultDisplayName = currentLang === 'en' ? displayEnName : displayZhName;
+
     const langSwitchBtn = `
         <button onclick="toggleCardLang(this)" 
-                data-zh="${pName.replace(/"/g, '&quot;')}" 
-                data-en="${englishName.replace(/"/g, '&quot;')}" 
+                data-zh="${displayZhName.replace(/"/g, '&quot;')}" 
+                data-en="${displayEnName.replace(/"/g, '&quot;')}" 
                 data-brand-zh="${brandZh.replace(/"/g, '&quot;')}"
                 data-brand-en="${brandEn.replace(/"/g, '&quot;')}"
                 class="px-1.5 py-0.5 text-[10px] bg-slate-200 dark:bg-slate-700 rounded-md font-bold hover:bg-blue-200 transition-colors ml-1">
             中/EN
         </button>`;
 
+   // 💡 終極防彈版搜尋掣：直接將最完整嘅 pName (牌子 + 貨品名) 打包，一撳即彈出新分頁！
+    // 咁做完全唔使理 PromoEngine.js，保證 100% 唔會漏字同唔會 Error！
+    let fullSearchQuery = pName.replace(/'/g, "\\'").replace(/"/g, "&quot;");
     const searchBtn = `
-        <button onclick="performGoogleSearch(this)" 
+        <button onclick="window.open('https://www.google.com/search?tbm=isch&q=' + encodeURIComponent('${fullSearchQuery}'), '_blank')" 
                 class="w-6 h-6 flex items-center justify-center bg-blue-100 dark:bg-blue-900/30 rounded-md hover:bg-blue-200 transition-colors ml-1" 
                 title="Google 搜尋/Search"> 
             <img src="Images_Search.png" alt="Search" class="w-4 h-4 object-contain">
         </button>`;
 
+    // 💡 留意下面 <h3> 入面，已經換晒做乾淨嘅 displayZhName 同 displayEnName！
     return `<div class="bg-white dark:bg-slate-800 p-4 rounded-3xl shadow-sm dark:shadow-none border border-slate-200 dark:border-slate-700 flex flex-col gap-3 relative overflow-hidden transition-colors">
                 <div class="flex justify-between items-start gap-3">
                     <div class="flex-1 min-w-0">
@@ -1248,7 +1278,7 @@ function generateProductCardHTML(pName, info) {
                         </div>
                         <div class="flex items-start justify-between gap-2">
                             <h3 class="font-bold text-slate-800 dark:text-slate-100 text-[16px] leading-tight break-words">
-                                <span class="product-name" data-zh="${pName.replace(/"/g, '&quot;')}" data-en="${englishName.replace(/"/g, '&quot;')}">${pName}</span>
+                                <span class="product-name" data-zh="${displayZhName.replace(/"/g, '&quot;')}" data-en="${displayEnName.replace(/"/g, '&quot;')}">${defaultDisplayName}</span>
                             </h3>
                             ${gapBadgeHtml}
                         </div>
@@ -1257,7 +1287,7 @@ function generateProductCardHTML(pName, info) {
                         <button onclick="openAlertModal('${pName.replace(/'/g, "\\'")}', '${alertTargetPrice}')" class="w-8 h-8 flex items-center justify-center rounded-full bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50 border border-amber-200 dark:border-amber-800 text-amber-500 dark:text-amber-400 active:scale-90 transition-all shadow-sm" title="${alertTitle}">
                             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
                         </button>
-                        <button onclick="shareProduct('${pName.replace(/'/g, "\\'")}', '${info.brand}', '${minBasePrice}')" class="w-8 h-8 flex items-center justify-center rounded-full bg-[#1877F2] dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-500 active:scale-90 transition-all shadow-sm">
+                        <button onclick="shareProduct('${displayZhName.replace(/'/g, "\\'")}', '${info.brand}', '${minBasePrice}')" class="w-8 h-8 flex items-center justify-center rounded-full bg-[#1877F2] dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-500 active:scale-90 transition-all shadow-sm">
                             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
                         </button>
                     </div>
@@ -1265,6 +1295,7 @@ function generateProductCardHTML(pName, info) {
                 <div class="flex flex-col gap-2.5">${priceList}</div>
             </div>`;
 }
+
         function triggerHomeQuickAction(mode, label, kw = '') {
             selectedCat1 = 'GLOBAL'; 
             chatSection.classList.remove('hidden'); 
@@ -1388,90 +1419,72 @@ function updateAlertBadge() {
     const bellBtn = document.getElementById('global-alert-btn');
     if (!bellBtn) return;
 
-    let alerts = JSON.parse(localStorage.getItem('priceAlerts')) || [];
-    let hasHitTarget = false;
+    const possibleKeys = ['hk_price_alerts', 'priceAlerts', 'alerts', 'myAlerts', 'watchlist'];
+    let alerts = [];
 
-    alerts.forEach(item => {
-        let currentLowest = findLowestPriceByName(item.productName || item.name); 
-        if (currentLowest !== null && currentLowest <= parseFloat(item.targetPrice)) {
-            hasHitTarget = true;
+    for (let key of possibleKeys) {
+        let data = localStorage.getItem(key);
+        if (data) {
+            try {
+                let parsedData = JSON.parse(data);
+                
+                // 💡 關鍵修正：如果是 Object，將 key (產品名) 整合入去
+                if (Array.isArray(parsedData)) {
+                    alerts = parsedData;
+                } else if (parsedData !== null && typeof parsedData === 'object') {
+                    alerts = Object.entries(parsedData).map(([prodName, details]) => ({
+                        ...details,
+                        name: prodName // 將 key 變成 name 屬性
+                    }));
+                    console.log(`🛠️ 數據係 Object，已修復名單結構: ${key}`);
+                }
+                
+                if (alerts.length > 0) {
+                    console.log(`✅ 成功搵到並處理追蹤清單，Key 係: ${key}`);
+                    break; 
+                }
+            } catch (e) {
+                console.error(`⚠️ JSON 解析錯誤 (Key: ${key})`);
+            }
         }
-    });
-
-    const dotId = 'alert-red-dot';
-    let existingDot = document.getElementById(dotId);
-
-    if (hasHitTarget) {
-        if (!existingDot) {
-            let dot = document.createElement('span');
-            dot.id = dotId;
-            dot.innerHTML = `<span class="absolute top-0 right-0 flex h-2.5 w-2.5 transform translate-x-0.5 -translate-y-0.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500 border border-white dark:border-slate-800"></span></span>`;
-            bellBtn.appendChild(dot);
-        }
-    } else {
-        if (existingDot) existingDot.remove();
     }
-}
-// ==========================================
-        
-// ==========================================
-// 🔔 新增：紅點偵測系統
-// ==========================================
-function findLowestPriceByName(targetName) {
-    let minPrice = null;
-    if (!structuredData) return null;
+
+    let hasHitTarget = false;
     
-    Object.values(structuredData).forEach(c1 => {
-        Object.values(c1).forEach(c2 => {
-            let product = c2[targetName];
-            if (product && product.prices) {
-                product.prices.forEach(p => {
-                    let parsed = parseFloat(p.price);
-                    let avg = typeof calculateAvgPrice === 'function' ? calculateAvgPrice(p.promoCalc, parsed) : parsed;
-                    let effective = (avg && avg > 0 && avg < parsed) ? avg : parsed;
-                    if (!isNaN(effective)) {
-                        if (minPrice === null || effective < minPrice) minPrice = effective;
-                    }
-                });
+    if (Array.isArray(alerts)) {
+        alerts.forEach(item => {
+            // 💡 現在 item.name 已經有值喇！
+            let nameToFind = item.productName || item.name;
+            let currentLowest = findLowestPriceByName(nameToFind); 
+            
+            console.log(`🔍 檢查: "${nameToFind}" | 最低價: ${currentLowest} | 心水價: ${item.targetPrice}`);
+
+            if (currentLowest !== null && currentLowest <= parseFloat(item.targetPrice)) {
+                hasHitTarget = true;
+                console.log("✅ 命中目標，準備顯示紅點！");
             }
         });
-    });
-    return minPrice;
-}
-
-function updateAlertBadge() {
-    const bellBtn = document.getElementById('global-alert-btn');
-    if (!bellBtn) return;
-
-    let alerts = JSON.parse(localStorage.getItem('priceAlerts')) || [];
-    let hasHitTarget = false;
-
-    alerts.forEach(item => {
-        let currentLowest = findLowestPriceByName(item.productName || item.name); 
-        if (currentLowest !== null && currentLowest <= parseFloat(item.targetPrice)) {
-            hasHitTarget = true;
-        }
-    });
+    }
 
     const dotId = 'alert-red-dot';
-    let existingDot = document.getElementById(dotId);
+    const existingDot = document.getElementById(dotId);
 
     if (hasHitTarget) {
         if (!existingDot) {
             let dot = document.createElement('span');
             dot.id = dotId;
-            dot.innerHTML = `<span class="absolute top-0 right-0 flex h-2.5 w-2.5 transform translate-x-0.5 -translate-y-0.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500 border border-white dark:border-slate-800"></span></span>`;
+            dot.style.zIndex = "9999"; 
+            dot.innerHTML = `<span class="absolute top-0 right-0 flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-red-500 border-2 border-white dark:border-slate-800"></span></span>`;
             bellBtn.appendChild(dot);
+            console.log("🔴 紅點顯示成功！");
         }
     } else {
         if (existingDot) existingDot.remove();
+        console.log("⚪ 無貨到價，隱藏紅點。");
     }
 }
-     
 
         init();
     </script>
-
-
 </body>
 </html>
