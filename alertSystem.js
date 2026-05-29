@@ -243,6 +243,11 @@ function openMyAlerts() {
         modal.classList.remove('opacity-0');
         const box = document.getElementById('myAlertsListBox');
         if(box) box.classList.remove('scale-95');
+        
+        // 💡 關鍵修正：打開通知中心後，立即檢查一次狀態並更新紅點
+        if (typeof updateAlertBadge === 'function') {
+            updateAlertBadge();
+        }
     }, 10);
 }
 
@@ -253,5 +258,39 @@ function closeMyAlerts() {
         const box = document.getElementById('myAlertsListBox');
         if(box) box.classList.add('scale-95');
         setTimeout(() => modal.classList.add('hidden'), 300);
+    }
+}
+
+function updateAlertBadge() {
+    const badge = document.getElementById('alertBadge');
+    if (!badge) return;
+
+    // 1. 使用正確的 Key：'hk_price_alerts'
+    const myAlerts = JSON.parse(localStorage.getItem('hk_price_alerts') || '{}');
+    const alertKeys = Object.keys(myAlerts);
+
+    if (alertKeys.length === 0) {
+        badge.classList.add('hidden');
+        return;
+    }
+
+    // 2. 檢查是否有任何產品已經達到目標價
+    let hasReachedTarget = false;
+    for (let pName of alertKeys) {
+        let currentPrice = getCurrentMinPrice(pName); // 這是你原有的 Helper 函數
+        if (currentPrice !== null && currentPrice <= myAlerts[pName].targetPrice) {
+            hasReachedTarget = true;
+            break; // 只要有一個達到就顯示紅點
+        }
+    }
+
+    // 3. 根據結果顯示或隱藏紅點
+    if (hasReachedTarget) {
+        badge.classList.remove('hidden');
+        // 可選：如果你想要紅點閃爍效果，可以加上 pulse class
+        badge.classList.add('animate-pulse'); 
+    } else {
+        badge.classList.add('hidden');
+        badge.classList.remove('animate-pulse');
     }
 }
