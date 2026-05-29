@@ -39,7 +39,7 @@
     <script src="botResponses.js?v=999"></script> 
     <script src="lang.js?v=9"></script>
     <script src="promoEngine.js?v=9"></script>
-    <script src="searchEngine.js?v=9"></script>
+    
     <script src="alertSystem.js?v=1"></script> 
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -838,19 +838,29 @@
             return { icon: '📦', bg: 'from-slate-100 to-slate-200', text: 'text-slate-800', border: 'border-slate-300' };
         }
 
-        function showLevel1() { chatSection.classList.add('hidden'); level1Section.classList.remove('hidden'); renderLevel1(); }
+        function showLevel1() 
+        { chatSection.classList.add('hidden'); level1Section.classList.remove('hidden'); renderLevel1(); }
 
-        function startChat(cat1) {
-            selectedCat1 = cat1; chatSection.classList.remove('hidden'); level1Section.classList.add('hidden');
-            const style = getCatStyle(cat1);
-            chatTitle.innerHTML = `<span class="mr-1.5">${style.icon}</span> ${cat1}`;
-            chatMessages.innerHTML = '';
-            isBigGapMode = false;
-            isDiscountMode = false;
-            currentKeyword = "";
-            addBotMessage(`${uiText[currentLang].chatWelcome} <strong class="text-blue-600 dark:text-blue-400">${style.icon} ${cat1}</strong>。<br>${uiText[currentLang].chatAsk}`);
-        }
-
+    function startChat(cat1) {
+    selectedCat1 = cat1; 
+    chatSection.classList.remove('hidden'); 
+    level1Section.classList.add('hidden');
+    
+    const style = getCatStyle(cat1);
+    chatTitle.innerHTML = `<span class="mr-1.5">${style.icon}</span> ${cat1}`;
+    chatMessages.innerHTML = '';
+    
+    // 重置搜尋參數
+    isBigGapMode = false;
+    isDiscountMode = false;
+    currentKeyword = ""; 
+    
+    addBotMessage(`${uiText[currentLang].chatWelcome} <strong class="text-blue-600 dark:text-blue-400">${style.icon} ${cat1}</strong>。<br>${uiText[currentLang].chatAsk}`);
+    
+    // --- 【新增此行】觸發搜尋 ---
+    // 因為 currentKeyword 已經清空，這會觸發「顯示該分類下所有產品」的邏輯
+    executeProductSearch(); 
+}
         function cleanUserInput(q) {
             let kw = q;
             const noiseWords = ['可唔可以幫我搵', '可唔可以幫我買', '幫我搵吓', '幫我搵下', '我想搵吓', '我想搵下', '我想搵', '我想買', '幫我搵', '幫我買', '有無', '有冇', '想搵', '想買', '搵', '買', 'search', '找', '有沒有'];
