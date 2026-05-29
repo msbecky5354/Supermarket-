@@ -88,16 +88,17 @@ function calculateAvgPrice(enPromoText, originalPrice) {
             }
         }
 
-        // 🛡️ 終極防線 + Google Sheet 觸發機制
+        // 🛡️ 終極防線 + Google Sheet 觸發機制 (已修正)
         if (finalPrice !== null) {
-            if (finalPrice >= originalPrice || finalPrice < (originalPrice * 0.1)) {
-                logUnknownPromo(enPromoText, originalPrice, finalPrice);
+            // 💡 容許 finalPrice >= originalPrice 通過，交畀 UI 判斷出 🤦🏼‍♀️
+            if (finalPrice < (originalPrice * 0.1)) {
+                if (typeof logUnknownPromo === 'function') logUnknownPromo(enPromoText, originalPrice, finalPrice);
                 return null;
             }
             return finalPrice; 
         } else {
             if (enPromoText.trim() !== '') {
-                logUnknownPromo(enPromoText, originalPrice, null);
+                if (typeof logUnknownPromo === 'function') logUnknownPromo(enPromoText, originalPrice, null);
             }
             return null;
         }
