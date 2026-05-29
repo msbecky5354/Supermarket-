@@ -65,6 +65,33 @@
             50% { opacity: 0.5; transform: scale(1.3) rotate(15deg); filter: drop-shadow(0 0 8px #eab308); }
         }
         .star-blink { animation: star-blink 1.5s infinite ease-in-out; display: inline-block; }
+
+     
+    /* ... 你原本既 CSS ... */
+    
+    @keyframes stamp-appear {
+        0% { transform: scale(2) rotate(-15deg); opacity: 0; }
+        100% { transform: scale(1) rotate(-15deg); opacity: 1; }
+    }
+    .fake-stamp {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 45px;
+        height: 45px;
+        border: 3px solid #ef4444;
+        border-radius: 50%;
+        color: #ef4444;
+        font-weight: 900;
+        font-size: 10px;
+        text-align: center;
+        line-height: 1.1;
+        animation: stamp-appear 0.3s ease-out;
+        background: rgba(254, 226, 226, 0.5);
+    }
+
+
+
     </style>
 </head>
 <body class="bg-slate-50 h-[100dvh] flex flex-col font-sans text-slate-900 overflow-hidden w-full text-[15px] dark:bg-slate-900 dark:text-slate-100 transition-colors duration-300">
@@ -990,7 +1017,7 @@
 
 
 
-        function executeProductSearch() {
+       function executeProductSearch() {
             const html = getFilteredProductsHTML(currentKeyword);
             const isAll = ['所有', '全部', 'all', 'list', '*'].includes(currentKeyword) || !currentKeyword;
 
@@ -1062,9 +1089,8 @@
                          Object.keys(structuredData[cat1]).forEach(cat2 => {
                              Object.keys(structuredData[cat1][cat2]).forEach(pName => {
                                  const info = structuredData[cat1][cat2][pName];
-                                 // 🧠 關鍵修改二：用 info.searchKeywords 去核對，代替原本嘅 pName
                                  if (suggestions.length < 3 && info.searchKeywords.includes(searchPrefix.toLowerCase())) {
-                                     suggestions.push(pName); // 照樣 Push pName，因為 pName 會自動根據 currentLang 顯示相應語言
+                                     suggestions.push(pName); 
                                  }
                              });
                          });
@@ -1074,7 +1100,6 @@
                 if (suggestions.length > 0) {
                      noResultMsg += "<br><br>";
                      suggestions.forEach(s => {
-                         // 💡 防爆破處理：英文名可能有撇號 (例如 Kellogg's)，要加上 .replace(/'/g, "\\'") 防撞 code
                          noResultMsg += `<button onclick="this.closest('.flex-col').remove(); currentKeyword='${s.replace(/'/g, "\\'")}'; executeProductSearch();" style="display:inline-block; background-color:#eff6ff; color:#1e40af; border:1px solid #bfdbfe; padding:6px 14px; margin:4px; border-radius:99px; font-size:13px; font-weight:bold; cursor:pointer;">${s}</button> `;
                      });
                 }
@@ -1097,11 +1122,26 @@
                     botTip = uiText[currentLang].foundKw.replace('{keyword}', currentKeyword);
                 }
 
-                addBotMessage(botTip, html);
+                // 🌟 【新增】專屬排序按鈕邏輯
+                // 如果當前並非「大差價模式」，就在結果的最上方加入一個「按差價排序」的按鈕
+                let finalHtml = html;
+                if (!isBigGapMode) {
+                    const sortText = currentLang === 'en' ? 'Sort by Price Gap' : (currentLang === 'zh-Hans' ? '按差价排序' : '按差價排序');
+                    const sortBtnHtml = `
+                    <div class="flex justify-end w-full mb-3 pr-1">
+                        <button onclick="handleQuickAction('filterBigGap', '🔥 ${sortText}')" class="flex items-center gap-1.5 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 px-3 py-1.5 rounded-full text-[12px] font-bold active:scale-95 transition-transform shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5h10"></path><path d="M11 9h7"></path><path d="M11 13h4"></path><path d="M3 17l3 3 3-3"></path><path d="M6 18V4"></path></svg>
+                            ${sortText}
+                        </button>
+                    </div>`;
+                    finalHtml = sortBtnHtml + finalHtml;
+                }
+
+                // 使用 finalHtml 輸出
+                addBotMessage(botTip, finalHtml);
                 return true; 
             }
         }
-
     function addBotMessage(text, cardsHTML = null) {
     const wrapper = document.createElement('div');
     // 加返 bot-response-block 等你之後想做其他嘢方便捉到個位置
@@ -1153,9 +1193,7 @@
             return { isBigGap: gap >= 10, percentage: Math.round(gap) };
         }
 
-    //generateProductCardHTML
-  function generateProductCardHTML(pName, info) {
-    // ... [價格計算邏輯保持不變] ...
+   function generateProductCardHTML(pName, info) {
     let validPrices = [];
     info.prices.forEach(p => {
         let parsed = parseFloat(p.price);
@@ -1194,16 +1232,24 @@
         else if (code === 'AEON') { cls = 'border-fuchsia-200 bg-fuchsia-50/30 dark:border-fuchsia-900/50 dark:bg-fuchsia-900/20'; textCls = 'text-fuchsia-700 dark:text-fuchsia-400'; }
 
         let avgLabel = '';
+        let fakePromoIcon = ''; 
+        
         if (typeof calculateAvgPrice === 'function') {
             let avg = calculateAvgPrice(p.promoCalc, parsed);
+            // 正常優惠顯示
             if (avg && avg > 0 && avg < parsed) {
                 let isAbsoluteLowest = (minEffectivePrice !== null && Math.abs(avg - minEffectivePrice) < 0.01 && validPrices.length > 1 && !allSameEffectivePrice);
                 let starHtml = isAbsoluteLowest ? `<span class="star-blink ml-1 text-[13px]">⭐</span>` : '';
                 avgLabel = `<span class="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-black shadow-sm ml-1 shrink-0 whitespace-nowrap flex items-center">💰 ${(currentLang === 'en' ? 'Avg' : '折合')} $${avg.toFixed(1)}/${(currentLang === 'en' ? 'ea' : '件')}${starHtml}</span>`;
+            } 
+            // 💡 踢爆假優惠：取代原本嗰段，換成「假優惠」印仔
+            else if (avg >= parsed && p.promoDisplay) {
+                let stampText = (currentLang === 'en') ? 'FAKE<br>OFFER' : '假<br>優惠';
+                fakePromoIcon = `<span class="fake-stamp ml-1 cursor-help shadow-md" title="${currentLang === 'en' ? 'Fake Discount!' : '呢個優惠冇平到呀！'}">${stampText}</span>`;
             }
         }
         
-        return `<div class="flex flex-col p-3 rounded-2xl border ${cls} ${isLowestBase ? 'ring-2 ring-green-400 dark:ring-green-500 bg-white dark:bg-slate-800 scale-[1.01] shadow-md z-10' : ''} transition-all"><div class="flex justify-between items-center w-full"><span class="font-black text-[13px] ${textCls} flex items-center gap-1">${displayName}</span><span class="text-[17px] font-black text-slate-800 dark:text-slate-100">$${isNaN(parsed) ? p.price : parsed.toFixed(1)}${isLowestBase ? ' 👍' : ''}</span></div>${p.promoDisplay ? `<div class="mt-2 flex flex-wrap sm:flex-nowrap items-center justify-between gap-1 w-full"><span class="text-[11px] font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 px-2 py-0.5 rounded-md border border-red-100 dark:border-red-800 break-words w-full sm:w-auto">🏷️ ${p.promoDisplay}</span>${avgLabel}</div>` : ''}</div>`;
+        return `<div class="flex flex-col p-3 rounded-2xl border ${cls} ${isLowestBase ? 'ring-2 ring-green-400 dark:ring-green-500 bg-white dark:bg-slate-800 scale-[1.01] shadow-md z-10' : ''} transition-all"><div class="flex justify-between items-center w-full"><span class="font-black text-[13px] ${textCls} flex items-center gap-1">${displayName}</span><span class="text-[17px] font-black text-slate-800 dark:text-slate-100">$${isNaN(parsed) ? p.price : parsed.toFixed(1)}${isLowestBase ? ' 👍' : ''}</span></div>${p.promoDisplay ? `<div class="mt-2 flex flex-wrap sm:flex-nowrap items-center justify-between gap-1 w-full"><span class="text-[11px] font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 px-2 py-0.5 rounded-md border border-red-100 dark:border-red-800 break-words w-full sm:w-auto">🏷️ ${p.promoDisplay}</span>${fakePromoIcon}${avgLabel}</div>` : ''}</div>`;
     }).join('');
 
     let alertTitle = (currentLang === 'zh-Hans') ? "设定到价提醒" : (currentLang === 'en') ? "Set Price Alert" : "設定到價提醒";
@@ -1212,12 +1258,10 @@
     const brandZh = info.brand || '綜合品牌';
     const brandEn = info.brandEn || info.brand || 'General';
 
-    // ✂️ 核心修改：幫 UI 顯示「剪走」開頭重複嘅牌子名，令畫面乾淨俐落
     let displayZhName = pName;
     if (info.brand && displayZhName.startsWith(info.brand + ' - ')) {
         displayZhName = displayZhName.substring(info.brand.length + 3);
     }
-    
     let displayEnName = englishName;
     if (info.brandEn && displayEnName.toLowerCase().startsWith(info.brandEn.toLowerCase() + ' - ')) {
         displayEnName = displayEnName.substring(info.brandEn.length + 3);
@@ -1227,7 +1271,6 @@
 
     let defaultDisplayName = currentLang === 'en' ? displayEnName : displayZhName;
 
-    // 中英切換掣：改用已剪裁嘅 displayZhName 同 displayEnName
     const langSwitchBtn = (currentLang === 'en') ? '' : `
         <button onclick="toggleCardLang(this)" 
                 data-zh="${displayZhName.replace(/"/g, '&quot;')}" 
@@ -1238,7 +1281,6 @@
             中/EN
         </button>`;
 
-    // 💡 搜尋同 Alert 必須保留最完整嘅 pName (Brand - Name)，保證 100% 準確！
     let fullSearchQuery = pName.replace(/'/g, "\\'").replace(/"/g, "&quot;");
     const searchBtn = `
         <button onclick="window.open('https://www.google.com/search?tbm=isch&q=' + encodeURIComponent('${fullSearchQuery}'), '_blank')" 
@@ -1277,7 +1319,7 @@
                 </div>
                 <div class="flex flex-col gap-2.5">${priceList}</div>
             </div>`;
-}
+  }
         function triggerHomeQuickAction(mode, label, kw = '') {
             selectedCat1 = 'GLOBAL'; 
             chatSection.classList.remove('hidden'); 
