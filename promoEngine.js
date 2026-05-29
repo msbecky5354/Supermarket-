@@ -1,5 +1,3 @@
-
-
 // 💡 搜尋強化：移除非字母、數字及中文字元
 function normalizeStr(str) {
     if (!str) return "";
@@ -88,9 +86,9 @@ function calculateAvgPrice(enPromoText, originalPrice) {
             }
         }
 
-        // 🛡️ 終極防線 + Google Sheet 觸發機制 (已修正)
+        // 🛡️ 終極防線 + Google Sheet 觸發機制 (✅ 已修正：容許 >= 原價通關)
         if (finalPrice !== null) {
-            // 💡 容許 finalPrice >= originalPrice 通過，交畀 UI 判斷出 🤦🏼‍♀️
+            // 💡 容許 finalPrice >= originalPrice 通過，交畀 UI 去顯示 🤦🏼‍♀️ 標籤
             if (finalPrice < (originalPrice * 0.1)) {
                 if (typeof logUnknownPromo === 'function') logUnknownPromo(enPromoText, originalPrice, finalPrice);
                 return null;
@@ -107,32 +105,33 @@ function calculateAvgPrice(enPromoText, originalPrice) {
         console.error("Promo Engine Error:", e);
         return null; 
     }
+} // ⚠️ 呢個括號好重要！佢結束咗 calculateAvgPrice，將下面兩個 Function 放返出嚟。
 
-    function performGoogleSearch(btn) {
-    const card = btn.closest('.bg-white') || btn.closest('div');
-    const nameSpan = card.querySelector('.product-name');
-    const brandDiv = card.querySelector('.product-brand');
-    
-    // 組合搜尋詞 (Brand + Name)
-    const query = (brandDiv ? brandDiv.innerText : '') + ' ' + nameSpan.innerText;
-    
-    // 設置 iframe URL (tbm=isch 係 Google 圖片搜尋參數)
+
+// 💡 升級版 Google 圖片搜尋 (✅ 已搬出全域，並支援直接傳入完整名字)
+function performGoogleSearch(searchQuery) {
     const modal = document.getElementById('googleSearchModal');
     const iframe = document.getElementById('googleSearchIframe');
     
-    iframe.src = 'https://www.google.com/search?tbm=isch&q=' + encodeURIComponent(query);
-    
-    // 顯示 Modal
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
+    if (modal && iframe) {
+        // 設置 iframe URL (tbm=isch 係 Google 圖片搜尋參數)
+        iframe.src = 'https://www.google.com/search?tbm=isch&q=' + encodeURIComponent(searchQuery);
+        // 顯示 Modal
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    } else {
+        // 🛡️ 防彈機制：如果萬一 index.html 搵唔到 Modal，就直接彈出新分頁去搜尋！
+        window.open('https://www.google.com/search?tbm=isch&q=' + encodeURIComponent(searchQuery), '_blank');
+    }
 }
 
 function closeGoogleSearchModal() {
     const modal = document.getElementById('googleSearchModal');
     const iframe = document.getElementById('googleSearchIframe');
     
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
-    iframe.src = ''; // 清空 iframe 停止載入，慳資源
-}
+    if (modal && iframe) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        iframe.src = ''; // 清空 iframe 停止載入，慳資源
+    }
 }
