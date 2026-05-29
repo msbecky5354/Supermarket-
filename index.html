@@ -1132,27 +1132,14 @@ function buildStructuredData() {
 
 //generateProductCardHTML
 function generateProductCardHTML(pName, info) {
-    const getAvg = (p, parsed) => {
-        let avg = typeof calculateAvgPrice === 'function' ? calculateAvgPrice(p.promoCalc, parsed) : null;
-        
-        // 💡 終極防彈 Regex 升級版：令 "Buy" 變成可選 (?:buy\s+)?，通殺 "Buy 2 for $40" 同 "2 For $34"
-        if (!avg && p.promoCalc) {
-            let match = p.promoCalc.match(/(?:buy\s+)?(\d+)[^\d$]*?(?:at|for)\s+\$?\s*([\d.]+)/i);
-            if (match) {
-                let qty = parseInt(match[1]);
-                let amt = parseFloat(match[2]);
-                if (qty > 0) avg = amt / qty;
-            }
-        }
-        return avg;
-    };
-
     let validPrices = [];
     info.prices.forEach(p => {
         let parsed = parseFloat(p.price);
         if (!isNaN(parsed)) {
-            let avg = getAvg(p, parsed);
-            validPrices.push((avg && avg > 0 && avg < parsed) ? avg : parsed);
+            // 💡 100% 依賴 PromoEngine.js，唔再喺度寫 Regex
+            let avg = typeof calculateAvgPrice === 'function' ? calculateAvgPrice(p.promoCalc, parsed) : null;
+            // 微調：確保假優惠唔會污染有效最低價，有真平 (avg < parsed) 先入折實價
+            validPrices.push((avg !== null && avg > 0 && avg < parsed) ? avg : parsed);
         }
     });
 
@@ -1161,6 +1148,7 @@ function generateProductCardHTML(pName, info) {
     let allSameBasePrice = info.prices.filter(p => !isNaN(parseFloat(p.price))).every(v => parseFloat(v.price) === minBasePrice);
     let allSameEffectivePrice = validPrices.length > 1 && validPrices.every(v => Math.abs(v - validPrices[0]) < 0.01);
 
+    // 計算「終極最低價」畀 Watchlist 用 (兩者取其低)
     let alertTargetPrice = (minEffectivePrice !== null && minEffectivePrice < minBasePrice) ? minEffectivePrice : minBasePrice;
 
     const gapInfo = checkPriceGap(info);
@@ -1190,9 +1178,10 @@ function generateProductCardHTML(pName, info) {
         let smartSaveBadge = ''; 
         let fakePromoIcon = ''; 
 
-        let avg = getAvg(p, parsed);
+        // 💡 直接用 PromoEngine.js 計！
+        let avg = typeof calculateAvgPrice === 'function' ? calculateAvgPrice(p.promoCalc, parsed) : null;
 
-        if (avg && avg > 0) {
+        if (avg !== null && avg > 0) {
             if (avg < parsed) {
                 let isAbsoluteLowest = (minEffectivePrice !== null && Math.abs(avg - minEffectivePrice) < 0.01 && validPrices.length > 1 && !allSameEffectivePrice);
                 let starHtml = isAbsoluteLowest ? `<span class="star-blink ml-1 text-[13px]">⭐</span>` : '';
