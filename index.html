@@ -94,7 +94,7 @@
             <div class="flex items-center gap-1.5">
                 <button onclick="toggleTheme()" id="themeBtn" class="w-7 h-7 flex items-center justify-center rounded-full bg-slate-50 text-slate-600 border border-slate-200 shadow-sm active:scale-95 transition-all dark:bg-slate-800 dark:border-slate-700">☀️</button>
 
-                <button onclick="openMyAlerts()" class="w-7 h-7 flex items-center justify-center rounded-full bg-rose-50 text-rose-600 border border-rose-100 shadow-sm active:scale-95 transition-all dark:bg-rose-900/30 dark:border-rose-800">🔔</button>
+                <button id="global-alert-btn" onclick="openMyAlerts()" class="relative w-7 h-7 flex items-center justify-center rounded-full bg-rose-50 text-rose-600 border border-rose-100 shadow-sm active:scale-95 transition-all dark:bg-rose-900/30 dark:border-rose-800">🔔</button>
                 <button onclick="openManual()" class="w-7 h-7 flex items-center justify-center rounded-full bg-amber-50 text-amber-600 border border-amber-100 shadow-sm text-[12px] active:scale-95 transition-all dark:bg-amber-900/30 dark:border-amber-800">📖</button>
                 <button onclick="openShareAppModal()" class="w-7 h-7 flex items-center justify-center rounded-full bg-blue-50 text-blue-600 border border-blue-100 shadow-sm active:scale-95 transition-all dark:bg-blue-900/30 dark:border-blue-800">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
@@ -103,6 +103,8 @@
 
         </div>
     </div>
+
+    
 </header>
 
 <main class="flex-1 overflow-hidden w-full max-w-2xl mx-auto relative flex flex-col bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
@@ -205,7 +207,7 @@
            href="https://www.facebook.com/share/18j3qqx64K/?mibextid=wwXIfr" 
            target="_blank" 
            class="text-yellow-600 dark:text-yellow-400 hover:text-yellow-700 dark:hover:text-yellow-300 underline transition cursor-pointer ml-1">
-           懶人工具駅
+            懶人工具駅
         </a>
     </div>
 </div>
@@ -717,8 +719,8 @@
             }, 300);
         }
         
-        // buildStructuredData
- function buildStructuredData() {
+   // buildStructuredData (終極修正：解決同名唔同牌子撈亂問題)
+function buildStructuredData() {
     structuredData = {};
     const unknownSupermarkets = new Set(); 
 
@@ -731,22 +733,23 @@
         if (!cat1) return;
         
         let cat2 = item.cat3Name?.[currentLang] || item.cat2Name?.[currentLang] || 'Other';
-        let name = item.name?.[currentLang] || item.name?.['zh-Hant'] || 'Unknown';
         
-        // 3. 確保結構存在 (防止 undefined 錯誤)
+        // 💡 關鍵修正：先提取 Brand 同 Name
+        let rawName = item.name?.[currentLang] || item.name?.['zh-Hant'] || 'Unknown';
+        let brandObj = item.brand || item.brandName || '';
+        let localBrand = (typeof brandObj === 'object') ? (brandObj[currentLang] || brandObj['zh-Hant'] || '') : brandObj;
+        
+        // 💡 關鍵修正：將 Brand + Name 結合，變成獨一無二嘅 Key (例如 "地捫 - 熱帶雜果 850克")
+        let name = localBrand ? `${localBrand} - ${rawName}` : rawName;
+        
+        // 3. 確保結構存在 
         if (!structuredData[cat1]) structuredData[cat1] = {};
         if (!structuredData[cat1][cat2]) structuredData[cat1][cat2] = {};
         
-        // 4. 初始化該產品 (如果未存在)
+        // 4. 初始化該產品
         if (!structuredData[cat1][cat2][name]) {
-            let brandObj = item.brand || item.brandName || '';
-            let localBrand = (typeof brandObj === 'object') ? (brandObj[currentLang] || brandObj['zh-Hant'] || '') : brandObj;
-            
-            // 💡 提取英文品牌名 (如果冇就用返本地品牌名)
             let brandEn = (typeof brandObj === 'object') ? (brandObj['en'] || localBrand) : localBrand;
-            
-            // 💡 提取英文產品名 (如果冇就用返產品名)
-            let enName = (item.name && item.name['en']) ? item.name['en'] : name;
+            let enName = (item.name && item.name['en']) ? item.name['en'] : rawName;
 
             let allNames = Object.values(item.name || {}).join(' '); 
             let allBrands = (typeof brandObj === 'object') ? Object.values(brandObj).join(' ') : brandObj;
@@ -755,46 +758,40 @@
             structuredData[cat1][cat2][name] = { 
                 brand: localBrand,
                 brandEn: brandEn,
-                enName: enName, // 存入英文名，方便之後 Card 切換
+                enName: enName, 
                 searchKeywords: normalizeStr(`${allNames} ${allBrands} ${allCat2} ${cat1}`),
                 prices: [] 
             };
         }
         
-        // 5. 處理價格 (依附喺已經存在嘅產品之下)
+        // 5. 處理價格
         if (Array.isArray(item.prices)) {
             item.prices.forEach(p => {
                 let codeUpper = (p.supermarketCode || '').toUpperCase();
                 let smName = p.supermarketCode;
 
-                // 處理超級市場名 (多語言)
                 if (typeof supermarketDict !== 'undefined' && supermarketDict[currentLang] && supermarketDict[currentLang][codeUpper]) {
                     smName = supermarketDict[currentLang][codeUpper]; 
                 } else if (p.supermarketName && p.supermarketName[currentLang]) {
                     smName = p.supermarketName[currentLang]; 
                 }
                 
-               // 處理優惠字串 (💡 修正：去返上一層 item 搵對應超市嘅優惠)
                 let promoDisplay = "";
                 let promoCalcEn = "";
                 const promoKeys = ['offers', 'promotions', 'promotion', 'offer', 'promotionDesc'];
                 
                 for (let key of promoKeys) {
-                    // 情況 1: 新數據格式 (offers 獨立成一個 Array)
                     if (Array.isArray(item[key])) {
-                        // 搵返同一間超市嘅優惠
                         let matchingOffer = item[key].find(o => o.supermarketCode === p.supermarketCode || o.supermarket === p.supermarketCode);
                         if (matchingOffer) {
                             let extractedDisplay = extractDeepPromoText(matchingOffer, currentLang);
                             if (extractedDisplay && extractedDisplay !== "[object Object]") {
                                 promoDisplay = extractedDisplay;
                                 promoCalcEn = extractDeepPromoText(matchingOffer, 'en');
-                                break; // 搵到就跳出
+                                break; 
                             }
                         }
-                    } 
-                    // 情況 2: 舊數據格式 (offer 收埋咗喺 price 裡面)
-                    else if (p[key]) {
+                    } else if (p[key]) {
                         let extractedDisplay = extractDeepPromoText(p[key], currentLang);
                         if (extractedDisplay && extractedDisplay !== "[object Object]") {
                             promoDisplay = extractedDisplay;
@@ -804,7 +801,7 @@
                     }
                 }
                 
-                // 推入價格資料
+                // 💡 恢復最原本嘅簡單 push (因為依家已經唔會再將唔同牌子撈亂)
                 structuredData[cat1][cat2][name].prices.push({ 
                     rawCode: p.supermarketCode, 
                     supermarket: smName, 
@@ -944,7 +941,10 @@
                 Object.keys(structuredData[cat1]).forEach(cat2 => {
                     Object.keys(structuredData[cat1][cat2]).forEach(pName => {
                         const info = structuredData[cat1][cat2][pName];
-                        const matchesKeyword = isAll || info.searchKeywords.includes(keywordToTest);
+                       // 💡 無視空格進行無縫比對，剷走晒兩邊嘅空格先 Check
+                  const safeSearchTarget = info.searchKeywords.replace(/\s+/g, '');
+                  const safeInput = (keywordToTest || '').replace(/\s+/g, '');
+                  const matchesKeyword = isAll || safeSearchTarget.includes(safeInput);
                         const hasDiscount = info.prices.some(p => p.promoDisplay || p.promoCalc);
                         const matchesDiscount = !isDiscountMode || hasDiscount;
                         const matchesBigGap = !isBigGapMode || checkPriceGap(info).isBigGap; 
@@ -1130,14 +1130,28 @@
             return { isBigGap: gap >= 10, percentage: Math.round(gap) };
         }
 
-    //generateProductCardHTML
-  function generateProductCardHTML(pName, info) {
-    // ... [價格計算邏輯保持不變] ...
+//generateProductCardHTML
+function generateProductCardHTML(pName, info) {
+    const getAvg = (p, parsed) => {
+        let avg = typeof calculateAvgPrice === 'function' ? calculateAvgPrice(p.promoCalc, parsed) : null;
+        
+        // 💡 終極防彈 Regex 升級版：令 "Buy" 變成可選 (?:buy\s+)?，通殺 "Buy 2 for $40" 同 "2 For $34"
+        if (!avg && p.promoCalc) {
+            let match = p.promoCalc.match(/(?:buy\s+)?(\d+)[^\d$]*?(?:at|for)\s+\$?\s*([\d.]+)/i);
+            if (match) {
+                let qty = parseInt(match[1]);
+                let amt = parseFloat(match[2]);
+                if (qty > 0) avg = amt / qty;
+            }
+        }
+        return avg;
+    };
+
     let validPrices = [];
     info.prices.forEach(p => {
         let parsed = parseFloat(p.price);
         if (!isNaN(parsed)) {
-            let avg = typeof calculateAvgPrice === 'function' ? calculateAvgPrice(p.promoCalc, parsed) : parsed;
+            let avg = getAvg(p, parsed);
             validPrices.push((avg && avg > 0 && avg < parsed) ? avg : parsed);
         }
     });
@@ -1146,6 +1160,8 @@
     let minEffectivePrice = validPrices.length > 0 ? Math.min(...validPrices) : null;
     let allSameBasePrice = info.prices.filter(p => !isNaN(parseFloat(p.price))).every(v => parseFloat(v.price) === minBasePrice);
     let allSameEffectivePrice = validPrices.length > 1 && validPrices.every(v => Math.abs(v - validPrices[0]) < 0.01);
+
+    let alertTargetPrice = (minEffectivePrice !== null && minEffectivePrice < minBasePrice) ? minEffectivePrice : minBasePrice;
 
     const gapInfo = checkPriceGap(info);
     let gapBadgeHtml = '';
@@ -1171,16 +1187,39 @@
         else if (code === 'AEON') { cls = 'border-fuchsia-200 bg-fuchsia-50/30 dark:border-fuchsia-900/50 dark:bg-fuchsia-900/20'; textCls = 'text-fuchsia-700 dark:text-fuchsia-400'; }
 
         let avgLabel = '';
-        if (typeof calculateAvgPrice === 'function') {
-            let avg = calculateAvgPrice(p.promoCalc, parsed);
-            if (avg && avg > 0 && avg < parsed) {
+        let smartSaveBadge = ''; 
+        let fakePromoIcon = ''; 
+
+        let avg = getAvg(p, parsed);
+
+        if (avg && avg > 0) {
+            if (avg < parsed) {
                 let isAbsoluteLowest = (minEffectivePrice !== null && Math.abs(avg - minEffectivePrice) < 0.01 && validPrices.length > 1 && !allSameEffectivePrice);
                 let starHtml = isAbsoluteLowest ? `<span class="star-blink ml-1 text-[13px]">⭐</span>` : '';
+                
                 avgLabel = `<span class="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-black shadow-sm ml-1 shrink-0 whitespace-nowrap flex items-center">💰 ${(currentLang === 'en' ? 'Avg' : '折合')} $${avg.toFixed(1)}/${(currentLang === 'en' ? 'ea' : '件')}${starHtml}</span>`;
+
+                let savedAmount = (parsed - avg).toFixed(1);
+                let badgeText = currentLang === 'en' ? `Smart Save -$${savedAmount}` : 
+                                currentLang === 'zh-Hans' ? `悭真D -$${savedAmount}` : `慳真D -$${savedAmount}`;
+                
+                smartSaveBadge = `<span class="bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-700 px-1.5 py-0.5 rounded-md text-[10px] font-black mr-2 flex items-center shadow-sm">🔍 ${badgeText}</span>`;
+            } else if (avg >= parsed && p.promoDisplay) {
+                let fakePromoTip = currentLang === 'en' ? 'Fake Discount!' : '呢個優惠冇平到呀！';
+                fakePromoIcon = `<span class="ml-1 text-[15px] cursor-help drop-shadow-sm transition-transform hover:scale-125 inline-flex" title="${fakePromoTip}">🤦🏼‍♀️</span>`;
             }
         }
         
-        return `<div class="flex flex-col p-3 rounded-2xl border ${cls} ${isLowestBase ? 'ring-2 ring-green-400 dark:ring-green-500 bg-white dark:bg-slate-800 scale-[1.01] shadow-md z-10' : ''} transition-all"><div class="flex justify-between items-center w-full"><span class="font-black text-[13px] ${textCls} flex items-center gap-1">${displayName}</span><span class="text-[17px] font-black text-slate-800 dark:text-slate-100">$${isNaN(parsed) ? p.price : parsed.toFixed(1)}${isLowestBase ? ' 👍' : ''}</span></div>${p.promoDisplay ? `<div class="mt-2 flex flex-wrap sm:flex-nowrap items-center justify-between gap-1 w-full"><span class="text-[11px] font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 px-2 py-0.5 rounded-md border border-red-100 dark:border-red-800 break-words w-full sm:w-auto">🏷️ ${p.promoDisplay}</span>${avgLabel}</div>` : ''}</div>`;
+        return `<div class="flex flex-col p-3 rounded-2xl border ${cls} ${isLowestBase ? 'ring-2 ring-green-400 dark:ring-green-500 bg-white dark:bg-slate-800 scale-[1.01] shadow-md z-10' : ''} transition-all">
+            <div class="flex justify-between items-center w-full">
+                <span class="font-black text-[13px] ${textCls} flex items-center gap-1">${displayName}</span>
+                <span class="text-[17px] font-black text-slate-800 dark:text-slate-100 flex items-center justify-end">
+                    ${smartSaveBadge}
+                    $${isNaN(parsed) ? p.price : parsed.toFixed(1)}${isLowestBase ? ' 👍' : ''}
+                </span>
+            </div>
+            ${p.promoDisplay ? `<div class="mt-2 flex flex-wrap sm:flex-nowrap items-center justify-between gap-1 w-full"><span class="text-[11px] font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 px-2 py-0.5 rounded-md border border-red-100 dark:border-red-800 break-words w-full sm:w-auto flex items-center">🏷️ <span class="mx-1">${p.promoDisplay}</span>${fakePromoIcon}</span>${avgLabel}</div>` : ''}
+        </div>`;
     }).join('');
 
     let alertTitle = (currentLang === 'zh-Hans') ? "设定到价提醒" : (currentLang === 'en') ? "Set Price Alert" : "設定到價提醒";
@@ -1189,17 +1228,16 @@
     const brandZh = info.brand || '綜合品牌';
     const brandEn = info.brandEn || info.brand || 'General';
 
-    const langSwitchBtn = (currentLang === 'en') ? '' : `
+    const langSwitchBtn = `
         <button onclick="toggleCardLang(this)" 
                 data-zh="${pName.replace(/"/g, '&quot;')}" 
                 data-en="${englishName.replace(/"/g, '&quot;')}" 
                 data-brand-zh="${brandZh.replace(/"/g, '&quot;')}"
                 data-brand-en="${brandEn.replace(/"/g, '&quot;')}"
-                class="px-1.5 py-0.5 text-[10px] bg-slate-200 dark:bg-slate-700 rounded-md font-bold hover:bg-blue-200 transition-colors">
+                class="px-1.5 py-0.5 text-[10px] bg-slate-200 dark:bg-slate-700 rounded-md font-bold hover:bg-blue-200 transition-colors ml-1">
             中/EN
         </button>`;
 
-    // 💡 修正：變數名稱統一為 searchBtn
     const searchBtn = `
         <button onclick="performGoogleSearch(this)" 
                 class="w-6 h-6 flex items-center justify-center bg-blue-100 dark:bg-blue-900/30 rounded-md hover:bg-blue-200 transition-colors ml-1" 
@@ -1227,7 +1265,7 @@
                         </div>
                     </div>
                     <div class="flex items-center gap-2 shrink-0">
-                        <button onclick="openAlertModal('${pName.replace(/'/g, "\\'")}', '${minBasePrice}')" class="w-8 h-8 flex items-center justify-center rounded-full bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50 border border-amber-200 dark:border-amber-800 text-amber-500 dark:text-amber-400 active:scale-90 transition-all shadow-sm" title="${alertTitle}">
+                        <button onclick="openAlertModal('${pName.replace(/'/g, "\\'")}', '${alertTargetPrice}')" class="w-8 h-8 flex items-center justify-center rounded-full bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50 border border-amber-200 dark:border-amber-800 text-amber-500 dark:text-amber-400 active:scale-90 transition-all shadow-sm" title="${alertTitle}">
                             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
                         </button>
                         <button onclick="shareProduct('${pName.replace(/'/g, "\\'")}', '${info.brand}', '${minBasePrice}')" class="w-8 h-8 flex items-center justify-center rounded-full bg-[#1877F2] dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-500 active:scale-90 transition-all shadow-sm">
@@ -1316,8 +1354,6 @@
             window.checkGeminiKey();
         });
 
-
-
         
     // 💡 返回頂部嘅 Function
       function scrollToResults() {
@@ -1334,12 +1370,119 @@
     }
 }
 
+// ==========================================
+// 🔔 新增：紅點偵測系統
+// ==========================================
+function findLowestPriceByName(targetName) {
+    let minPrice = null;
+    if (!structuredData) return null;
+    
+    Object.values(structuredData).forEach(c1 => {
+        Object.values(c1).forEach(c2 => {
+            let product = c2[targetName];
+            if (product && product.prices) {
+                product.prices.forEach(p => {
+                    let parsed = parseFloat(p.price);
+                    let avg = typeof calculateAvgPrice === 'function' ? calculateAvgPrice(p.promoCalc, parsed) : parsed;
+                    let effective = (avg && avg > 0 && avg < parsed) ? avg : parsed;
+                    if (!isNaN(effective)) {
+                        if (minPrice === null || effective < minPrice) minPrice = effective;
+                    }
+                });
+            }
+        });
+    });
+    return minPrice;
+}
+
+function updateAlertBadge() {
+    const bellBtn = document.getElementById('global-alert-btn');
+    if (!bellBtn) return;
+
+    let alerts = JSON.parse(localStorage.getItem('priceAlerts')) || [];
+    let hasHitTarget = false;
+
+    alerts.forEach(item => {
+        let currentLowest = findLowestPriceByName(item.productName || item.name); 
+        if (currentLowest !== null && currentLowest <= parseFloat(item.targetPrice)) {
+            hasHitTarget = true;
+        }
+    });
+
+    const dotId = 'alert-red-dot';
+    let existingDot = document.getElementById(dotId);
+
+    if (hasHitTarget) {
+        if (!existingDot) {
+            let dot = document.createElement('span');
+            dot.id = dotId;
+            dot.innerHTML = `<span class="absolute top-0 right-0 flex h-2.5 w-2.5 transform translate-x-0.5 -translate-y-0.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500 border border-white dark:border-slate-800"></span></span>`;
+            bellBtn.appendChild(dot);
+        }
+    } else {
+        if (existingDot) existingDot.remove();
+    }
+}
+// ==========================================
         
+// ==========================================
+// 🔔 新增：紅點偵測系統
+// ==========================================
+function findLowestPriceByName(targetName) {
+    let minPrice = null;
+    if (!structuredData) return null;
+    
+    Object.values(structuredData).forEach(c1 => {
+        Object.values(c1).forEach(c2 => {
+            let product = c2[targetName];
+            if (product && product.prices) {
+                product.prices.forEach(p => {
+                    let parsed = parseFloat(p.price);
+                    let avg = typeof calculateAvgPrice === 'function' ? calculateAvgPrice(p.promoCalc, parsed) : parsed;
+                    let effective = (avg && avg > 0 && avg < parsed) ? avg : parsed;
+                    if (!isNaN(effective)) {
+                        if (minPrice === null || effective < minPrice) minPrice = effective;
+                    }
+                });
+            }
+        });
+    });
+    return minPrice;
+}
+
+function updateAlertBadge() {
+    const bellBtn = document.getElementById('global-alert-btn');
+    if (!bellBtn) return;
+
+    let alerts = JSON.parse(localStorage.getItem('priceAlerts')) || [];
+    let hasHitTarget = false;
+
+    alerts.forEach(item => {
+        let currentLowest = findLowestPriceByName(item.productName || item.name); 
+        if (currentLowest !== null && currentLowest <= parseFloat(item.targetPrice)) {
+            hasHitTarget = true;
+        }
+    });
+
+    const dotId = 'alert-red-dot';
+    let existingDot = document.getElementById(dotId);
+
+    if (hasHitTarget) {
+        if (!existingDot) {
+            let dot = document.createElement('span');
+            dot.id = dotId;
+            dot.innerHTML = `<span class="absolute top-0 right-0 flex h-2.5 w-2.5 transform translate-x-0.5 -translate-y-0.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500 border border-white dark:border-slate-800"></span></span>`;
+            bellBtn.appendChild(dot);
+        }
+    } else {
+        if (existingDot) existingDot.remove();
+    }
+}
      
+
         init();
     </script>
 
 
 </body>
 </html>
-
